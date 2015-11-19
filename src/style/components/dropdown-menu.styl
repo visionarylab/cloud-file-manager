@@ -1,0 +1,54 @@
+.menu
+  display inline
+  padding-left 10px
+  .menu-anchor
+    cursor pointer
+    label-font(size: 13px)
+    font-size 13px
+    i
+      font-size 7px
+
+.menu-hidden
+  display none
+.menu-showing
+  display block
+
+.menu-hidden, .menu-showing
+  font-size 13px
+  text-align center
+  background none
+  position fixed
+  min-width 150px
+  z-index 1000
+  color dark-blue
+  ul
+    text-align left
+    display block
+    margin 0.5em
+    padding 4px
+    list-style none
+    box-shadow 0 0 5px rgba(0, 0, 0, 0.15)
+    border-radius 5px
+    background #fff
+
+  li
+    font light 12px sans-serif
+    display block
+    position relative
+    margin 2px
+    padding 4px
+    cursor pointer
+    border-radius 5px
+    transition all 0.2
+    &.disabled
+      color #aaa
+      font-style italic
+  li:hover
+    background hsla(0,0,80,1.0)
+    color #fff
+    &.disabled
+      color #aaa
+      background none
+      cursor not-allowed
+
+

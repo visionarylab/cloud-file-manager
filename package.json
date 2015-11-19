@@ -18,6 +18,7 @@
     "coffeeify": "^1.0.0",
     "gulp": "^3.8.11",
     "gulp-concat": "^2.5.2",
+    "gulp-stylus": "^2.0.1",
     "vinyl-source-stream": "^1.1.0",
     "coffee-script": "^1.9.1",
     "gulp-coffeelint": "^0.4.0",

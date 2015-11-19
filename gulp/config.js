@@ -18,14 +18,9 @@ module.exports = {
     watch: src + '/code/**/*.coffee',
     src: src + '/code/**/*.coffee',
   },
-  trim: {
-    code: {
-      src: src + '/code/**/*.*',
-      dest: src + '/code/'
-    },
-    stylus: {
-      src: src + '/stylus/**/*.*',
-      dest: src + '/stylus/'
-    }
+  css: {
+    watch: src + '/style/**/*.styl',
+    src: src + '/style/**/app.styl',
+    dest: dest + '/css/'
   }
 };

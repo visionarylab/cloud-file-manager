@@ -1,3 +1,6 @@
+
+MenuBar       = React.createFactory require './menu-bar'
+
 {div, iframe} = React.DOM
 
 module.exports = React.createClass
@@ -6,6 +9,7 @@ module.exports = React.createClass
 
   render: ->
     (div {className: 'app'},
+      (MenuBar {})
       (iframe {
         width: "100%"
         height: "100%"
