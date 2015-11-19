@@ -1,0 +1,28 @@
+{
+  "name": "cloud-file-manager",
+  "description": "Wrapper for providing file management for web applications",
+  "author": "The Concord Consortium",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/concord-consortium/cloud-file-manger"
+  },
+  "dependencies": {
+    "iframe-phone": "^1.1.3",
+    "lodash": "^3.3.0",
+    "react": "^0.13.3",
+    "reflux": "^0.2.7"
+  },
+  "devDependencies": {
+    "browserify": "^9.0.3",
+    "coffeeify": "^1.0.0",
+    "gulp": "^3.8.11",
+    "gulp-concat": "^2.5.2",
+    "vinyl-source-stream": "^1.1.0",
+    "coffee-script": "^1.9.1",
+    "gulp-coffeelint": "^0.4.0",
+    "require-dir": "^0.1.0",
+    "beepbeep": "^1.2.0",
+    "event-stream": "^3.3.0"
+  }
+}
