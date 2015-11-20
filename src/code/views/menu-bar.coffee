@@ -9,19 +9,11 @@ module.exports = React.createClass
 
   render: ->
     filename = @props.filename or "Untitled Document"
-    options = [
-      name: tr "~MENU.OPEN"
-      action: null
-    ,
-      name: tr "~MENU.SAVE"
-      action: null
-    ]
-
     (div {className: 'menu-bar'},
       (div {},
         (Dropdown {
           anchor: filename
-          items: options
+          items: @props.items
           className:'menu-bar-content-filename'})
       )
     )

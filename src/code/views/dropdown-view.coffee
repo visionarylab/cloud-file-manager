@@ -53,11 +53,12 @@ module.exports = DropDown = React.createClass
         @props.anchor
         (i {className: 'icon-codap-arrow-expand'})
       )
-      (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
-        (ul {},
-          (DropdownItem {key: item.name or item, item: item, select: @select, isActionMenu: @props.isActionMenu}) for item in @props.items
+      if @props.items?.length > 0
+        (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
+          (ul {},
+            (DropdownItem {key: item.name or item, item: item, select: @select, isActionMenu: @props.isActionMenu}) for item in @props.items
+          )
         )
-      )
     )
 
 

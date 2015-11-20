@@ -1,16 +1,90 @@
 <html>
   <head>
+    <style>
+      body {
+        font-family: 'Arial', 'Helvetica', 'sans-serif'
+      }
+      textarea {
+        width: 600px;
+        height:300px;
+      }
+      #buttons {
+        margin-top: 10px;
+      }
+    </style>
+    <script type="text/javascript">
+      var cfmClient;
+
+      function newFile() {
+        cfmClient && cfmClient.newFile();
+        setTextValue('');
+      }
+
+      function openFile() {
+        // no callback for open - we will handle it in the clientInit event callback
+        cfmClient && cfmClient.openFileDialog();
+      }
+
+      function saveFile() {
+        cfmClient && cfmClient.saveFileDialog(getTextValue());
+      }
+
+      function getTextValue() {
+        return document.getElementById("text").value;
+      }
+
+      function setTextValue(text) {
+        document.getElementById("text").value = text;
+      }
+
+      function setClient(client) {
+        cfmClient = client;
+      }
+    </script>
   </head>
   <body>
-    <h2>Text App</h2>
-    <textarea cols="50" rows="10"></textarea>
+    <h2>Demo App</h2>
+    <p>
+      This simple demo app uses the textarea below edit text files.  You can either use the menu bar or the buttons below.
+    </p>
+    <div>
+      <textarea cols="50" rows="10" id="text"></textarea>
+    </div>
+    <div id="buttons">
+      <button onclick="newFile()">New</button>
+      <button onclick="openFile()">Open</button>
+      <button onclick="saveFile()">Save</button>
+    </div>
     <script type="text/javascript">
-      var options = {
-        version: '1.0.0'
-      };
-      parent && parent.CloudFileManager && parent.CloudFileManager.frameLoaded(options, function (event, client) {
-        console.log(event);
-      })
+      var cfm = parent && parent.CloudFileManager ? parent.CloudFileManager : null,
+          clientOptions;
+
+      if (cfm) {
+        clientOptions = {
+          version: '1.0.0',
+          menu: cfm.DefaultMenu
+        };
+        cfm.clientConnect(clientOptions, function (event) {
+          console.log(event);
+          switch (event.type) {
+            case 'connected':
+              setClient(event.data.client);
+              break;
+
+            case 'getContent':
+              event.callback(getTextValue());
+              break;
+
+            case 'newedFile':
+              setTextValue('');
+              break;
+
+            case 'openedFile':
+              setTextValue(event.data.content);
+              break;
+          }
+        });
+      }
     </script>
   </body>
 </html>
