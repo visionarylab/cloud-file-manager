@@ -24,7 +24,8 @@ class LocalStorageProvider extends ProviderInterface
 
   save: (content, metadata, callback) ->
     try
-      callback null, @localStorage.setItem @_getKey(metadata.name), content
+      @localStorage.setItem @_getKey(metadata.name), content
+      callback null
     catch
       callback 'Unable to save'
 
@@ -40,7 +41,7 @@ class LocalStorageProvider extends ProviderInterface
     for own key of @localStorage
       if key.substr(0, prefix.length) is prefix
         [name, remainder...] = key.substr(prefix.length).split('/')
-        list.push new Metadata
+        list.push new CloudMetadata
           name: key.substr(prefix.length)
           path: "#{path}/#{name}"
           type: if remainder.length > 0 then Metadata.Folder else Metadata.File

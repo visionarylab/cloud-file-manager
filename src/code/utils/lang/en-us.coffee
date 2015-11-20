@@ -1,3 +1,5 @@
 module.exports =
+  "~MENU.NEW": "New"
+  "~MENU.OPEN": "Open ..."
   "~MENU.SAVE": "Save"
-  "~MENU.OPEN": "Open"
+  "~MENU.SAVE_AS": "Save As ..."

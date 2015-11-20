@@ -1,10 +1,10 @@
-class File
+class CloudFile
   contructor: (options) ->
     {@content, @metadata} = options
 
-class Metadata
+class CloudMetadata
   contructor: (options) ->
-    {@name, @path, @type} = options
+    {@name, @path, @type, @provider} = options
   @Folder: 'folder'
   @File: 'file'
 
