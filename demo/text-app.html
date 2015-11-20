@@ -4,5 +4,13 @@
   <body>
     <h2>Text App</h2>
     <textarea cols="50" rows="10"></textarea>
+    <script type="text/javascript">
+      var options = {
+        version: '1.0.0'
+      };
+      parent && parent.CloudFileManager && parent.CloudFileManager.frameLoaded(options, function (event, client) {
+        console.log(event);
+      })
+    </script>
   </body>
 </html>

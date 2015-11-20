@@ -1,7 +1,7 @@
 {div, i, span} = React.DOM
 tr = require '../utils/translate'
 
-Dropdown           = React.createFactory require './dropdown-view'
+Dropdown = React.createFactory require './dropdown-view'
 
 module.exports = React.createClass
 
