@@ -26,7 +26,11 @@
       }
 
       function saveFile() {
-        cfmClient && cfmClient.saveFileDialog(getTextValue());
+        cfmClient && cfmClient.saveContent(getTextValue());
+      }
+
+      function saveFileAs() {
+        cfmClient && cfmClient.saveFileAsDialog(getTextValue());
       }
 
       function getTextValue() {
@@ -54,6 +58,7 @@
       <button onclick="newFile()">New</button>
       <button onclick="openFile()">Open</button>
       <button onclick="saveFile()">Save</button>
+      <button onclick="saveFileAs()">Save As</button>
     </div>
     <script type="text/javascript">
       var cfm = parent && parent.CloudFileManager ? parent.CloudFileManager : null,
