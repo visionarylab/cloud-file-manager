@@ -1,5 +1,8 @@
 tr = require './utils/translate'
 AppView = React.createFactory require './views/app-view'
+LocalStorageProvider = require './providers/localstorage-provider'
+CloudFile = (require './providers/provider-interface').CloudFile
+CloudMetadata = (require './providers/provider-interface').CloudMetadata
 
 # helpers that don't need to live in the classes
 isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
@@ -17,16 +20,26 @@ class CloudFileManagerUI
       @menu = new CloudFileManagerUIMenu @options, @client
 
   saveFileDialog: (callback) ->
-    alert 'saveFileDialog'
+    @_promptForFile 'Save File', callback
 
   saveFileAsDialog: (callback) ->
-    alert 'saveFileAsDialog'
+    @_promptForFile 'Save File As', callback
 
   openFileDialog: (callback) ->
-    alert 'openFileDialog'
+    @_promptForFile 'Open File', callback
 
   selectProviderDialog: (callback) ->
     alert 'selectProviderDialog'
+
+  _promptForFile: (promptText, callback) ->
+    filename = prompt(promptText)
+    if filename isnt null
+      callback new CloudMetadata
+        name: filename
+        path: filename
+        type: CloudMetadata.File
+        provider: @client.state.currentProvider
+
 
 class CloudFileManagerUIMenu
 
@@ -68,12 +81,17 @@ class CloudFileManagerClientEvent
 class CloudFileManagerClient
 
   constructor: ->
+    @allProviders = {}
+    if LocalStorageProvider.Available()
+      provider = new LocalStorageProvider()
+      @allProviders[provider.name] = provider
+
     @_initState()
     @_ui = new CloudFileManagerUI @
 
   # single client - used by the client app to register and receive callback events
   connect: (@options, @eventCallback) ->
-    @_initState()
+    @_initState @options
     @_ui.init @options
     @_event 'connected', {client: @}
 
@@ -90,10 +108,11 @@ class CloudFileManagerClient
     @newFile()
 
   openFile: (metadata, callback = null) ->
-    @_ensureProvider (provider) ->
+    @_ensureProvider (provider) =>
       provider.load metadata, (err, content) =>
         return @_error(err) if err
-        @_event 'openedFile', {content: content, metadata: metadata}
+        @_fileChanged 'openedFile', content, metadata
+        callback? content, metadata
 
   openFileDialog: (callback = null) ->
     @_ui.openFileDialog (metadata) =>
@@ -106,10 +125,11 @@ class CloudFileManagerClient
       @saveFileDialog content, callback
 
   saveFile: (content, metadata, callback = null) ->
-    @_ensureProvider (provider) ->
+    @_ensureProvider (provider) =>
       provider.save content, metadata, (err) =>
         return @_error(err) if err
-        @_event 'savedFile', {content: content, metadata: metadata}
+        @_fileChanged 'savedFile', content, metadata
+        callback? content, metadata
 
   saveFileDialog: (content = null, callback = null) ->
     @_ui.saveFileDialog (metadata) =>
@@ -130,6 +150,11 @@ class CloudFileManagerClient
     # for now an alert
     alert message
 
+  _fileChanged: (type, content, metadata) ->
+    @state.content = content
+    @state.metadata = metadata
+    @_event type, {content: content, metadata: metadata}
+
   _event: (type, data = {}, eventCallback = null) ->
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     @eventCallback? event
@@ -147,8 +172,26 @@ class CloudFileManagerClient
     @state =
       content: null
       metadata: null
-      providers: []
+      allProviders: @allProviders
+      availableProviders: []
       currentProvider: null
+
+    # default to all providers if non specified
+    if not options.providers
+      options.providers = []
+      for own providerName of @allProviders
+        options.providers.push providerName
+
+    # check the providers
+    for providerName in options.providers
+      if @allProviders[providerName]
+        @state.availableProviders.push @allProviders[providerName]
+      else
+        @_error "Unknown provider: #{providerName}"
+
+    # auto select a provider if only one given
+    if @state.availableProviders.length is 1
+      @state.currentProvider = @state.availableProviders[0]
 
 class CloudFileManager
 

@@ -3,7 +3,7 @@ class CloudFile
     {@content, @metadata} = options
 
 class CloudMetadata
-  contructor: (options) ->
+  constructor: (options) ->
     {@name, @path, @type, @provider} = options
   @Folder: 'folder'
   @File: 'file'
@@ -30,3 +30,8 @@ class ProviderInterface
 
   _notImplemented: (methodName) ->
     throw new Error("#{methodName} not implemented for #{@name} provider")
+
+module.exports =
+  CloudFile: CloudFile
+  CloudMetadata: CloudMetadata
+  ProviderInterface: ProviderInterface

@@ -1,11 +1,10 @@
-require './provider-interface'
+ProviderInterface = (require './provider-interface').ProviderInterface
 
 class LocalStorageProvider extends ProviderInterface
 
   constructor: (options) ->
-    @localStorage = window.localStorage
     super
-      name: 'local-storage'
+      name: 'localStorage'
       displayName: 'Local Storage'
       capabilities:
         auth: false
@@ -14,31 +13,31 @@ class LocalStorageProvider extends ProviderInterface
         list: true
 
   @Available: ->
-    try
+    result = try
       test = 'LocalStorageProvider::auth'
-      @localStorage.setItem(test, test)
-      @localStorage.removeItem(test)
+      window.localStorage.setItem(test, test)
+      window.localStorage.removeItem(test)
       true
     catch
       false
 
   save: (content, metadata, callback) ->
     try
-      @localStorage.setItem @_getKey(metadata.name), content
+      window.localStorage.setItem @_getKey(metadata.name), content
       callback null
     catch
       callback 'Unable to save'
 
   load: (metadata, callback) ->
     try
-      callback null,  @localStorage.getItem @_getKey metadata.name
+      callback null,  window.localStorage.getItem @_getKey metadata.name
     catch
       callback 'Unable to load'
 
   list: (metadata, callback) ->
     list = []
     prefix = @_getKey path
-    for own key of @localStorage
+    for own key of window.localStorage
       if key.substr(0, prefix.length) is prefix
         [name, remainder...] = key.substr(prefix.length).split('/')
         list.push new CloudMetadata
@@ -49,3 +48,5 @@ class LocalStorageProvider extends ProviderInterface
 
   _getKey: (name = '') ->
     "cfm::#{name}"
+
+module.exports = LocalStorageProvider
