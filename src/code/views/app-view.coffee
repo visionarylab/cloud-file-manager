@@ -6,20 +6,24 @@ module.exports = React.createClass
 
   displayName: 'CloudFileManager'
 
+  getFilename: ->
+    if @props.client.state.metadata?.hasOwnProperty('name') then @props.client.state.metadata.name else "Untitled Document"
+
   getInitialState: ->
+    filename: @getFilename()
     menuItems: @props.client._ui.menu?.items or []
 
   componentWillMount: ->
     @props.client.listen (event) =>
+      @setState filename: @getFilename()
+
       switch event.type
         when 'connected'
-          # when the client connects update the menu
-          @setState
-            menuItems: @props.client._ui.menu?.items or []
+          @setState menuItems: @props.client._ui.menu?.items or []
 
   render: ->
     (div {className: 'app'},
-      (MenuBar {items: @state.menuItems})
+      (MenuBar {filename: @state.filename, items: @state.menuItems})
       (iframe {
         width: "100%"
         height: "100%"

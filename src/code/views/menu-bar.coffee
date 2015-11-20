@@ -8,11 +8,10 @@ module.exports = React.createClass
   displayName: 'MenuBar'
 
   render: ->
-    filename = @props.filename or "Untitled Document"
     (div {className: 'menu-bar'},
       (div {},
         (Dropdown {
-          anchor: filename
+          anchor: @props.filename
           items: @props.items
           className:'menu-bar-content-filename'})
       )
