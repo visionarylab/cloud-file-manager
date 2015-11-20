@@ -11,7 +11,7 @@ This is a list of providers with APIs so we can find a common core api set for t
 
 ### LocalStorage
 
-* auth -> check if window.localStorage exists
+* auth -> n/a
 * save -> window.localStorage.setItem
 * load -> window.localStorage.getItem
 * list -> window.localStorage.getItem(key) in loop over key in window.localStorage
