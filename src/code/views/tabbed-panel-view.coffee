@@ -57,7 +57,7 @@ module.exports = React.createClass
     )
 
   render: ->
-    (div {className: "tabbed-panel"},
+    (div {key: @props.key, className: "tabbed-panel"},
       @renderTabs()
       @renderSelectedPanel()
     )
