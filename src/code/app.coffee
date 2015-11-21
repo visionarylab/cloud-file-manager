@@ -1,6 +1,8 @@
 tr = require './utils/translate'
 AppView = React.createFactory require './views/app-view'
+
 LocalStorageProvider = require './providers/localstorage-provider'
+ReadOnlyProvider = require './providers/readonly-provider'
 
 # helpers that don't need to live in the classes
 isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
@@ -83,9 +85,10 @@ class CloudFileManagerClient
 
   constructor: ->
     @allProviders = {}
-    if LocalStorageProvider.Available()
-      provider = new LocalStorageProvider()
-      @allProviders[provider.name] = provider
+    for Provider in [ReadOnlyProvider, LocalStorageProvider]
+      if Provider.Available()
+        provider = new Provider()
+        @allProviders[provider.name] = provider
 
     @_initState()
     @_ui = new CloudFileManagerUI @
@@ -109,7 +112,7 @@ class CloudFileManagerClient
     @newFile()
 
   openFile: (metadata, callback = null) ->
-    @_ensureProvider (provider) =>
+    @_ensureProviderCan 'load', (provider) =>
       provider.load metadata, (err, content) =>
         return @_error(err) if err
         @_fileChanged 'openedFile', content, metadata
@@ -126,7 +129,7 @@ class CloudFileManagerClient
       @saveFileDialog content, callback
 
   saveFile: (content, metadata, callback = null) ->
-    @_ensureProvider (provider) =>
+    @_ensureProviderCan 'save', (provider) =>
       provider.save content, metadata, (err) =>
         return @_error(err) if err
         @_fileChanged 'savedFile', content, metadata
@@ -161,8 +164,8 @@ class CloudFileManagerClient
     @eventCallback? event
     @listenerCallback? event
 
-  _ensureProvider: (callback) ->
-    if @state.currentProvider
+  _ensureProviderCan: (action, callback) ->
+    if @state.currentProvider and @state.currentProvider.capabilities[action]
       callback @state.currentProvider
     else
       @_ui.selectProviderDialog (err, provider) ->

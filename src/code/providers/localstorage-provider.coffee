@@ -2,12 +2,11 @@ ProviderInterface = (require './provider-interface').ProviderInterface
 
 class LocalStorageProvider extends ProviderInterface
 
-  constructor: (options) ->
+  constructor: (options = {}) ->
     super
       name: 'localStorage'
       displayName: 'Local Storage'
       capabilities:
-        auth: false
         save: true
         load: true
         list: true
@@ -39,7 +38,7 @@ class LocalStorageProvider extends ProviderInterface
 
   list: (metadata, callback) ->
     list = []
-    prefix = @_getKey path
+    prefix = @_getKey metadata.path
     for own key of window.localStorage
       if key.substr(0, prefix.length) is prefix
         [name, remainder...] = key.substr(prefix.length).split('/')

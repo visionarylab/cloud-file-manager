@@ -8,10 +8,12 @@ module.exports = React.createClass
   displayName: 'ProviderTabbedDialog'
 
   render:  ->
+    isSave = (@props.dialog.action is 'saveFile') or (@props.dialog.action is 'saveFileAs')
     tabs = []
     props =
       dialog: @props.dialog
     for provider, i in @props.client.state.availableProviders
-      tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: (provider.dialog props)}
+      if not isSave or provider.capabilities.save
+        tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: (provider.dialog props)}
 
     (ModalTabbedDialog {title: (tr @props.dialog.title), close: @props.close, tabs: tabs})

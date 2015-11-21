@@ -48,6 +48,7 @@ module.exports = React.createClass
     (div {className: 'workspace-tab-component'},
       for tab, index in @props.tabs
         (div {
+          key: index
           style:
             display: if index is @state.selectedTabIndex then 'block' else 'none'
           },
