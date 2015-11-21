@@ -1,11 +1,13 @@
 tr = require './utils/translate'
 AppView = React.createFactory require './views/app-view'
 LocalStorageProvider = require './providers/localstorage-provider'
-CloudFile = (require './providers/provider-interface').CloudFile
-CloudMetadata = (require './providers/provider-interface').CloudMetadata
 
 # helpers that don't need to live in the classes
 isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
+
+class CloudFileManagerUIEvent
+
+  constructor: (@type, @data = {}) ->
 
 class CloudFileManagerUI
 
@@ -19,27 +21,26 @@ class CloudFileManagerUI
         @options.menu = CloudFileManager.DefaultMenu
       @menu = new CloudFileManagerUIMenu @options, @client
 
+  # for React to listen for dialog changes
+  listen: (@listenerCallback) ->
+
   saveFileDialog: (callback) ->
-    @_promptForFile 'Save File', callback
+    @_showProviderDialog 'saveFile', (tr '~DIALOG.SAVE'), callback
 
   saveFileAsDialog: (callback) ->
-    @_promptForFile 'Save File As', callback
+    @_showProviderDialog 'saveFileAs', (tr '~DIALOG.SAVE_AS'), callback
 
   openFileDialog: (callback) ->
-    @_promptForFile 'Open File', callback
+    @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
 
   selectProviderDialog: (callback) ->
-    alert 'selectProviderDialog'
+    @_showProviderDialog 'selectProvider', (tr '~DIALOG.SELECT_PROVIDER'), callback
 
-  _promptForFile: (promptText, callback) ->
-    filename = prompt(promptText)
-    if filename isnt null
-      callback new CloudMetadata
-        name: filename
-        path: filename
-        type: CloudMetadata.File
-        provider: @client.state.currentProvider
-
+  _showProviderDialog: (action, title, callback) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
+      action: action
+      title: title
+      callback: callback
 
 class CloudFileManagerUIMenu
 

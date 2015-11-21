@@ -1,4 +1,8 @@
-var src = './src',
+var argv = require('yargs').argv,
+    environment = process.env.ENVIRONMENT || "development",
+    production = !!argv.production,
+    buildInfo = argv.buildInfo || 'development build (' + (new Date()) + ')',
+    src = './src',
     dest  = './dist';
 
 module.exports = {
@@ -22,5 +26,10 @@ module.exports = {
     watch: src + '/style/**/*.styl',
     src: src + '/style/**/app.styl',
     dest: dest + '/css/'
+  },
+  assets: {
+    watch: src + '/assets/**/*.*',
+    src: src + '/assets/**/*.*',
+    dest: dest
   }
 };

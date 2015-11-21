@@ -6,8 +6,9 @@ gulp.task('watch', function() {
     gulp.watch(config.browserify.app.watch,       ['browserify-app']);
     gulp.watch(config.browserify.globals.watch,   ['browserify-globals']);
     gulp.watch(config.css.watch,                  ['css']);
+    gulp.watch(config.assets.watch,               ['assets']);
 });
 
-gulp.task('build-all', ['coffeelint', 'browserify-app', 'browserify-globals', 'css']);
+gulp.task('build-all', ['coffeelint', 'browserify-app', 'browserify-globals', 'css', 'assets']);
 
 gulp.task('default', ['build-all', 'watch']);

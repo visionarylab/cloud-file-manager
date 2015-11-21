@@ -16,8 +16,8 @@ class ProviderInterface
 
   @Available: -> true
 
-  auth: (callback) ->
-    @_notImplemented 'auth'
+  dialog: (callback) ->
+    @_notImplemented 'dialog'
 
   save: (content, metadata, callback) ->
     @_notImplemented 'save'
