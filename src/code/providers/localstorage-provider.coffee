@@ -21,6 +21,9 @@ class LocalStorageProvider extends ProviderInterface
     catch
       false
 
+  dialog: (props) ->
+
+
   save: (content, metadata, callback) ->
     try
       window.localStorage.setItem @_getKey(metadata.name), content
