@@ -84,12 +84,6 @@ class CloudFileManagerClientEvent
 class CloudFileManagerClient
 
   constructor: ->
-    @allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider]
-      if Provider.Available()
-        provider = new Provider()
-        @allProviders[provider.name] = provider
-
     @_initState()
     @_ui = new CloudFileManagerUI @
 
@@ -164,8 +158,8 @@ class CloudFileManagerClient
     @eventCallback? event
     @listenerCallback? event
 
-  _ensureProviderCan: (action, callback) ->
-    if @state.currentProvider and @state.currentProvider.capabilities[action]
+  _ensureProviderCan: (capability, callback) ->
+    if @state.currentProvider and @state.currentProvider.capabilities[capability]
       callback @state.currentProvider
     else
       @_ui.selectProviderDialog (err, provider) ->
@@ -176,26 +170,32 @@ class CloudFileManagerClient
     @state =
       content: null
       metadata: null
-      allProviders: @allProviders
       availableProviders: []
       currentProvider: null
+
+    # flter for available providers
+    allProviders = {}
+    for Provider in [ReadOnlyProvider, LocalStorageProvider]
+      if Provider.Available()
+        allProviders[Provider.Name] = Provider
 
     # default to all providers if non specified
     if not options.providers
       options.providers = []
-      for own providerName of @allProviders
+      for own providerName of allProviders
         options.providers.push providerName
 
     # check the providers
-    for providerName in options.providers
-      if @allProviders[providerName]
-        @state.availableProviders.push @allProviders[providerName]
+    for provider in options.providers
+      [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
+      if not providerName
+        @_error "Invalid provider spec - must either be string or object with name property"
       else
-        @_error "Unknown provider: #{providerName}"
-
-    # auto select a provider if only one given
-    if @state.availableProviders.length is 1
-      @state.currentProvider = @state.availableProviders[0]
+        if allProviders[providerName]
+          Provider = allProviders[providerName]
+          @state.availableProviders.push new Provider providerOptions
+        else
+          @_error "Unknown provider: #{providerName}"
 
 class CloudFileManager
 

@@ -1,16 +1,18 @@
+tr = require '../utils/translate'
 ProviderInterface = (require './provider-interface').ProviderInterface
 
 class LocalStorageProvider extends ProviderInterface
 
-  constructor: (options = {}) ->
+  constructor: (@options = {}) ->
     super
-      name: 'localStorage'
-      displayName: 'Local Storage'
+      name: LocalStorageProvider.Name
+      displayName: @options.displayName or (tr '~PROVIDER.LOCAL_STORAGE')
       capabilities:
         save: true
         load: true
         list: true
 
+  @Name: 'localStorage'
   @Available: ->
     result = try
       test = 'LocalStorageProvider::auth'
@@ -19,9 +21,6 @@ class LocalStorageProvider extends ProviderInterface
       true
     catch
       false
-
-  dialog: (props) ->
-
 
   save: (content, metadata, callback) ->
     try
