@@ -31,5 +31,8 @@ module.exports = {
     watch: src + '/assets/**/*.*',
     src: src + '/assets/**/*.*',
     dest: dest
+  },
+  deploy: {
+    src: dest + '/**/*'
   }
 };
