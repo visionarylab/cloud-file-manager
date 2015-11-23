@@ -1,5 +1,4 @@
 {div, i, span} = React.DOM
-tr = require '../utils/translate'
 
 Dropdown = React.createFactory require './dropdown-view'
 

@@ -1,12 +1,10 @@
 {div} = React.DOM
 
 tr = require '../utils/translate'
+isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudMetadata = (require './provider-interface').CloudMetadata
-
-# helpers that don't need to live in the classes
-isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
 
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
   displayName: 'DocumentStoreAuthorizationDialog'

@@ -12,7 +12,7 @@ DropdownItem = React.createFactory React.createClass
     name = @props.item.name or @props.item
     (li {className: className, onClick: @clicked }, name)
 
-module.exports = DropDown = React.createClass
+DropDown = React.createClass
 
   displayName: 'Dropdown'
 
@@ -61,36 +61,4 @@ module.exports = DropDown = React.createClass
         )
     )
 
-
-DemoDropDown = React.createFactory DropDown
-Demo = React.createClass
-  getInitialState: ->
-    nonActionMenuSelection: "Selection menu"
-  onNonActionMenuSelect: (item) ->
-    @setState({nonActionMenuSelection: item})
-  render: ->
-    (div {},
-      (div {},
-        (DemoDropDown {
-          anchor: "Action Menu",
-          items: [
-            {name: "Action 1", action: -> alert "Action 1"}
-            {name: "Action 2", action: -> alert "Action 2"}
-            {name: "Disabled action"}
-          ]
-        })
-      )
-      (div {},
-        (DemoDropDown {
-          isActionMenu: false
-          onSelect: @onNonActionMenuSelect
-          anchor: @state.nonActionMenuSelection,
-          items: [
-            "Option 1"
-            "Option 2"
-          ]
-        })
-      )
-    )
-
-window.testComponent = (domID) -> React.render React.createElement(Demo,{}), domID
+module.exports = DropDown

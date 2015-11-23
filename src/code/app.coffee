@@ -1,13 +1,12 @@
 tr = require './utils/translate'
+isString = require './utils/is-string'
+
 AppView = React.createFactory require './views/app-view'
 
 LocalStorageProvider = require './providers/localstorage-provider'
 ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
-
-# helpers that don't need to live in the classes
-isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
 
 class CloudFileManagerUIEvent
 
@@ -85,14 +84,42 @@ class CloudFileManagerClientEvent
 
 class CloudFileManagerClient
 
-  constructor: ->
-    @_initState()
+  constructor: (options) ->
+    @state =
+      content: null
+      metadata: null
+      availableProviders: []
+      currentProvider: null
     @_ui = new CloudFileManagerUI @
 
+  setAppOptions: (appOptions = {})->
+    # flter for available providers
+    allProviders = {}
+    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider]
+      if Provider.Available()
+        allProviders[Provider.Name] = Provider
+
+    # default to all providers if non specified
+    if not appOptions.providers
+      appOptions.providers = []
+      for own providerName of allProviders
+        appOptions.providers.push providerName
+
+    # check the providers
+    for provider in appOptions.providers
+      [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
+      if not providerName
+        @_error "Invalid provider spec - must either be string or object with name property"
+      else
+        if allProviders[providerName]
+          Provider = allProviders[providerName]
+          @state.availableProviders.push new Provider providerOptions
+        else
+          @_error "Unknown provider: #{providerName}"
+
   # single client - used by the client app to register and receive callback events
-  connect: (@options, @eventCallback) ->
-    @_initState @options
-    @_ui.init @options
+  connect: (options, @eventCallback) ->
+    @_ui.init options
     @_event 'connected', {client: @}
 
   # single listener - used by the React menu via to watch client state changes
@@ -168,45 +195,18 @@ class CloudFileManagerClient
         if not err
           callback provider
 
-  _initState: (options = {})->
-    @state =
-      content: null
-      metadata: null
-      availableProviders: []
-      currentProvider: null
-
-    # flter for available providers
-    allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider]
-      if Provider.Available()
-        allProviders[Provider.Name] = Provider
-
-    # default to all providers if non specified
-    if not options.providers
-      options.providers = []
-      for own providerName of allProviders
-        options.providers.push providerName
-
-    # check the providers
-    for provider in options.providers
-      [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
-      if not providerName
-        @_error "Invalid provider spec - must either be string or object with name property"
-      else
-        if allProviders[providerName]
-          Provider = allProviders[providerName]
-          @state.availableProviders.push new Provider providerOptions
-        else
-          @_error "Unknown provider: #{providerName}"
-
 class CloudFileManager
 
   @DefaultMenu: CloudFileManagerUIMenu.DefaultMenu
 
-  constructor: ->
-    @client = new CloudFileManagerClient
+  constructor: (options) ->
+    @client = new CloudFileManagerClient()
+
+  setAppOptions: (appCptions) ->
+    @client.setAppOptions appCptions
 
   createFrame: (appCptions, elemId) ->
+    @setAppOptions appCptions
     appCptions.client = @client
     React.render (AppView appCptions), document.getElementById(elemId)
 
