@@ -1,5 +1,7 @@
 tr = require '../utils/translate'
+
 ProviderInterface = (require './provider-interface').ProviderInterface
+CloudMetadata = (require './provider-interface').CloudMetadata
 
 class LocalStorageProvider extends ProviderInterface
 
@@ -22,6 +24,9 @@ class LocalStorageProvider extends ProviderInterface
     catch
       false
 
+  authorized: (callback) ->
+    callback true
+
   save: (content, metadata, callback) ->
     try
       window.localStorage.setItem @_getKey(metadata.name), content
@@ -31,20 +36,23 @@ class LocalStorageProvider extends ProviderInterface
 
   load: (metadata, callback) ->
     try
-      callback null,  window.localStorage.getItem @_getKey metadata.name
+      content = window.localStorage.getItem @_getKey metadata.name
+      callback null, content
     catch
       callback 'Unable to load'
 
   list: (metadata, callback) ->
     list = []
-    prefix = @_getKey metadata.path
+    path = metadata?.path or ''
+    prefix = @_getKey path
     for own key of window.localStorage
       if key.substr(0, prefix.length) is prefix
         [name, remainder...] = key.substr(prefix.length).split('/')
         list.push new CloudMetadata
           name: key.substr(prefix.length)
           path: "#{path}/#{name}"
-          type: if remainder.length > 0 then Metadata.Folder else Metadata.File
+          type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
+          provider: @
     callback null, list
 
   _getKey: (name = '') ->

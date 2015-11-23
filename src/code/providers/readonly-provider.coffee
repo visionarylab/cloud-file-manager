@@ -16,12 +16,15 @@ class ReadOnlyProvider extends ProviderInterface
         save: false
         load: true
         list: true
-    @tree = if @options.json then @_convertJSONToMetadataTree(@options.json) else null
+    @tree = null
 
   @Name: 'readOnly'
 
+  authorized: (callback) ->
+    callback true
+
   load: (metadata, callback) ->
-    @_loadTree (err, tree) ->
+    @_loadTree (err, tree) =>
       return callback err if err
       parent = @_findParent metadata
       if parent
@@ -36,7 +39,7 @@ class ReadOnlyProvider extends ProviderInterface
         callback "#{metadata.name} folder not found"
 
   list: (metadata, callback) ->
-    @_loadTree (err, tree) ->
+    @_loadTree (err, tree) =>
       return callback err if err
       parent = @_findParent metadata
       if parent
@@ -45,12 +48,20 @@ class ReadOnlyProvider extends ProviderInterface
         callback null, list
       else if metadata
         callback "#{metadata.name} folder not found"
-      else
-        callback "Folder not found"
 
   _loadTree: (callback) ->
     if @tree isnt null
       callback null, @tree
+    else if @options.json
+      @tree = @_convertJSONToMetadataTree @options.json
+      callback null, tree
+    else if @options.jsonCallback
+      @options.jsonCallback (err, json) =>
+        if err
+          callback err
+        else
+          @tree = @_convertJSONToMetadataTree @options.json
+          callback null, @tree
     else if @options.src
       $.ajax
         dataType: 'json'
@@ -60,7 +71,8 @@ class ReadOnlyProvider extends ProviderInterface
           callback null, @tree
         error: -> callback "Unable to load json for #{@displayName} provider"
     else
-      callback "No json or src option found for #{@displayName} provider"
+      console.error? "No json or src option found for #{@displayName} provider"
+      callback null, {}
 
   _convertJSONToMetadataTree: (json, pathPrefix = '/') ->
     tree = {}
@@ -81,7 +93,6 @@ class ReadOnlyProvider extends ProviderInterface
     if not metadata
       @tree
     else
-
-    json
+      @tree
 
 module.exports = ReadOnlyProvider

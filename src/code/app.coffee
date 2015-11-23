@@ -3,6 +3,8 @@ AppView = React.createFactory require './views/app-view'
 
 LocalStorageProvider = require './providers/localstorage-provider'
 ReadOnlyProvider = require './providers/readonly-provider'
+GoogleDriveProvider = require './providers/google-drive-provider'
+DocumentStoreProvider = require './providers/document-store-provider'
 
 # helpers that don't need to live in the classes
 isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
@@ -106,7 +108,7 @@ class CloudFileManagerClient
     @newFile()
 
   openFile: (metadata, callback = null) ->
-    @_ensureProviderCan 'load', (provider) =>
+    @_ensureProviderCan 'load', metadata?.provider, (provider) =>
       provider.load metadata, (err, content) =>
         return @_error(err) if err
         @_fileChanged 'openedFile', content, metadata
@@ -123,7 +125,7 @@ class CloudFileManagerClient
       @saveFileDialog content, callback
 
   saveFile: (content, metadata, callback = null) ->
-    @_ensureProviderCan 'save', (provider) =>
+    @_ensureProviderCan 'save', metadata?.provider, (provider) =>
       provider.save content, metadata, (err) =>
         return @_error(err) if err
         @_fileChanged 'savedFile', content, metadata
@@ -158,9 +160,9 @@ class CloudFileManagerClient
     @eventCallback? event
     @listenerCallback? event
 
-  _ensureProviderCan: (capability, callback) ->
-    if @state.currentProvider and @state.currentProvider.capabilities[capability]
-      callback @state.currentProvider
+  _ensureProviderCan: (capability, provider, callback) ->
+    if provider?.capabilities[capability]
+      callback provider
     else
       @_ui.selectProviderDialog (err, provider) ->
         if not err
@@ -175,7 +177,7 @@ class CloudFileManagerClient
 
     # flter for available providers
     allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider]
+    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider]
       if Provider.Available()
         allProviders[Provider.Name] = Provider
 

@@ -1,3 +1,5 @@
+{div} = React.DOM
+
 class CloudFile
   contructor: (options) ->
     {@content, @metadata} = options
@@ -8,6 +10,12 @@ class CloudMetadata
   @Folder: 'folder'
   @File: 'file'
 
+
+AuthorizationNotImplementedDialog = React.createFactory React.createClass
+  displayName: 'AuthorizationNotImplementedDialog'
+  render: ->
+    (div {}, "Authorization dialog not yet implemented for #{@props.provider.displayName}")
+
 class ProviderInterface
 
   constructor: (options) ->
@@ -15,6 +23,11 @@ class ProviderInterface
     @user = null
 
   @Available: -> true
+
+  authorized: (callback) ->
+    callback false
+
+  authorizationDialog: AuthorizationNotImplementedDialog
 
   dialog: (callback) ->
     @_notImplemented 'dialog'
