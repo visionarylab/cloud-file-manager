@@ -25,11 +25,12 @@ FileList = React.createFactory React.createClass
     @load()
 
   load: ->
-    @props.provider.list @props.metadata, (err, list) =>
+    @props.provider.list @props.folder, (err, list) =>
       return alert(err) if err
       @setState
         loading: false
         list: list
+      @props.listLoaded list
 
   render: ->
     (div {className: 'filelist'},
@@ -46,21 +47,49 @@ FileDialogTab = React.createClass
   mixins: [AuthorizeMixin]
 
   getInitialState: ->
-    isOpen: @props.dialog.action is 'openFile'
+    folder: @props.client.state.metadata?.parent or null
     metadata: @props.client.state.metadata
     filename: @props.client.state.metadata?.name or ''
 
+  componentWillMount: ->
+    @isOpen = @props.dialog.action is 'openFile'
+    @list = []
+
   filenameChanged: (e) ->
-    @setState filename: e.target.value
+    filename = e.target.value
+    metadata = null
+    @setState
+      filename: filename
+      metadata: metadata
+
+  listLoaded: (list) ->
+    @list = list
 
   fileSelected: (metadata) ->
-    if metadata?.type = CloudMetadata.File
+    if metadata?.type is CloudMetadata.File
       @setState filename: metadata.name
     @setState metadata: metadata
 
   confirm: ->
-    @props.dialog.callback @state.metadata
-    @props.close()
+    # if filename changed find the file in the list
+    filename = $.trim @state.filename
+    if not @state.metadata
+      for metadata in @list
+        if metadata.name is filename
+          @state.metadata = metadata
+          break
+      if not @state.metadata
+        if @isOpen
+          alert "#{@state.filename} not found"
+        else
+          @state.metadata = new CloudMetadata
+            name: filename
+            path: "/#{filename}" # TODO: Fix path
+            type: CloudMetadata.File
+            provider: @props.provider
+    if @state.metadata
+      @props.dialog.callback @state.metadata
+      @props.close()
 
   cancel: ->
     @props.close()
@@ -68,9 +97,9 @@ FileDialogTab = React.createClass
   renderWhenAuthorized: ->
     (div {className: 'dialogTab'},
       (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged})
-      (FileList {provider: @props.provider, metadata: @state.metadata, fileSelected: @fileSelected})
+      (FileList {provider: @props.provider, folder: @state.folder, fileSelected: @fileSelected, listLoaded: @listLoaded})
       (div {className: 'buttons'},
-        (button {onClick: @confirm}, if @state.isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
+        (button {onClick: @confirm, disabled: @state.filename.length is 0}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
       )
     )
