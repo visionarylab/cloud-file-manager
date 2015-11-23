@@ -1,10 +1,8 @@
 tr = require '../utils/translate'
+isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudMetadata = (require './provider-interface').CloudMetadata
-
-# helpers that don't need to live in the classes
-isString = (param) -> Object.prototype.toString.call(param) is '[object String]'
 
 class ReadOnlyProvider extends ProviderInterface
 
@@ -29,8 +27,8 @@ class ReadOnlyProvider extends ProviderInterface
       parent = @_findParent metadata
       if parent
         if parent[metadata.name]
-          if parent[metadata.name].type is CloudMetadata.File
-            callback null, parent[metadata.name]
+          if parent[metadata.name].metadata.type is CloudMetadata.File
+            callback null, parent[metadata.name].content
           else
             callback "#{metadata.name} is a folder"
         else
@@ -44,7 +42,7 @@ class ReadOnlyProvider extends ProviderInterface
       parent = @_findParent metadata
       if parent
         list = []
-        list.push metadata for own metadata of parent
+        list.push file.metadata for own filename, file of parent
         callback null, list
       else if metadata
         callback "#{metadata.name} folder not found"
@@ -54,7 +52,7 @@ class ReadOnlyProvider extends ProviderInterface
       callback null, @tree
     else if @options.json
       @tree = @_convertJSONToMetadataTree @options.json
-      callback null, tree
+      callback null, @tree
     else if @options.jsonCallback
       @options.jsonCallback (err, json) =>
         if err
@@ -86,7 +84,9 @@ class ReadOnlyProvider extends ProviderInterface
         children: null
       if type is CloudMetadata.Folder
         metadata.children = _convertJSONToMetadataTree json[filename], pathPrefix + filename + '/'
-      tree[filename] = metadata
+      tree[filename] =
+        content: json[filename]
+        metadata: metadata
     tree
 
   _findParent: (metadata) ->

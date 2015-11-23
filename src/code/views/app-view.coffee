@@ -1,8 +1,7 @@
-CloudFile = (require '../providers/provider-interface').CloudFile
-CloudMetadata = (require '../providers/provider-interface').CloudMetadata
-
-MenuBar = React.createFactory require './menu-bar'
+MenuBar = React.createFactory require './menu-bar-view'
 ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-view'
+
+tr = require '../utils/translate'
 
 {div, iframe} = React.DOM
 
@@ -18,12 +17,12 @@ InnerApp = React.createFactory React.createClass
       (iframe {src: @props.app})
     )
 
-module.exports = React.createClass
+App = React.createClass
 
   displayName: 'CloudFileManager'
 
   getFilename: ->
-    if @props.client.state.metadata?.hasOwnProperty('name') then @props.client.state.metadata.name else "Untitled Document"
+    if @props.client.state.metadata?.hasOwnProperty('name') then @props.client.state.metadata.name else (tr "~MENUBAR.UNTITLE_DOCUMENT")
 
   getInitialState: ->
     filename: @getFilename()
@@ -52,3 +51,5 @@ module.exports = React.createClass
       if @state.providerDialog
         (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
     )
+
+module.exports = App
