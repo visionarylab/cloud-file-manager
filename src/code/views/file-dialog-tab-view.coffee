@@ -32,7 +32,7 @@ FileList = React.createFactory React.createClass
         list: list
 
   render: ->
-    (div {},
+    (div {className: 'filelist'},
       if @state.loading
         tr "~FILE_DIALOG.LOADING"
       else
