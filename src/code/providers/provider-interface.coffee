@@ -6,10 +6,9 @@ class CloudFile
 
 class CloudMetadata
   constructor: (options) ->
-    {@name, @path, @type, @provider} = options
+    {@name, @path, @type, @provider, @parent} = options
   @Folder: 'folder'
   @File: 'file'
-
 
 AuthorizationNotImplementedDialog = React.createFactory React.createClass
   displayName: 'AuthorizationNotImplementedDialog'
