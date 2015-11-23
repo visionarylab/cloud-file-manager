@@ -11,3 +11,5 @@ module.exports =
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
+  "~PROVIDER.GOOGLE_DRIVE": "Google Drive"
+  "~PROVIDER.DOCUMENT_STORE": "Document Store"
