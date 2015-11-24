@@ -24,9 +24,9 @@ class GoogleDriveProvider extends ProviderInterface
 
   @Name: 'googleDrive'
 
-  authorized: (callback) ->
-    callback false
+  authorized: (@authCallback) ->
 
-  authorizationDialog: GoogleDriveAuthorizationDialog
+  renderAuthorizationDialog: ->
+    (GoogleDriveAuthorizationDialog {provider: @, authCallback: @authCallback})
 
 module.exports = GoogleDriveProvider
