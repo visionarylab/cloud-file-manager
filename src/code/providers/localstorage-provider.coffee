@@ -13,6 +13,7 @@ class LocalStorageProvider extends ProviderInterface
         save: true
         load: true
         list: true
+        remove: true
 
   @Name: 'localStorage'
   @Available: ->
@@ -27,9 +28,9 @@ class LocalStorageProvider extends ProviderInterface
   save: (content, metadata, callback) ->
     try
       window.localStorage.setItem @_getKey(metadata.name), content
-      callback null
+      callback? null
     catch
-      callback 'Unable to save'
+      callback? 'Unable to save'
 
   load: (metadata, callback) ->
     try
@@ -51,6 +52,13 @@ class LocalStorageProvider extends ProviderInterface
           type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
           provider: @
     callback null, list
+
+  remove: (metadata, callback) ->
+    try
+      window.localStorage.removeItem @_getKey(metadata.name)
+      callback? null
+    catch
+      callback? 'Unable to delete'
 
   _getKey: (name = '') ->
     "cfm::#{name}"
