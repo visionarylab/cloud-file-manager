@@ -8,12 +8,6 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 
 {button} = React.DOM
 
-AUTH =
-  APP_ID : '1095918012594'
-  DEVELOPER_KEY: 'AIzaSyAUobrEXqtbZHBvr24tamdE6JxmPYTRPEA'
-  CLIENT_ID: '1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com'
-  SCOPES: 'https://www.googleapis.com/auth/drive'
-
 GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   displayName: 'GoogleDriveAuthorizationDialog'
 
@@ -46,7 +40,10 @@ class GoogleDriveProvider extends ProviderInterface
         load: true
         list: true
     @authToken = null
-    @mimeType = "application/json"
+    @clientId = @options.clientId
+    if not @clientId
+      throw new Error 'Missing required clientId in googlDrive provider options'
+    @mimeType = @options.mimeType or "text/plain"
     @_loadGAPI()
 
   @Name: 'googleDrive'
@@ -64,8 +61,8 @@ class GoogleDriveProvider extends ProviderInterface
   authorize: (immediate) ->
     @_loadedGAPI =>
       args =
-        client_id: AUTH.CLIENT_ID
-        scope: AUTH.SCOPES
+        client_id: @clientId
+        scope: 'https://www.googleapis.com/auth/drive'
         immediate: immediate
       gapi.auth.authorize args, (authToken) =>
         @authToken = if authToken and not authToken.error then authToken else null
@@ -122,10 +119,11 @@ class GoogleDriveProvider extends ProviderInterface
       document.head.appendChild script
 
   _loadedGAPI: (callback) ->
+    self = @
     check = ->
       if window._LoadedGAPI
         gapi.client.load 'drive', 'v2', ->
-          callback()
+          callback.call self
       else
         setTimeout check, 10
     setTimeout check, 10
