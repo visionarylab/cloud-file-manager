@@ -2,6 +2,7 @@
 
 authorizeUrl  = "http://document-store.herokuapp.com/user/authenticate"
 checkLoginUrl = "http://document-store.herokuapp.com/user/info"
+listUrl = "http://document-store.herokuapp.com/document/all"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -41,7 +42,6 @@ class DocumentStoreProvider extends ProviderInterface
 
   _loginSuccessful: (data) ->
     if @_loginWindow then @_loginWindow.close()
-    alert("Welcome #{data.name}")
     @authCallback true
 
   _checkLogin: ->
@@ -104,5 +104,28 @@ class DocumentStoreProvider extends ProviderInterface
 
   renderAuthorizationDialog: ->
     (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
+
+  list: (metadata, callback) ->
+    provider = @
+    $.ajax
+      dataType: 'json'
+      url: listUrl
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        list = []
+        path = metadata?.path or ''
+        for own key of window.localStorage
+          list.push new CloudMetadata
+            name: key
+            path: "#{path}/#{name}"
+            type: CloudMetadata.File
+            provider: provider
+        callback null, list
+      error: ->
+        callback null, []
+
+  load: (metadata, callback) ->
+
 
 module.exports = DocumentStoreProvider
