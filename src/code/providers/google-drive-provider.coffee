@@ -32,7 +32,7 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
       if @state.loadedGAPI
         (button {onClick: @authenticate}, 'Authorization Needed')
       else
-        'Waiting for gapi...'
+        'Waiting for the Google Client API to load...'
     )
 
 class GoogleDriveProvider extends ProviderInterface
@@ -73,19 +73,19 @@ class GoogleDriveProvider extends ProviderInterface
   renderAuthorizationDialog: ->
     (GoogleDriveAuthorizationDialog {provider: @})
 
-  @_LoadingGAPI: false
-
   _loadGAPI: ->
-    if not GoogleDriveProvider._LoadingGAPI
-      GoogleDriveProvider._LoadingGAPI = true
+    if not window._LoadingGAPI
+      window._LoadingGAPI = true
+      window._GAPIOnLoad = ->
+        @window._LoadedGAPI = true
       script = document.createElement 'script'
-      script.src = 'https://apis.google.com/js/client.js'
+      script.src = 'https://apis.google.com/js/client.js?onload=_GAPIOnLoad'
       document.head.appendChild script
 
   _loadedGAPI: (callback) ->
     check = ->
-      if window.gapi
-        callback window.gapi
+      if window._LoadedGAPI
+        callback()
       else
         setTimeout check, 10
     setTimeout check, 10
