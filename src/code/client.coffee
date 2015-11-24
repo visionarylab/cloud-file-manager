@@ -46,9 +46,10 @@ class CloudFileManagerClient
         else
           @_error "Unknown provider: #{providerName}"
 
+    @_ui.init appOptions.ui
+
   # single client - used by the client app to register and receive callback events
-  connect: (options, @eventCallback) ->
-    @_ui.init options
+  connect: (@eventCallback) ->
     @_event 'connected', {client: @}
 
   # single listener - used by the React menu via to watch client state changes
