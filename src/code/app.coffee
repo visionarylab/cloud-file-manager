@@ -10,15 +10,15 @@ class CloudFileManager
   constructor: (options) ->
     @client = new CloudFileManagerClient()
 
-  setAppOptions: (appCptions) ->
-    @client.setAppOptions appCptions
+  setAppOptions: (appOptions) ->
+    @client.setAppOptions appOptions
 
-  createFrame: (appCptions, elemId) ->
-    @setAppOptions appCptions
-    appCptions.client = @client
-    React.render (AppView appCptions), document.getElementById(elemId)
+  createFrame: (appOptions, elemId) ->
+    @setAppOptions appOptions
+    appOptions.client = @client
+    React.render (AppView appOptions), document.getElementById(elemId)
 
-  clientConnect: (clientOptions, eventCallback) ->
-    @client.connect  clientOptions, eventCallback
+  clientConnect: (eventCallback) ->
+    @client.connect eventCallback
 
 module.exports = new CloudFileManager()
