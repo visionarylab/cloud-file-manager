@@ -24,9 +24,6 @@ class LocalStorageProvider extends ProviderInterface
     catch
       false
 
-  authorized: (callback) ->
-    callback true
-
   save: (content, metadata, callback) ->
     try
       window.localStorage.setItem @_getKey(metadata.name), content

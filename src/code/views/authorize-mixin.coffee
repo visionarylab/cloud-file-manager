@@ -1,9 +1,15 @@
 AuthorizeMixin =
-  render: ->
+  getInitialState: ->
+    authorized: false
+
+  componentWillMount: ->
     @props.provider.authorized (authorized) =>
-      if authorized
-        @renderWhenAuthorized()
-      else
-        (@props.provider.authorizationDialog {provider: @props.provider})
+      @setState authorized: authorized
+
+  render: ->
+    if @state.authorized
+      @renderWhenAuthorized()
+    else
+      (@props.provider.authorizationDialog {provider: @props.provider})
 
 module.exports = AuthorizeMixin
