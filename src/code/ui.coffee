@@ -43,12 +43,13 @@ class CloudFileManagerUI
   constructor: (@client)->
     @menu = null
 
-  init: (@options) ->
+  init: (options) ->
+    options = options or {}
     # skip the menu if explicity set to null (meaning no menu)
-    if @options.menu isnt null
-      if typeof @options.menu is 'undefined'
-        @options.menu = CloudFileManagerUIMenu.DefaultMenu
-      @menu = new CloudFileManagerUIMenu @options, @client
+    if options.menu isnt null
+      if typeof options.menu is 'undefined'
+        options.menu = CloudFileManagerUIMenu.DefaultMenu
+      @menu = new CloudFileManagerUIMenu options, @client
 
   # for React to listen for dialog changes
   listen: (@listenerCallback) ->
