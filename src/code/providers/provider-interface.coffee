@@ -6,7 +6,7 @@ class CloudFile
 
 class CloudMetadata
   constructor: (options) ->
-    {@name, @path, @type, @provider, @parent} = options
+    {@name, @path, @type, @provider, @providerData} = options
   @Folder: 'folder'
   @File: 'file'
 
