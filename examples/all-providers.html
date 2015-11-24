@@ -10,7 +10,7 @@
     </div>
     <script>
       var options = {
-        app: "building-models",
+        app: "example-app",
         providers: [
           "localStorage",
           {"name": "readOnly", json: {
@@ -19,7 +19,10 @@
           }},
           "googleDrive",
           "documentStore"
-        ]
+        ],
+        ui: {
+          menu: CloudFileManager.DefaultMenu
+        }
       }
       CloudFileManager.createFrame(options, "wrapper");
     </script>
