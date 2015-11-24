@@ -16,6 +16,7 @@ module.exports = React.createClass
       when 'selectProvider' then [null, SelectProviderDialogTab]
 
     tabs = []
+    selectedTabIndex = 0
     for provider, i in @props.client.state.availableProviders
       if not capability or provider.capabilities[capability]
         component = TabComponent
@@ -24,5 +25,7 @@ module.exports = React.createClass
           close: @props.close
           provider: provider
         tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component}
+        if provider is @props.client.state.metadata?.provider
+          selectedTabIndex = i
 
-    (ModalTabbedDialog {title: (tr @props.dialog.title), close: @props.close, tabs: tabs})
+    (ModalTabbedDialog {title: (tr @props.dialog.title), close: @props.close, tabs: tabs, selectedTabIndex: selectedTabIndex})
