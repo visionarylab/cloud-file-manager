@@ -23,6 +23,9 @@ class ProviderInterface
 
   @Available: -> true
 
+  can: (capability) ->
+    @capabilities[capability]
+
   authorized: (callback) ->
     callback false
 

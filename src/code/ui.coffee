@@ -62,9 +62,6 @@ class CloudFileManagerUI
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
 
-  selectProviderDialog: (callback) ->
-    @_showProviderDialog 'selectProvider', (tr '~DIALOG.SELECT_PROVIDER'), callback
-
   _showProviderDialog: (action, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
       action: action

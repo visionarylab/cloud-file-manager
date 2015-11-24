@@ -64,11 +64,13 @@ class CloudFileManagerClient
     @newFile()
 
   openFile: (metadata, callback = null) ->
-    @_ensureProviderCan 'load', metadata?.provider, (provider) =>
-      provider.load metadata, (err, content) =>
+    if metadata?.provider?.can 'load'
+      metadata.provider.load metadata, (err, content) =>
         return @_error(err) if err
         @_fileChanged 'openedFile', content, metadata
         callback? content, metadata
+    else
+      @openFileDialog callback
 
   openFileDialog: (callback = null) ->
     @_ui.openFileDialog (metadata) =>
@@ -85,11 +87,13 @@ class CloudFileManagerClient
       @saveFileDialog content, callback
 
   saveFile: (content, metadata, callback = null) ->
-    @_ensureProviderCan 'save', metadata?.provider, (provider) =>
-      provider.save content, metadata, (err) =>
+    if metadata?.provider?.can 'save'
+      metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
         @_fileChanged 'savedFile', content, metadata
         callback? content, metadata
+    else
+      @saveFileDialog content, callback
 
   saveFileDialog: (content = null, callback = null) ->
     @_ui.saveFileDialog (metadata) =>
@@ -119,14 +123,6 @@ class CloudFileManagerClient
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     @eventCallback? event
     @listenerCallback? event
-
-  _ensureProviderCan: (capability, provider, callback) ->
-    if provider?.capabilities[capability]
-      callback provider
-    else
-      @_ui.selectProviderDialog (err, provider) ->
-        if not err
-          callback provider
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
