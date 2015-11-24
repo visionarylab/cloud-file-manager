@@ -39,6 +39,7 @@ class GoogleDriveProvider extends ProviderInterface
         save: true
         load: true
         list: true
+        remove: true
     @authToken = null
     @clientId = @options.clientId
     if not @clientId
@@ -109,6 +110,13 @@ class GoogleDriveProvider extends ProviderInterface
           return 1 if lowerA > lowerB
           return 0
         callback null, list
+
+  remove: (metadata, callback) ->
+    @_loadedGAPI =>
+      request = gapi.client.drive.files.delete
+        fileId: metadata.providerData.id
+      request.execute (result) =>
+        callback? result?.error or null
 
   _loadGAPI: ->
     if not window._LoadingGAPI

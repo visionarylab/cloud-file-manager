@@ -43,6 +43,9 @@ class ProviderInterface
   list: (metadata, callback) ->
     @_notImplemented 'list'
 
+  remove: (metadata, callback) ->
+    @_notImplemented 'remove'
+
   _notImplemented: (methodName) ->
     throw new Error("#{methodName} not implemented for #{@name} provider")
 

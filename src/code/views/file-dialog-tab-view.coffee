@@ -19,7 +19,6 @@ FileList = React.createFactory React.createClass
 
   getInitialState: ->
     loading: true
-    list: []
 
   componentDidMount: ->
     @load()
@@ -29,7 +28,6 @@ FileList = React.createFactory React.createClass
       return alert(err) if err
       @setState
         loading: false
-        list: list
       @props.listLoaded list
 
   render: ->
@@ -37,7 +35,7 @@ FileList = React.createFactory React.createClass
       if @state.loading
         tr "~FILE_DIALOG.LOADING"
       else
-        for metadata in @state.list
+        for metadata in @props.list
           (FileListFile {metadata: metadata, fileSelected: @props.fileSelected})
     )
 
@@ -50,20 +48,20 @@ FileDialogTab = React.createClass
     folder: @props.client.state.metadata?.parent or null
     metadata: @props.client.state.metadata
     filename: @props.client.state.metadata?.name or ''
+    list: []
 
   componentWillMount: ->
     @isOpen = @props.dialog.action is 'openFile'
-    @list = []
 
   filenameChanged: (e) ->
     filename = e.target.value
-    metadata = null
+    metadata = @findMetadata filename
     @setState
       filename: filename
       metadata: metadata
 
   listLoaded: (list) ->
-    @list = list
+    @setState list: list
 
   fileSelected: (metadata) ->
     if metadata?.type is CloudMetadata.File
@@ -71,13 +69,9 @@ FileDialogTab = React.createClass
     @setState metadata: metadata
 
   confirm: ->
-    # if filename changed find the file in the list
-    filename = $.trim @state.filename
     if not @state.metadata
-      for metadata in @list
-        if metadata.name is filename
-          @state.metadata = metadata
-          break
+      filename = $.trim @state.filename
+      @state.metadata = @findMetadata filename
       if not @state.metadata
         if @isOpen
           alert "#{@state.filename} not found"
@@ -91,15 +85,38 @@ FileDialogTab = React.createClass
       @props.dialog.callback @state.metadata
       @props.close()
 
+  remove: ->
+    if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder
+      @props.provider.remove @state.metadata, (err) =>
+        if not err
+          list = @state.list.slice 0
+          index = list.indexOf @state.metadata
+          list.splice index, 1
+          @setState
+            list: list
+            metadata: null
+            filename: ''
+
   cancel: ->
     @props.close()
 
+  findMetadata: (filename) ->
+    for metadata in @state.list
+      if metadata.name is filename
+        return metadata
+    null
+
   renderWhenAuthorized: ->
+    confirmDisabled = (@state.filename.length is 0) or (@isOpen and not @state.metadata)
+    removeDisabled = (@state.metadata is null) or (@state.metadata.type is CloudMetadata.Folder)
+
     (div {className: 'dialogTab'},
       (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged})
-      (FileList {provider: @props.provider, folder: @state.folder, fileSelected: @fileSelected, listLoaded: @listLoaded})
+      (FileList {provider: @props.provider, folder: @state.folder, fileSelected: @fileSelected, list: @state.list, listLoaded: @listLoaded})
       (div {className: 'buttons'},
-        (button {onClick: @confirm, disabled: @state.filename.length is 0}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
+        (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
+        if @props.provider.can 'remove'
+          (button {onClick: @remove, disabled: removeDisabled, className: if removeDisabled then 'disabled' else ''}, (tr "~FILE_DIALOG.REMOVE"))
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
       )
     )
