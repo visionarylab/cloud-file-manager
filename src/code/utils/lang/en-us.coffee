@@ -9,7 +9,6 @@ module.exports =
   "~DIALOG.SAVE": "Save"
   "~DIALOG.SAVE_AS": "Save As ..."
   "~DIALOG.OPEN": "Open"
-  "~DIALOG.SELECT_PROVIDER": "Select Provider"
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
