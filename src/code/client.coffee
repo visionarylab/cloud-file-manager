@@ -19,7 +19,6 @@ class CloudFileManagerClient
       content: null
       metadata: null
       availableProviders: []
-      currentProvider: null
     @_ui = new CloudFileManagerUI @
 
   setAppOptions: (appOptions = {})->
