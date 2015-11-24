@@ -45,9 +45,12 @@ App = React.createClass
     @setState providerDialog: null
 
   render: ->
+    if not @props.headless
+      menu = MenuBar {filename: @state.filename, items: @state.menuItems}
+      app = InnerApp (app: @props.app)
     (div {className: 'app'},
-      (MenuBar {filename: @state.filename, items: @state.menuItems})
-      (InnerApp (app: @props.app))
+      menu
+      app
       if @state.providerDialog
         (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
     )
