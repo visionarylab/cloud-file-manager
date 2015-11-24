@@ -27,7 +27,7 @@ class ProviderInterface
     @capabilities[capability]
 
   authorized: (callback) ->
-    callback false
+    callback true
 
   authorizationDialog: AuthorizationNotImplementedDialog
 

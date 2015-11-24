@@ -18,9 +18,6 @@ class ReadOnlyProvider extends ProviderInterface
 
   @Name: 'readOnly'
 
-  authorized: (callback) ->
-    callback true
-
   load: (metadata, callback) ->
     @_loadTree (err, tree) =>
       return callback err if err
