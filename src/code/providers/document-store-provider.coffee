@@ -24,9 +24,9 @@ class DocumentStoreProvider extends ProviderInterface
 
   @Name: 'documentStore'
 
-  authorized: (callback) ->
-    callback false
+  authorized: (@authCallback) ->
 
-  authorizationDialog: DocumentStoreAuthorizationDialog
+  renderAuthorizationDialog: ->
+    (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
 
 module.exports = DocumentStoreProvider

@@ -10,6 +10,6 @@ AuthorizeMixin =
     if @state.authorized
       @renderWhenAuthorized()
     else
-      (@props.provider.authorizationDialog {provider: @props.provider})
+      @props.provider.renderAuthorizationDialog()
 
 module.exports = AuthorizeMixin
