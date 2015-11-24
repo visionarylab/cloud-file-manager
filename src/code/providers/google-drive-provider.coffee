@@ -46,6 +46,7 @@ class GoogleDriveProvider extends ProviderInterface
         load: true
         list: true
     @authToken = null
+    @mimeType = "application/json"
     @_loadGAPI()
 
   @Name: 'googleDrive'
@@ -73,6 +74,44 @@ class GoogleDriveProvider extends ProviderInterface
   renderAuthorizationDialog: ->
     (GoogleDriveAuthorizationDialog {provider: @})
 
+  save:  (content, metadata, callback) ->
+    @_loadedGAPI =>
+      @_sendFile content, metadata, callback
+
+  load: (metadata, callback) ->
+    @_loadedGAPI =>
+      request = gapi.client.drive.files.get
+        fileId: metadata.providerData.id
+      request.execute (file) =>
+        if file?.downloadUrl
+          @_downloadFromUrl file.downloadUrl, @authToken, callback
+        else
+          callback 'Unable to get download url'
+
+  list: (metadata, callback) ->
+    @_loadedGAPI =>
+      request = gapi.client.drive.files.list()
+      request.execute (result) =>
+        return callback('Unable to list files') if not result
+        list = []
+        for item in result?.items
+          # TODO: for now don't allow folders
+          if item.mimeType isnt 'application/vnd.google-apps.folder'
+            list.push new CloudMetadata
+              name: item.title
+              path: ""
+              type: if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
+              provider: @
+              providerData:
+                id: item.id
+        list.sort (a, b) ->
+          lowerA = a.name.toLowerCase()
+          lowerB = b.name.toLowerCase()
+          return -1 if lowerA < lowerB
+          return 1 if lowerA > lowerB
+          return 0
+        callback null, list
+
   _loadGAPI: ->
     if not window._LoadingGAPI
       window._LoadingGAPI = true
@@ -85,10 +124,54 @@ class GoogleDriveProvider extends ProviderInterface
   _loadedGAPI: (callback) ->
     check = ->
       if window._LoadedGAPI
-        callback()
+        gapi.client.load 'drive', 'v2', ->
+          callback()
       else
         setTimeout check, 10
     setTimeout check, 10
 
+  _downloadFromUrl: (url, token, callback) ->
+    xhr = new XMLHttpRequest()
+    xhr.open 'GET', url
+    if token
+      xhr.setRequestHeader 'Authorization', "Bearer #{token.access_token}"
+    xhr.onload = ->
+      callback null, xhr.responseText
+    xhr.onerror = ->
+      callback "Unable to download #{url}"
+    xhr.send()
+
+  _sendFile: (content, metadata, callback) ->
+    boundary = '-------314159265358979323846'
+    header = JSON.stringify
+      title: metadata.name
+      mimeType: @mimeType
+
+    [method, path] = if metadata.providerData?.id
+      ['PUT', "/upload/drive/v2/files/#{metadata.providerData.id}"]
+    else
+      ['POST', '/upload/drive/v2/files']
+
+    body = [
+      "\r\n--#{boundary}\r\nContent-Type: application/json\r\n\r\n#{header}",
+      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content}",
+      "\r\n--#{boundary}--"
+    ].join ''
+
+    request = gapi.client.request
+      path: path
+      method: method
+      params: {uploadType: 'multipart'}
+      headers: {'Content-Type': 'multipart/related; boundary="' + boundary + '"'}
+      body: body
+
+    request.execute (file) ->
+      if callback
+        if file?.error
+          callback "Unabled to upload file: #{file.error.message}"
+        else if file
+          callback null, file
+        else
+          callback 'Unabled to upload file'
 
 module.exports = GoogleDriveProvider
