@@ -87,7 +87,8 @@ class GoogleDriveProvider extends ProviderInterface
 
   list: (metadata, callback) ->
     @_loadedGAPI =>
-      request = gapi.client.drive.files.list()
+      request = gapi.client.drive.files.list
+        q: "mimeType = '#{@mimeType}'"
       request.execute (result) =>
         return callback('Unable to list files') if not result
         list = []
