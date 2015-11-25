@@ -45,14 +45,19 @@ App = React.createClass
     @setState providerDialog: null
 
   render: ->
-    if not @props.headless
-      menu = MenuBar {filename: @state.filename, items: @state.menuItems}
-      app = InnerApp (app: @props.app)
-    (div {className: 'app'},
-      menu
-      app
+    if @props.usingIframe
+      (div {className: 'app'},
+        (MenuBar {filename: @state.filename, items: @state.menuItems})
+        (InnerApp {app: @props.app})
+        if @state.providerDialog
+          (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
+      )
+    else
       if @state.providerDialog
-        (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
-    )
+        (div {className: 'app'},
+          (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
+        )
+      else
+        null
 
 module.exports = App
