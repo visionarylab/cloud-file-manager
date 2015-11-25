@@ -9,16 +9,28 @@ class CloudFileManager
 
   constructor: (options) ->
     @client = new CloudFileManagerClient()
+    @appOptions = {}
 
-  setAppOptions: (appOptions) ->
-    @client.setAppOptions appOptions
+  init: (@appOptions, usingIframe = false) ->
+    @appOptions.usingIframe = usingIframe
+    @client.setAppOptions @appOptions
 
-  createFrame: (appOptions, elemId) ->
-    @setAppOptions appOptions
-    appOptions.client = @client
-    React.render (AppView appOptions), document.getElementById(elemId)
+  createFrame: (@appOptions, elemId) ->
+    @init @appOptions, true
+    @_renderApp document.getElementById(elemId)
 
   clientConnect: (eventCallback) ->
+    if not @appOptions.usingIframe
+      @_createHiddenApp()
     @client.connect eventCallback
+
+  _createHiddenApp: ->
+    anchor = document.createElement("div")
+    document.body.appendChild(anchor)
+    @_renderApp anchor
+
+  _renderApp: (anchor) ->
+    @appOptions.client = @client
+    React.render (AppView @appOptions), anchor
 
 module.exports = new CloudFileManager()
