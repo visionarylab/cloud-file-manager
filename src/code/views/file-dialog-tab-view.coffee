@@ -8,8 +8,19 @@ tr = require '../utils/translate'
 FileListFile = React.createFactory React.createClass
   displayName: 'FileListFile'
 
-  fileSelected: ->
+  componentWillMount: ->
+    @lastClick = 0
+
+  fileSelected:  (e) ->
+    e.preventDefault()
+    e.stopPropagation()
+    now = (new Date()).getTime()
     @props.fileSelected @props.metadata
+    if now - @lastClick <= 250
+      @props.fileConfirmed()
+    @lastClick = now
+
+  clicked: ->
 
   render: ->
     (div {className: (if @props.selected then 'selected' else ''), onClick: @fileSelected}, @props.metadata.name)
@@ -36,7 +47,7 @@ FileList = React.createFactory React.createClass
         tr "~FILE_DIALOG.LOADING"
       else
         for metadata in @props.list
-          (FileListFile {metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected})
+          (FileListFile {metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed})
     )
 
 FileDialogTab = React.createClass
@@ -119,7 +130,7 @@ FileDialogTab = React.createClass
 
     (div {className: 'dialogTab'},
       (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter})
-      (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, list: @state.list, listLoaded: @listLoaded})
+      (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, fileConfirmed: @confirm, list: @state.list, listLoaded: @listLoaded})
       (div {className: 'buttons'},
         (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
         if @props.provider.can 'remove'
