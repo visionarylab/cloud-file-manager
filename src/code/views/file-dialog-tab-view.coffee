@@ -20,8 +20,6 @@ FileListFile = React.createFactory React.createClass
       @props.fileConfirmed()
     @lastClick = now
 
-  clicked: ->
-
   render: ->
     (div {className: (if @props.selected then 'selected' else ''), onClick: @fileSelected}, @props.metadata.name)
 
