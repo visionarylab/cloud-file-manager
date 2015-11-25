@@ -12,7 +12,7 @@ FileListFile = React.createFactory React.createClass
     @props.fileSelected @props.metadata
 
   render: ->
-    (div {title: @props.metadata.path, onClick: @fileSelected}, @props.metadata.name)
+    (div {className: (if @props.selected then 'selected' else ''), onClick: @fileSelected}, @props.metadata.name)
 
 FileList = React.createFactory React.createClass
   displayName: 'FileList'
@@ -36,7 +36,7 @@ FileList = React.createFactory React.createClass
         tr "~FILE_DIALOG.LOADING"
       else
         for metadata in @props.list
-          (FileListFile {metadata: metadata, fileSelected: @props.fileSelected})
+          (FileListFile {metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected})
     )
 
 FileDialogTab = React.createClass
@@ -86,7 +86,7 @@ FileDialogTab = React.createClass
       @props.close()
 
   remove: ->
-    if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder
+    if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder and confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: @state.metadata.name}))
       @props.provider.remove @state.metadata, (err) =>
         if not err
           list = @state.list.slice 0
@@ -112,7 +112,7 @@ FileDialogTab = React.createClass
 
     (div {className: 'dialogTab'},
       (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged})
-      (FileList {provider: @props.provider, folder: @state.folder, fileSelected: @fileSelected, list: @state.list, listLoaded: @listLoaded})
+      (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, list: @state.list, listLoaded: @listLoaded})
       (div {className: 'buttons'},
         (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
         if @props.provider.can 'remove'

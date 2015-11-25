@@ -20,4 +20,5 @@ module.exports =
   "~FILE_DIALOG.SAVE": "Save"
   "~FILE_DIALOG.CANCEL": "Cancel"
   "~FILE_DIALOG.REMOVE": "Delete"
+  "~FILE_DIALOG.REMOVE_CONFIRM": "Are you sure you want to delete %{filename}?"
   "~FILE_DIALOG.LOADING": "Loading..."

@@ -112,10 +112,10 @@ class GoogleDriveProvider extends ProviderInterface
         callback null, list
 
   remove: (metadata, callback) ->
-    @_loadedGAPI =>
+    @_loadedGAPI ->
       request = gapi.client.drive.files.delete
         fileId: metadata.providerData.id
-      request.execute (result) =>
+      request.execute (result) ->
         callback? result?.error or null
 
   _loadGAPI: ->
