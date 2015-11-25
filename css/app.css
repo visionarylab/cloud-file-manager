@@ -471,11 +471,19 @@
   overflow: auto;
   margin: 10px 0;
   cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .tabbed-panel .workspace-tab-component .dialogTab .filelist div {
   margin: 3px 0;
   padding: 3px;
   font-size: 20px;
+}
+.tabbed-panel .workspace-tab-component .dialogTab .filelist div.selected {
+  color: #fff;
+  background-color: #72bfca;
 }
 .tabbed-panel .workspace-tab-component .dialogTab .filelist div:hover {
   color: #fff;
@@ -504,6 +512,9 @@
 }
 .tabbed-panel .workspace-tab-component .dialogTab .buttons button:hover {
   background-color: #3c94a1;
+}
+.tabbed-panel .workspace-tab-component .dialogTab .buttons button.disabled {
+  background-color: #777;
 }
 body {
   font-style: normal;
