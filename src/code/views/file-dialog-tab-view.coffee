@@ -106,12 +106,19 @@ FileDialogTab = React.createClass
         return metadata
     null
 
+  watchForEnter: (e) ->
+    if e.keyCode is 13 and not @confirmDisabled()
+      @confirm()
+
+  confirmDisabled: ->
+    (@state.filename.length is 0) or (@isOpen and not @state.metadata)
+
   renderWhenAuthorized: ->
-    confirmDisabled = (@state.filename.length is 0) or (@isOpen and not @state.metadata)
+    confirmDisabled = @confirmDisabled()
     removeDisabled = (@state.metadata is null) or (@state.metadata.type is CloudMetadata.Folder)
 
     (div {className: 'dialogTab'},
-      (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged})
+      (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter})
       (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, list: @state.list, listLoaded: @listLoaded})
       (div {className: 'buttons'},
         (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
