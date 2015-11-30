@@ -123,10 +123,10 @@ class CloudFileManagerClient
     @_ui.saveFileAsDialog (metadata) =>
       @_dialogSave content, metadata, callback
 
-  dirty: ->
+  dirty: (isDirty = true)->
     @_setState
-      dirty: true
-      saved: false
+      dirty: isDirty
+      saved: false if isDirty
 
   autoSave: (interval) ->
     if @_autoSaveInterval
@@ -140,6 +140,9 @@ class CloudFileManagerClient
         if @state.dirty and @state.metadata
           @save()
       @_autoSaveInterval = setInterval saveIfDirty, (interval * 1000)
+
+  isAutoSaving: ->
+    @_autoSaveInterval > 0
 
   _dialogSave: (content, metadata, callback) ->
     if content isnt null
