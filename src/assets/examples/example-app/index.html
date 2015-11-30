@@ -70,6 +70,10 @@
           switch (event.type) {
             case 'connected':
               setClient(event.data.client);
+              event.data.client.appendMenuItem({
+                name: 'Inner Frame Callback Menu Item',
+                action: function () { alert('This is an example of a callback menu item added in the inner frame')}
+              });
               break;
 
             case 'getContent':

@@ -38,8 +38,12 @@ App = React.createClass
           @setState menuItems: @props.client._ui.menu?.items or []
 
     @props.client._ui.listen (event) =>
-      if event.type is 'showProviderDialog'
-        @setState providerDialog: event.data
+      switch event.type
+        when 'showProviderDialog'
+          @setState providerDialog: event.data
+        when 'appendMenuItem'
+          @state.menuItems.push event.data
+          @setState menuItems: @state.menuItems
 
   closeProviderDialog: ->
     @setState providerDialog: null

@@ -32,7 +32,10 @@
           "documentStore"
         ],
         ui: {
-          menu: CloudFileManager.DefaultMenu
+          menu: CloudFileManager.DefaultMenu.concat([{
+            name: 'Outer Frame Callback Menu Item',
+            action: function () { alert('This is an example of a callback menu item added in the outer frame')}
+          }])
         }
       }
       CloudFileManager.createFrame(options, "wrapper");

@@ -54,6 +54,9 @@ class CloudFileManagerUI
   # for React to listen for dialog changes
   listen: (@listenerCallback) ->
 
+  appendMenuItem: (item) ->
+    @listenerCallback new CloudFileManagerUIEvent 'appendMenuItem', item
+
   saveFileDialog: (callback) ->
     @_showProviderDialog 'saveFile', (tr '~DIALOG.SAVE'), callback
 

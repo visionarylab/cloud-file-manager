@@ -55,6 +55,9 @@ class CloudFileManagerClient
   # single listener - used by the React menu via to watch client state changes
   listen: (@listenerCallback) ->
 
+  appendMenuItem: (item) ->
+    @_ui.appendMenuItem item
+
   newFile: (callback = null) ->
     @state.content = null
     @state.metadata = null
