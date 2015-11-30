@@ -29,10 +29,21 @@ App = React.createClass
     menuItems: @props.client._ui.menu?.items or []
     menuOptions: @props.menuBar or {}
     providerDialog: null
+    dirty: false
 
   componentWillMount: ->
     @props.client.listen (event) =>
-      @setState filename: @getFilename()
+      fileStatus = if event.state.saving
+        {message: 'Saving...', type: 'info'}
+      else if event.state.saved
+        {message: 'Saved', type: 'info'}
+      else if event.state.dirty
+        {message: 'Unsaved', type: 'alert'}
+      else
+        null
+      @setState
+        filename: @getFilename()
+        fileStatus: fileStatus
 
       switch event.type
         when 'connected'
@@ -55,7 +66,7 @@ App = React.createClass
   render: ->
     if @props.usingIframe
       (div {className: 'app'},
-        (MenuBar {filename: @state.filename, items: @state.menuItems, options: @state.menuOptions})
+        (MenuBar {filename: @state.filename, fileStatus: @state.fileStatus, options: @state.menuOptions})
         (InnerApp {app: @props.app})
         if @state.providerDialog
           (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})

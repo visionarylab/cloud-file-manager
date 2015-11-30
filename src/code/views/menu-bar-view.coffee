@@ -19,6 +19,8 @@ module.exports = React.createClass
           anchor: @props.filename
           items: @props.items
           className:'menu-bar-content-filename'})
+        if @props.fileStatus
+          (span {className: "menu-bar-file-status menu-bar-file-status-#{@props.fileStatus.type}"}, @props.fileStatus.message)
       )
       (div {className: 'menu-bar-right'},
         for item in @state.rightSideLayout

@@ -16,9 +16,8 @@ class CloudFileManagerClient
 
   constructor: (options) ->
     @state =
-      content: null
-      metadata: null
       availableProviders: []
+    @_resetState()
     @_ui = new CloudFileManagerUI @
 
   setAppOptions: (appOptions = {})->
@@ -35,6 +34,7 @@ class CloudFileManagerClient
         appOptions.providers.push providerName
 
     # check the providers
+    availableProviders = []
     for provider in appOptions.providers
       [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
       if not providerName
@@ -42,10 +42,10 @@ class CloudFileManagerClient
       else
         if allProviders[providerName]
           Provider = allProviders[providerName]
-          @state.availableProviders.push new Provider providerOptions
+          availableProviders.push new Provider providerOptions
         else
           @_error "Unknown provider: #{providerName}"
-
+    @_setState availableProviders: availableProviders
     @_ui.init appOptions.ui
 
   # single client - used by the client app to register and receive callback events
@@ -62,8 +62,7 @@ class CloudFileManagerClient
     @_ui.setMenuBarInfo info
 
   newFile: (callback = null) ->
-    @state.content = null
-    @state.metadata = null
+    @_resetState()
     @_event 'newedFile'
 
   newFileDialog: (callback = null) ->
@@ -95,6 +94,7 @@ class CloudFileManagerClient
 
   saveFile: (content, metadata, callback = null) ->
     if metadata?.provider?.can 'save'
+      @_setState saving: true
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
         @_fileChanged 'savedFile', content, metadata
@@ -110,6 +110,11 @@ class CloudFileManagerClient
     @_ui.saveFileAsDialog (metadata) =>
       @_dialogSave content, metadata, callback
 
+  dirty: ->
+    @_setState
+      dirty: true
+      saved: false
+
   _dialogSave: (content, metadata, callback) ->
     if content isnt null
       @saveFile content, metadata, callback
@@ -122,14 +127,31 @@ class CloudFileManagerClient
     alert message
 
   _fileChanged: (type, content, metadata) ->
-    @state.content = content
-    @state.metadata = metadata
+    @_setState
+      content: content
+      metadata: metadata
+      saving: false
+      saved: type is 'savedFile'
+      dirty: false
     @_event type, {content: content, metadata: metadata}
 
   _event: (type, data = {}, eventCallback = null) ->
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     @eventCallback? event
     @listenerCallback? event
+
+  _setState: (options) ->
+    for own key, value of options
+      @state[key] = value
+    @_event 'stateChanged'
+
+  _resetState: ->
+    @_setState
+      content: null
+      metadata: null
+      dirty: false
+      saving: false
+      saved: false
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
