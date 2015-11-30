@@ -1,8 +1,10 @@
 {div, button} = React.DOM
 
-authorizeUrl  = "http://document-store.herokuapp.com/user/authenticate"
-checkLoginUrl = "http://document-store.herokuapp.com/user/info"
-listUrl = "http://document-store.herokuapp.com/document/all"
+documentStore = "http://document-store.herokuapp.com"
+authorizeUrl     = "#{documentStore}/user/authenticate"
+checkLoginUrl    = "#{documentStore}/user/info"
+listUrl          = "#{documentStore}/document/all"
+loadDocumentUrl      = "#{documentStore}/document/open"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -121,26 +123,38 @@ class DocumentStoreProvider extends ProviderInterface
     (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
 
   list: (metadata, callback) ->
-    provider = @
     $.ajax
       dataType: 'json'
       url: listUrl
+      context: @
       xhrFields:
         withCredentials: true
       success: (data) ->
         list = []
-        path = metadata?.path or ''
-        for own key of window.localStorage
+        for own key, file of data
           list.push new CloudMetadata
-            name: key
-            path: "#{path}/#{name}"
+            name: file.name
+            fileId: file.id
             type: CloudMetadata.File
-            provider: provider
+            provider: @
         callback null, list
       error: ->
         callback null, []
 
   load: (metadata, callback) ->
+    $.ajax
+      dataType: 'json'
+      url: loadDocumentUrl
+      data:
+        recordid: metadata.fileId
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        callback null, data
+      error: ->
+        callback "Unable to load "+metadata.name
+
 
 
 module.exports = DocumentStoreProvider
