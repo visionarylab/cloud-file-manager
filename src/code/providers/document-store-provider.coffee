@@ -135,7 +135,7 @@ class DocumentStoreProvider extends ProviderInterface
         for own key, file of data
           list.push new CloudMetadata
             name: file.name
-            fileId: file.id
+            providerData: {id: file.id}
             type: CloudMetadata.File
             provider: @
         callback null, list
@@ -147,7 +147,7 @@ class DocumentStoreProvider extends ProviderInterface
       dataType: 'json'
       url: loadDocumentUrl
       data:
-        recordid: metadata.fileId
+        recordid: metadata.providerData.id
       context: @
       xhrFields:
         withCredentials: true
@@ -160,7 +160,7 @@ class DocumentStoreProvider extends ProviderInterface
     content = @_validateContent content
 
     params = {}
-    if metadata.fileId then params.recordid = metadata.fileId
+    if metadata.providerData.id then params.recordid = metadata.providerData.id
     if metadata.name then params.recordname = metadata.name
 
     url = @_addParams(saveDocumentUrl, params)
@@ -174,7 +174,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        if data.id then metadata.fileId = data.id
+        if data.id then metadata.providerData.id = data.id
         callback null, data
       error: ->
         callback "Unable to load "+metadata.name
