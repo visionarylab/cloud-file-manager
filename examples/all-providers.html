@@ -11,6 +11,10 @@
     <script>
       var options = {
         app: "example-app",
+        menuBar: {
+          // info: "Version 1.0.0", <- this can be set here or via client.setMenuBarInfo('Version 1.0.0')
+          help: "http://lmgtfy.com/"
+        },
         providers: [
           "localStorage",
           {
@@ -28,7 +32,10 @@
           "documentStore"
         ],
         ui: {
-          menu: CloudFileManager.DefaultMenu
+          menu: CloudFileManager.DefaultMenu.concat([{
+            name: 'Outer Frame Callback Menu Item',
+            action: function () { alert('This is an example of a callback menu item added in the outer frame')}
+          }])
         }
       }
       CloudFileManager.createFrame(options, "wrapper");

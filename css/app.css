@@ -5,8 +5,8 @@
   font-weight: normal;
   font-style: normal;
 }
-[class^="icon-codap-"],
-[class*=" icon-codap-"] {
+[class^="icon-"],
+[class*=" icon-"] {
   font-family: 'CodapIvy';
   speak: none;
   font-style: normal;
@@ -18,157 +18,157 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.icon-codap-table2:before {
+.icon-table2:before {
   content: "\31";
 }
-.icon-codap-dataTool:before {
+.icon-dataTool:before {
   content: "\32";
 }
-.icon-codap-graph:before {
+.icon-graph:before {
   content: "\33";
 }
-.icon-codap-map:before {
+.icon-map:before {
   content: "\34";
 }
-.icon-codap-slider:before {
+.icon-slider:before {
   content: "\35";
 }
-.icon-codap-calc:before {
+.icon-calc:before {
   content: "\36";
 }
-.icon-codap-mediaTool:before {
+.icon-mediaTool:before {
   content: "\37";
 }
-.icon-codap-noteTool:before {
+.icon-noteTool:before {
   content: "\38";
 }
-.icon-codap-pageFull:before {
+.icon-pageFull:before {
   content: "\41";
 }
-.icon-codap-pageEmpty:before {
+.icon-pageEmpty:before {
   content: "\42";
 }
-.icon-codap-play:before {
+.icon-play:before {
   content: "\4a";
 }
-.icon-codap-controlsReset:before {
+.icon-controlsReset:before {
   content: "\4b";
 }
-.icon-codap-controlsBackward:before {
+.icon-controlsBackward:before {
   content: "\4d";
 }
-.icon-codap-controlsForward:before {
+.icon-controlsForward:before {
   content: "\4e";
 }
-.icon-codap-speedFast:before {
+.icon-speedFast:before {
   content: "\4f";
 }
-.icon-codap-speedSlow:before {
+.icon-speedSlow:before {
   content: "\50";
 }
-.icon-codap-smallSliderLines:before {
+.icon-smallSliderLines:before {
   content: "\52";
 }
-.icon-codap-alert:before {
+.icon-alert:before {
   content: "\53";
 }
-.icon-codap-checkmark:before {
+.icon-checkmark:before {
   content: "\54";
 }
-.icon-codap-info:before {
+.icon-info:before {
   content: "\55";
 }
-.icon-codap-saveGraph:before {
+.icon-saveGraph:before {
   content: "\56";
 }
-.icon-codap-link:before {
+.icon-link:before {
   content: "\57";
 }
-.icon-codap-marquee:before {
+.icon-marquee:before {
   content: "\58";
 }
-.icon-codap-arrow-undo:before {
+.icon-arrow-undo:before {
   content: "\61";
 }
-.icon-codap-arrow-redo:before {
+.icon-arrow-redo:before {
   content: "\62";
 }
-.icon-codap-tileList:before {
+.icon-tileList:before {
   content: "\63";
 }
-.icon-codap-guide:before {
+.icon-guide:before {
   content: "\64";
 }
-.icon-codap-options:before {
+.icon-options:before {
   content: "\65";
 }
-.icon-codap-draw:before {
+.icon-draw:before {
   content: "\66";
 }
-.icon-codap-simulateTool:before {
+.icon-simulateTool:before {
   content: "\67";
 }
-.icon-codap-help:before {
+.icon-help:before {
   content: "\68";
 }
-.icon-codap-hideShow:before {
+.icon-hideShow:before {
   content: "\69";
 }
-.icon-codap-scaleData:before {
+.icon-scaleData:before {
   content: "\6a";
 }
-.icon-codap-tileScreenshot:before {
+.icon-tileScreenshot:before {
   content: "\6c";
 }
-.icon-codap-search:before {
+.icon-search:before {
   content: "\6d";
 }
-.icon-codap-styles:before {
+.icon-styles:before {
   content: "\6e";
 }
-.icon-codap-values:before {
+.icon-values:before {
   content: "\6f";
 }
-.icon-codap-qualRel:before {
+.icon-qualRel:before {
   content: "\70";
 }
-.icon-codap-moreOptions:before {
+.icon-moreOptions:before {
   content: "\71";
 }
-.icon-codap-paletteArrow-expand:before {
+.icon-paletteArrow-expand:before {
   content: "\72";
 }
-.icon-codap-paletteArrow-collapse:before {
+.icon-paletteArrow-collapse:before {
   content: "\73";
 }
-.icon-codap-arrow-expand:before {
+.icon-arrow-expand:before {
   content: "\74";
 }
-.icon-codap-arrow-collapse:before {
+.icon-arrow-collapse:before {
   content: "\75";
 }
-.icon-codap-inspectorArrow-expand:before {
+.icon-inspectorArrow-expand:before {
   content: "\76";
 }
-.icon-codap-inspectorArrow-collapse:before {
+.icon-inspectorArrow-collapse:before {
   content: "\77";
 }
-.icon-codap-swapAxis:before {
+.icon-swapAxis:before {
   content: "\78";
 }
-.icon-codap-ex:before {
+.icon-ex:before {
   content: "\79";
 }
-.icon-codap-minimize:before {
+.icon-minimize:before {
   content: "\7a";
 }
-.icon-codap-comment:before {
+.icon-comment:before {
   content: "\e609";
 }
-.icon-codap-trash:before {
+.icon-trash:before {
   content: "\e629";
 }
-.icon-codap-right-arrow:before {
+.icon-right-arrow:before {
   content: "\f061";
 }
 @font-face {
@@ -194,6 +194,9 @@
   src: url("../fonts/MuseoSans_500_italic.otf");
   font-weight: normal;
   font-style: italic;
+}
+.clickable {
+  cursor: pointer;
 }
 .menu {
   display: inline;
@@ -323,6 +326,10 @@
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
+}
+.menu-bar .menu-bar-right {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 .modal {
   z-index: 100;
