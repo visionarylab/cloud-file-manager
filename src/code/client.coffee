@@ -48,6 +48,10 @@ class CloudFileManagerClient
     @_setState availableProviders: availableProviders
     @_ui.init appOptions.ui
 
+    # check for autosave
+    if options.autoSaveInterval
+      @autoSave options.autoSaveInterval
+
   # single client - used by the client app to register and receive callback events
   connect: (@eventCallback) ->
     @_event 'connected', {client: @}
@@ -114,6 +118,19 @@ class CloudFileManagerClient
     @_setState
       dirty: true
       saved: false
+
+  autoSave: (interval) ->
+    if @_autoSaveInterval
+      clearInterval @_autoSaveInterval
+
+    # in case the caller uses milliseconds
+    if interval > 1000
+      interval = Math.round(interval / 1000)
+    if interval > 0
+      saveIfDirty = =>
+        if @state.dirty and @state.metadata
+          @save()
+      @_autoSaveInterval = setInterval saveIfDirty, (interval * 1000)
 
   _dialogSave: (content, metadata, callback) ->
     if content isnt null
