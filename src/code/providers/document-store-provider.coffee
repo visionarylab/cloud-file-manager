@@ -13,12 +13,22 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
   displayName: 'DocumentStoreAuthorizationDialog'
 
+  getInitialState: ->
+    docStoreAvailable: false
+
+  componentWillMount: ->
+    @props.provider._onDocStoreLoaded =>
+      @setState docStoreAvailable: true
+
   authenticate: ->
     @props.provider.authorize()
 
   render: ->
     (div {},
-      (button {onClick: @authenticate}, 'Authorization Needed')
+      if @state.docStoreAvailable
+        (button {onClick: @authenticate}, 'Authorization Needed')
+      else
+        'Trying to log into the Document Store...'
     )
 
 class DocumentStoreProvider extends ProviderInterface
@@ -35,10 +45,14 @@ class DocumentStoreProvider extends ProviderInterface
   @Name: 'documentStore'
 
   authorized: (@authCallback) ->
+    @_checkLogin()
 
   authorize: ->
     @_showLoginWindow()
-    @_checkLogin()
+
+  _onDocStoreLoaded: (@docStoreLoadedCallback) ->
+    if @_docStoreLoaded
+      @docStoreLoadedCallback()
 
   _loginSuccessful: (data) ->
     if @_loginWindow then @_loginWindow.close()
@@ -52,9 +66,10 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
+        provider.docStoreLoadedCallback()
         provider._loginSuccessful(data)
       error: ->
-        # nothing yet
+        provider.docStoreLoadedCallback()
 
   _loginWindow: null
 
@@ -98,7 +113,7 @@ class DocumentStoreProvider extends ProviderInterface
             @_loginWindow.close()
             @_checkLogin()
         catch e
-          console.log e
+          # console.log e
 
       poll = setInterval pollAction, 200
 
