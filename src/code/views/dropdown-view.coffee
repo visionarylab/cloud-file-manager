@@ -51,7 +51,7 @@ DropDown = React.createClass
     (div {className: 'menu'},
       (span {className: 'menu-anchor', onClick: => @select(null)},
         @props.anchor
-        (i {className: 'icon-codap-arrow-expand'})
+        (i {className: 'icon-arrow-expand'})
       )
       if @props.items?.length > 0
         (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
