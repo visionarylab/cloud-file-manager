@@ -22,3 +22,5 @@ module.exports =
   "~FILE_DIALOG.REMOVE": "Delete"
   "~FILE_DIALOG.REMOVE_CONFIRM": "Are you sure you want to delete %{filename}?"
   "~FILE_DIALOG.LOADING": "Loading..."
+
+  "~CONFIRM.UNSAVED_CHANGES": "You have unsaved changes.  Are you sure you want a new file?"

@@ -20,7 +20,7 @@ class CloudFileManagerClient
     @_resetState()
     @_ui = new CloudFileManagerUI @
 
-  setAppOptions: (appOptions = {})->
+  setAppOptions: (@appOptions = {})->
     # flter for available providers
     allProviders = {}
     for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider]
@@ -28,14 +28,14 @@ class CloudFileManagerClient
         allProviders[Provider.Name] = Provider
 
     # default to all providers if non specified
-    if not appOptions.providers
-      appOptions.providers = []
+    if not @appOptions.providers
+      @appOptions.providers = []
       for own providerName of allProviders
         appOptions.providers.push providerName
 
     # check the providers
     availableProviders = []
-    for provider in appOptions.providers
+    for provider in @appOptions.providers
       [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
       if not providerName
         @_error "Invalid provider spec - must either be string or object with name property"
@@ -46,7 +46,7 @@ class CloudFileManagerClient
         else
           @_error "Unknown provider: #{providerName}"
     @_setState availableProviders: availableProviders
-    @_ui.init appOptions.ui
+    @_ui.init @appOptions.ui
 
     # check for autosave
     if options.autoSaveInterval
@@ -70,8 +70,16 @@ class CloudFileManagerClient
     @_event 'newedFile'
 
   newFileDialog: (callback = null) ->
-    # for now just call new - later we can add change notification from the client so we can prompt for "Are you sure?"
-    @newFile()
+    if @appOptions.newFileOpensInNewTab
+      window.open window.location, '_blank'
+    else if @state.dirty
+      if @_autoSaveInterval and @state.metadata
+        @save()
+        @newFile()
+      else if confirm tr '~CONFIRM.UNSAVED_CHANGES'
+        @newFile()
+    else
+      @newFile()
 
   openFile: (metadata, callback = null) ->
     if metadata?.provider?.can 'load'

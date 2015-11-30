@@ -16,8 +16,7 @@
       var cfmClient;
 
       function newFile() {
-        cfmClient && cfmClient.newFile();
-        setTextValue('');
+        cfmClient && cfmClient.newFileDialog();
       }
 
       function openFile() {
@@ -47,6 +46,10 @@
 
       function changed() {
         cfmClient.dirty();
+      }
+
+      function focus() {
+        document.getElementById("text").focus();
       }
     </script>
   </head>
@@ -88,10 +91,12 @@
 
             case 'newedFile':
               setTextValue('');
+              focus();
               break;
 
             case 'openedFile':
               setTextValue(event.data.content);
+              focus();
               break;
           }
         });
