@@ -34,9 +34,9 @@ App = React.createClass
   componentWillMount: ->
     @props.client.listen (event) =>
       fileStatus = if event.state.saving
-        {message: 'Saving...', type: 'info'}
+        {message: "Saving all changes to #{event.state.saving.provider.displayName}...", type: 'info'}
       else if event.state.saved
-        {message: 'Saved', type: 'info'}
+        {message: "All changes saved to #{event.state.metadata.provider.displayName}", type: 'info'}
       else if event.state.dirty
         {message: 'Unsaved', type: 'alert'}
       else

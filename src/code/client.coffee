@@ -98,7 +98,8 @@ class CloudFileManagerClient
 
   saveFile: (content, metadata, callback = null) ->
     if metadata?.provider?.can 'save'
-      @_setState saving: true
+      @_setState
+        saving: metadata
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
         @_fileChanged 'savedFile', content, metadata
@@ -147,7 +148,7 @@ class CloudFileManagerClient
     @_setState
       content: content
       metadata: metadata
-      saving: false
+      saving: null
       saved: type is 'savedFile'
       dirty: false
     @_event type, {content: content, metadata: metadata}
@@ -167,7 +168,7 @@ class CloudFileManagerClient
       content: null
       metadata: null
       dirty: false
-      saving: false
+      saving: null
       saved: false
 
 module.exports =
