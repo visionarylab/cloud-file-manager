@@ -11,9 +11,6 @@
     <script>
       var options = {
         app: "example-app",
-        menuBar: {
-          info: "This version auto saves every 5 seconds"
-        },
         autoSaveInterval: 5,
         providers: [
           "localStorage",
@@ -29,10 +26,20 @@
             "mimeType": "text/plain",
             "clientId": "1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com"
           },
-          "documentStore"
+          {
+            "name": "documentStore",
+            // These parameters are optional. If the saved file is JSON with
+            // these parameters already set, these will be ignored
+            "appName": "CFM_Demo",
+            "appVersion": "0.1",
+            "appBuildNum": "1"
+          }
         ],
         ui: {
-          menu: CloudFileManager.DefaultMenu
+          menu: CloudFileManager.DefaultMenu,
+          menuBar: {
+            info: "This version auto saves every 5 seconds"
+          }
         }
       }
       CloudFileManager.createFrame(options, "wrapper");

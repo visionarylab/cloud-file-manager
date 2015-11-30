@@ -11,10 +11,6 @@
     <script>
       var options = {
         app: "example-app",
-        menuBar: {
-          info: "Version 1.0.0",
-          help: "http://lmgtfy.com/"
-        },
         providers: [
           "localStorage",
           {
@@ -29,13 +25,24 @@
             "mimeType": "text/plain",
             "clientId": "1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com"
           },
-          "documentStore"
+          {
+            "name": "documentStore",
+            // These parameters are optional. If the saved file is JSON with
+            // these parameters already set, these will be ignored
+            "appName": "CFM_Demo",
+            "appVersion": "0.1",
+            "appBuildNum": "1"
+          }
         ],
         ui: {
           menu: CloudFileManager.DefaultMenu.concat([{
             name: 'Outer Frame Callback Menu Item',
             action: function () { alert('This is an example of a callback menu item added in the outer frame')}
-          }])
+          }]),
+          menuBar: {
+            info: "Version 1.0.0",
+            help: "http://lmgtfy.com/"
+          }
         }
       }
       CloudFileManager.createFrame(options, "wrapper");

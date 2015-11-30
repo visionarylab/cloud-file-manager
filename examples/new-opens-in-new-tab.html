@@ -11,10 +11,6 @@
     <script>
       var options = {
         app: "example-app",
-        newFileOpensInNewTab: true,
-        menuBar: {
-          info: "This version opens new documents in a new tab"
-        },
         providers: [
           "localStorage",
           {
@@ -32,7 +28,11 @@
           "documentStore"
         ],
         ui: {
-          menu: CloudFileManager.DefaultMenu
+          menu: CloudFileManager.DefaultMenu,
+          menuBar: {
+            info: "This version opens new documents in a new tab"
+          },
+          newFileOpensInNewTab: true
         }
       }
       CloudFileManager.createFrame(options, "wrapper");
