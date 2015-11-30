@@ -309,7 +309,7 @@
   -webkit-flex-grow: 1;
   -webkit-flex-shrink: 0;
 }
-.menu-bar .menu-bar-file-status {
+.menu-bar .menu-bar-file-status-alert {
   font-style: normal;
   font-variant: normal;
   font-weight: normal;
@@ -318,7 +318,7 @@
   text-transform: none;
   font-family: 'Museo Sans', 'Montserrat', sans-serif;
   text-transform: uppercase;
-  color: #fff;
+  background-color: #f00;
   padding: 2px 7px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
@@ -326,11 +326,8 @@
   -moz-border-radius: 5px;
   border-radius: 5px;
 }
-.menu-bar .menu-bar-file-status-alert {
-  background-color: #f00;
-}
 .menu-bar .menu-bar-file-status-info {
-  background-color: #00f;
+  font-style: italic;
 }
 .menu-bar .menu-bar-right {
   padding-left: 0.5em;
