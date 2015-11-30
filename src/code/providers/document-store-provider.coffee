@@ -5,6 +5,7 @@ authorizeUrl     = "#{documentStore}/user/authenticate"
 checkLoginUrl    = "#{documentStore}/user/info"
 listUrl          = "#{documentStore}/document/all"
 loadDocumentUrl      = "#{documentStore}/document/open"
+saveDocumentUrl      = "#{documentStore}/document/save"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -154,6 +155,34 @@ class DocumentStoreProvider extends ProviderInterface
         callback null, data
       error: ->
         callback "Unable to load "+metadata.name
+
+  save: (content, metadata, callback) ->
+    params = {}
+    if metadata.fileId then params.recordid = metadata.fileId
+    if metadata.name then params.recordname = metadata.name
+
+    url = @_addParams(saveDocumentUrl, params)
+
+    $.ajax
+      dataType: 'json'
+      method: 'POST'
+      url: url
+      data: content
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        if data.id then metadata.fileId = data.id
+        callback null, data
+      error: ->
+        callback "Unable to load "+metadata.name
+
+  _addParams: (url, params) ->
+    return url unless params
+    kvp = []
+    for key, value of params
+      kvp.push [key, value].map(encodeURI).join "="
+    return url + "?" + kvp.join "&"
 
 
 
