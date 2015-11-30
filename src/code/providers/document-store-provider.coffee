@@ -1,8 +1,11 @@
 {div, button} = React.DOM
 
-authorizeUrl  = "http://document-store.herokuapp.com/user/authenticate"
-checkLoginUrl = "http://document-store.herokuapp.com/user/info"
-listUrl = "http://document-store.herokuapp.com/document/all"
+documentStore = "http://document-store.herokuapp.com"
+authorizeUrl     = "#{documentStore}/user/authenticate"
+checkLoginUrl    = "#{documentStore}/user/info"
+listUrl          = "#{documentStore}/document/all"
+loadDocumentUrl      = "#{documentStore}/document/open"
+saveDocumentUrl      = "#{documentStore}/document/save"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -13,12 +16,22 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
   displayName: 'DocumentStoreAuthorizationDialog'
 
+  getInitialState: ->
+    docStoreAvailable: false
+
+  componentWillMount: ->
+    @props.provider._onDocStoreLoaded =>
+      @setState docStoreAvailable: true
+
   authenticate: ->
     @props.provider.authorize()
 
   render: ->
     (div {},
-      (button {onClick: @authenticate}, 'Authorization Needed')
+      if @state.docStoreAvailable
+        (button {onClick: @authenticate}, 'Authorization Needed')
+      else
+        'Trying to log into the Document Store...'
     )
 
 class DocumentStoreProvider extends ProviderInterface
@@ -35,10 +48,14 @@ class DocumentStoreProvider extends ProviderInterface
   @Name: 'documentStore'
 
   authorized: (@authCallback) ->
+    @_checkLogin()
 
   authorize: ->
     @_showLoginWindow()
-    @_checkLogin()
+
+  _onDocStoreLoaded: (@docStoreLoadedCallback) ->
+    if @_docStoreLoaded
+      @docStoreLoadedCallback()
 
   _loginSuccessful: (data) ->
     if @_loginWindow then @_loginWindow.close()
@@ -52,9 +69,10 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
+        provider.docStoreLoadedCallback()
         provider._loginSuccessful(data)
       error: ->
-        # nothing yet
+        provider.docStoreLoadedCallback()
 
   _loginWindow: null
 
@@ -98,7 +116,7 @@ class DocumentStoreProvider extends ProviderInterface
             @_loginWindow.close()
             @_checkLogin()
         catch e
-          console.log e
+          # console.log e
 
       poll = setInterval pollAction, 200
 
@@ -106,26 +124,81 @@ class DocumentStoreProvider extends ProviderInterface
     (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
 
   list: (metadata, callback) ->
-    provider = @
     $.ajax
       dataType: 'json'
       url: listUrl
+      context: @
       xhrFields:
         withCredentials: true
       success: (data) ->
         list = []
-        path = metadata?.path or ''
-        for own key of window.localStorage
+        for own key, file of data
           list.push new CloudMetadata
-            name: key
-            path: "#{path}/#{name}"
+            name: file.name
+            fileId: file.id
             type: CloudMetadata.File
-            provider: provider
+            provider: @
         callback null, list
       error: ->
         callback null, []
 
   load: (metadata, callback) ->
+    $.ajax
+      dataType: 'json'
+      url: loadDocumentUrl
+      data:
+        recordid: metadata.fileId
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        callback null, data
+      error: ->
+        callback "Unable to load "+metadata.name
+
+  save: (content, metadata, callback) ->
+    content = @_validateContent content
+
+    params = {}
+    if metadata.fileId then params.recordid = metadata.fileId
+    if metadata.name then params.recordname = metadata.name
+
+    url = @_addParams(saveDocumentUrl, params)
+
+    $.ajax
+      dataType: 'json'
+      method: 'POST'
+      url: url
+      data: content
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        if data.id then metadata.fileId = data.id
+        callback null, data
+      error: ->
+        callback "Unable to load "+metadata.name
+
+  _addParams: (url, params) ->
+    return url unless params
+    kvp = []
+    for key, value of params
+      kvp.push [key, value].map(encodeURI).join "="
+    return url + "?" + kvp.join "&"
+
+  # The document server requires the content to be JSON, and it must have
+  # certain pre-defined keys in order to be listed when we query the list
+  _validateContent: (content) ->
+    if typeof content isnt "object"
+      try
+        content = JSON.parse content
+      catch
+        content = {content: content}
+    content.appName     ?= @options.appName
+    content.appVersion  ?= @options.appVersion
+    content.appBuildNum ?= @options.appBuildNum
+
+    return JSON.stringify content
 
 
 module.exports = DocumentStoreProvider
