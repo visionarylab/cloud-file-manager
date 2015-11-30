@@ -27,7 +27,7 @@ App = React.createClass
   getInitialState: ->
     filename: @getFilename()
     menuItems: @props.client._ui.menu?.items or []
-    menuOptions: @props.menuBar or {}
+    menuOptions: @props.ui?.menuBar or {}
     providerDialog: null
     dirty: false
 

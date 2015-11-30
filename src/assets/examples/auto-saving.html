@@ -11,9 +11,6 @@
     <script>
       var options = {
         app: "example-app",
-        menuBar: {
-          info: "This version auto saves every 5 seconds"
-        },
         autoSaveInterval: 5,
         providers: [
           "localStorage",
@@ -32,7 +29,10 @@
           "documentStore"
         ],
         ui: {
-          menu: CloudFileManager.DefaultMenu
+          menu: CloudFileManager.DefaultMenu,
+          menuBar: {
+            info: "This version auto saves every 5 seconds"
+          }
         }
       }
       CloudFileManager.createFrame(options, "wrapper");

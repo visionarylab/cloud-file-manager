@@ -70,7 +70,7 @@ class CloudFileManagerClient
     @_event 'newedFile'
 
   newFileDialog: (callback = null) ->
-    if @appOptions.newFileOpensInNewTab
+    if @appOptions.ui?.newFileOpensInNewTab
       window.open window.location, '_blank'
     else if @state.dirty
       if @_autoSaveInterval and @state.metadata
