@@ -6,6 +6,7 @@ checkLoginUrl    = "#{documentStore}/user/info"
 listUrl          = "#{documentStore}/document/all"
 loadDocumentUrl      = "#{documentStore}/document/open"
 saveDocumentUrl      = "#{documentStore}/document/save"
+removeDocumentUrl    = "#{documentStore}/document/delete"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -44,6 +45,7 @@ class DocumentStoreProvider extends ProviderInterface
         save: true
         load: true
         list: true
+        remove: true
 
   @Name: 'documentStore'
 
@@ -175,6 +177,19 @@ class DocumentStoreProvider extends ProviderInterface
         withCredentials: true
       success: (data) ->
         if data.id then metadata.providerData.id = data.id
+        callback null, data
+      error: ->
+        callback "Unable to load "+metadata.name
+
+  remove: (metadata, callback) ->
+    $.ajax
+      url: removeDocumentUrl
+      data:
+        recordname: metadata.name
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
         callback null, data
       error: ->
         callback "Unable to load "+metadata.name
