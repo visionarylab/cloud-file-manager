@@ -44,6 +44,10 @@
       function setClient(client) {
         cfmClient = client;
       }
+
+      function changed() {
+        cfmClient.dirty();
+      }
     </script>
   </head>
   <body>
@@ -52,7 +56,7 @@
       This simple demo app uses the textarea below to edit text files.  You can either use the menu bar or the buttons below to open, save and create new files.
     </p>
     <div>
-      <textarea cols="50" rows="10" id="text"></textarea>
+      <textarea cols="50" rows="10" id="text" onkeyup="changed()"></textarea>
     </div>
     <div id="buttons">
       <button onclick="newFile()">New</button>
