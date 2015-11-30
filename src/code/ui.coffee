@@ -57,6 +57,9 @@ class CloudFileManagerUI
   appendMenuItem: (item) ->
     @listenerCallback new CloudFileManagerUIEvent 'appendMenuItem', item
 
+  setMenuBarInfo: (info) ->
+    @listenerCallback new CloudFileManagerUIEvent 'setMenuBarInfo', info
+
   saveFileDialog: (callback) ->
     @_showProviderDialog 'saveFile', (tr '~DIALOG.SAVE'), callback
 

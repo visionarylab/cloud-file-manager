@@ -58,6 +58,9 @@ class CloudFileManagerClient
   appendMenuItem: (item) ->
     @_ui.appendMenuItem item
 
+  setMenuBarInfo: (info) ->
+    @_ui.setMenuBarInfo info
+
   newFile: (callback = null) ->
     @state.content = null
     @state.metadata = null

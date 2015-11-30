@@ -27,6 +27,7 @@ App = React.createClass
   getInitialState: ->
     filename: @getFilename()
     menuItems: @props.client._ui.menu?.items or []
+    menuOptions: @props.menuBar or {}
     providerDialog: null
 
   componentWillMount: ->
@@ -44,6 +45,9 @@ App = React.createClass
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
+        when 'setMenuBarInfo'
+          @state.menuOptions.info = event.data
+          @setState menuOptions: @state.menuOptions
 
   closeProviderDialog: ->
     @setState providerDialog: null
@@ -51,7 +55,7 @@ App = React.createClass
   render: ->
     if @props.usingIframe
       (div {className: 'app'},
-        (MenuBar {filename: @state.filename, items: @state.menuItems, options: @props.menuBar or {}})
+        (MenuBar {filename: @state.filename, items: @state.menuItems, options: @state.menuOptions})
         (InnerApp {app: @props.app})
         if @state.providerDialog
           (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
