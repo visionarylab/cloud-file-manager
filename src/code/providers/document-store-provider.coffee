@@ -157,6 +157,8 @@ class DocumentStoreProvider extends ProviderInterface
         callback "Unable to load "+metadata.name
 
   save: (content, metadata, callback) ->
+    content = @_validateContent content
+
     params = {}
     if metadata.fileId then params.recordid = metadata.fileId
     if metadata.name then params.recordname = metadata.name
@@ -184,6 +186,19 @@ class DocumentStoreProvider extends ProviderInterface
       kvp.push [key, value].map(encodeURI).join "="
     return url + "?" + kvp.join "&"
 
+  # The document server requires the content to be JSON, and it must have
+  # certain pre-defined keys in order to be listed when we query the list
+  _validateContent: (content) ->
+    if typeof content isnt "object"
+      try
+        content = JSON.parse content
+      catch
+        content = {content: content}
+    content.appName     ?= @options.appName
+    content.appVersion  ?= @options.appVersion
+    content.appBuildNum ?= @options.appBuildNum
+
+    return JSON.stringify content
 
 
 module.exports = DocumentStoreProvider
