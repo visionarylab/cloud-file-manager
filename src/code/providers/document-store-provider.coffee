@@ -1,4 +1,4 @@
-{div, button} = React.DOM
+{div, button, span} = React.DOM
 
 documentStore = "http://document-store.herokuapp.com"
 authorizeUrl     = "#{documentStore}/user/authenticate"
@@ -135,7 +135,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   renderUser: ->
     if @user
-      @user.name
+      (span {}, (span {className: 'document-store-icon'}), @user.name)
     else
       null
 

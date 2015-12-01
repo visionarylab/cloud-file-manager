@@ -1,12 +1,10 @@
-{div, span} = React.DOM
+{div, button, span} = React.DOM
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudMetadata = (require './provider-interface').CloudMetadata
-
-{button} = React.DOM
 
 GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   displayName: 'GoogleDriveAuthorizationDialog'
