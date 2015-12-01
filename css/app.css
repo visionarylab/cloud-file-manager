@@ -198,6 +198,65 @@
 .clickable {
   cursor: pointer;
 }
+.download-dialog {
+  padding: 20px;
+  width: 400px;
+}
+.download-dialog input {
+  margin: 10px 0;
+  width: 100%;
+  font-size: 20px;
+  padding: 5px;
+}
+.download-dialog .buttons {
+  float: right;
+  margin: 10px 0;
+}
+.download-dialog .buttons a {
+  padding: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #72bfca;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 0;
+  margin-right: 10px;
+  text-decoration: none;
+}
+.download-dialog .buttons a:hover {
+  background-color: #3c94a1;
+}
+.download-dialog .buttons a.disabled {
+  background-color: #777;
+}
+.download-dialog .buttons button {
+  padding: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #72bfca;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 0;
+}
+.download-dialog .buttons button:hover {
+  background-color: #3c94a1;
+}
 .menu {
   display: inline;
   padding-left: 10px;
@@ -339,6 +398,15 @@
 }
 .menu-bar span.gdrive-icon {
   background: url("../img/google-drive-16.png") no-repeat top left;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  position: relative;
+  top: 3px;
+}
+.menu-bar span.document-store-icon {
+  background: url("../img/document-store-16.png") no-repeat top left;
   display: inline-block;
   width: 16px;
   height: 16px;
