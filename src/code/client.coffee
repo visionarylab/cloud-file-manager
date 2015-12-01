@@ -37,6 +37,8 @@ class CloudFileManagerClient
     availableProviders = []
     for provider in @appOptions.providers
       [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
+      # merge in other options as needed
+      providerOptions.mimeType ?= @appOptions.mimeType
       if not providerName
         @_error "Invalid provider spec - must either be string or object with name property"
       else
