@@ -489,6 +489,44 @@
   text-align: center;
   line-height: 20px;
 }
+.rename-dialog {
+  padding: 20px;
+  width: 400px;
+}
+.rename-dialog input {
+  margin: 10px 0;
+  width: 100%;
+  font-size: 20px;
+  padding: 5px;
+}
+.rename-dialog .buttons {
+  float: right;
+  margin: 10px 0;
+}
+.rename-dialog .buttons button {
+  padding: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #72bfca;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 0;
+  margin-left: 10px;
+}
+.rename-dialog .buttons button:hover {
+  background-color: #3c94a1;
+}
+.rename-dialog .buttons button.disabled {
+  background-color: #777;
+}
 .tabbed-panel {
   display: flex;
   flex-direction: row;
