@@ -333,6 +333,19 @@
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+.menu-bar .menu-bar-right .menu-hidden,
+.menu-bar .menu-bar-right .menu-showing {
+  right: 10px;
+}
+.menu-bar span.gdrive-icon {
+  background: url("../img/google-drive-16.png") no-repeat top left;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  position: relative;
+  top: 3px;
+}
 .modal {
   z-index: 100;
 }
