@@ -123,6 +123,10 @@ class CloudFileManagerClient
     @_ui.saveFileAsDialog (metadata) =>
       @_dialogSave content, metadata, callback
 
+  downloadDialog: (callback = null) ->
+    @_event 'getContent', {}, (content) =>
+      @_ui.downloadDialog @state.metadata?.name, content, callback
+
   dirty: (isDirty = true)->
     @_setState
       dirty: isDirty

@@ -40,7 +40,7 @@ module.exports = React.createClass
 
   renderTabs: ->
     (div {className: 'workspace-tabs'},
-      (ul {}, @renderTab(tab,index) for tab, index in @props.tabs)
+      (ul {key: index}, @renderTab(tab, index) for tab, index in @props.tabs)
     )
 
   renderSelectedPanel: ->

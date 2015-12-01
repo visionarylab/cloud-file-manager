@@ -21,7 +21,7 @@ FileListFile = React.createFactory React.createClass
     @lastClick = now
 
   render: ->
-    (div {className: (if @props.selected then 'selected' else ''), onClick: @fileSelected}, @props.metadata.name)
+    (div {key: @props.key, className: (if @props.selected then 'selected' else ''), onClick: @fileSelected}, @props.metadata.name)
 
 FileList = React.createFactory React.createClass
   displayName: 'FileList'
@@ -44,8 +44,8 @@ FileList = React.createFactory React.createClass
       if @state.loading
         tr "~FILE_DIALOG.LOADING"
       else
-        for metadata in @props.list
-          (FileListFile {metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed})
+        for metadata, i in @props.list
+          (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed})
     )
 
 FileDialogTab = React.createClass

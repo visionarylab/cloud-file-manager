@@ -5,10 +5,12 @@ module.exports =
   "~MENU.OPEN": "Open ..."
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
+  "~MENU.DOWNLOAD": "Download"
 
   "~DIALOG.SAVE": "Save"
   "~DIALOG.SAVE_AS": "Save As ..."
   "~DIALOG.OPEN": "Open"
+  "~DIALOG.DOWNLOAD": "Download"
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"

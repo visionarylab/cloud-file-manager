@@ -1,5 +1,6 @@
 MenuBar = React.createFactory require './menu-bar-view'
 ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-view'
+DownloadDialog = React.createFactory require './download-dialog-view'
 
 tr = require '../utils/translate'
 
@@ -33,6 +34,7 @@ App = React.createClass
     menuItems: @props.client._ui.menu?.items or []
     menuOptions: @props.ui?.menuBar or {}
     providerDialog: null
+    downloadDialog: null
     dirty: false
 
   componentWillMount: ->
@@ -58,6 +60,8 @@ App = React.createClass
       switch event.type
         when 'showProviderDialog'
           @setState providerDialog: event.data
+        when 'showDownloadDialog'
+          @setState downloadDialog: event.data
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
@@ -65,23 +69,29 @@ App = React.createClass
           @state.menuOptions.info = event.data
           @setState menuOptions: @state.menuOptions
 
-  closeProviderDialog: ->
-    @setState providerDialog: null
+  closeDialogs: ->
+    @setState
+      providerDialog: null
+      downloadDialog: null
+
+  renderDialogs: ->
+    if @state.providerDialog
+      (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
+    else if @state.downloadDialog
+      (DownloadDialog {filename: @state.downloadDialog.filename, content: @state.downloadDialog.content, close: @closeDialogs})
 
   render: ->
     if @props.usingIframe
       (div {className: 'app'},
         (MenuBar {filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
         (InnerApp {app: @props.app})
-        if @state.providerDialog
-          (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
+        @renderDialogs()
+      )
+    else if @state.providerDialog or @state.downloadDialog
+      (div {className: 'app'},
+        @renderDialogs()
       )
     else
-      if @state.providerDialog
-        (div {className: 'app'},
-          (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
-        )
-      else
-        null
+      null
 
 module.exports = App

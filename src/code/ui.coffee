@@ -7,7 +7,7 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'save', 'saveFileAsDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'save', 'saveFileAsDialog', 'downloadDialog']
 
   constructor: (options, client) ->
     setAction = (action) ->
@@ -26,6 +26,8 @@ class CloudFileManagerUIMenu
             name: name or tr "~MENU.SAVE"
           when 'saveFileAsDialog'
             name: name or tr "~MENU.SAVE_AS"
+          when 'downloadDialog'
+            name: name or tr "~MENU.DOWNLOAD"
           else
             name: "Unknown item: #{item}"
         menuItem.action = setAction item
@@ -68,6 +70,12 @@ class CloudFileManagerUI
 
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
+
+  downloadDialog: (filename, content, callback) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showDownloadDialog',
+      filename: filename
+      content: content
+      callback: callback
 
   _showProviderDialog: (action, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
