@@ -1,6 +1,7 @@
 MenuBar = React.createFactory require './menu-bar-view'
 ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-view'
 DownloadDialog = React.createFactory require './download-dialog-view'
+RenameDialog = React.createFactory require './rename-dialog-view'
 
 tr = require '../utils/translate'
 
@@ -35,6 +36,7 @@ App = React.createClass
     menuOptions: @props.ui?.menuBar or {}
     providerDialog: null
     downloadDialog: null
+    renameDialog: null
     dirty: false
 
   componentWillMount: ->
@@ -62,6 +64,8 @@ App = React.createClass
           @setState providerDialog: event.data
         when 'showDownloadDialog'
           @setState downloadDialog: event.data
+        when 'showRenameDialog'
+          @setState renameDialog: event.data
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
@@ -73,12 +77,15 @@ App = React.createClass
     @setState
       providerDialog: null
       downloadDialog: null
+      renameDialog: null
 
   renderDialogs: ->
     if @state.providerDialog
       (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
     else if @state.downloadDialog
       (DownloadDialog {filename: @state.downloadDialog.filename, content: @state.downloadDialog.content, close: @closeDialogs})
+    else if @state.renameDialog
+      (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
 
   render: ->
     if @props.usingIframe

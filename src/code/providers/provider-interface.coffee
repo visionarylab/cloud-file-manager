@@ -52,8 +52,11 @@ class ProviderInterface
   remove: (metadata, callback) ->
     @_notImplemented 'remove'
 
+  rename: (metadata, newName, callback) ->
+    @_notImplemented 'rename'
+
   _notImplemented: (methodName) ->
-    throw new Error("#{methodName} not implemented for #{@name} provider")
+    alert "#{methodName} not implemented for #{@name} provider"
 
 module.exports =
   CloudFile: CloudFile

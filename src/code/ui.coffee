@@ -7,11 +7,17 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'save', 'saveFileAsDialog', 'downloadDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'save', 'saveFileAsDialog', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
     setAction = (action) ->
       client[action]?.bind(client) or (-> alert "No #{action} action is available in the client")
+
+    setEnabled = (action) ->
+      if action is 'renameDialog'
+        -> client.state.metadata?.provider.can 'rename'
+      else
+        true
 
     @items = []
     for item in options.menu
@@ -28,14 +34,20 @@ class CloudFileManagerUIMenu
             name: name or tr "~MENU.SAVE_AS"
           when 'downloadDialog'
             name: name or tr "~MENU.DOWNLOAD"
+          when 'renameDialog'
+            name: name or tr "~MENU.RENAME"
           else
             name: "Unknown item: #{item}"
+        menuItem.enabled = setEnabled item
         menuItem.action = setAction item
         menuItem
       else
-        # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or it is assugmed it is a function
+        # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
         if isString item.action
+          item.enabled = setEnabled item.action
           item.action = setAction item.action
+        else
+          item.enabled or= true
         item
       if menuItem
         @items.push menuItem
@@ -75,6 +87,11 @@ class CloudFileManagerUI
     @listenerCallback new CloudFileManagerUIEvent 'showDownloadDialog',
       filename: filename
       content: content
+      callback: callback
+
+  renameDialog: (filename, callback) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showRenameDialog',
+      filename: filename
       callback: callback
 
   _showProviderDialog: (action, title, callback) ->

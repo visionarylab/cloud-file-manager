@@ -46,6 +46,7 @@ class DocumentStoreProvider extends ProviderInterface
         load: true
         list: true
         remove: true
+        rename: true
 
     @user = null
 

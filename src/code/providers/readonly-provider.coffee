@@ -15,6 +15,7 @@ class ReadOnlyProvider extends ProviderInterface
         load: true
         list: true
         remove: false
+        rename: false
     @tree = null
 
   @Name: 'readOnly'

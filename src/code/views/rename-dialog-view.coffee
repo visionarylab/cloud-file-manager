@@ -6,7 +6,7 @@ tr = require '../utils/translate'
 
 module.exports = React.createClass
 
-  displayName: 'DownloadDialogView'
+  displayName: 'RenameDialogView'
 
   getInitialState: ->
     filename: @trim(@props.filename or '')
@@ -21,9 +21,9 @@ module.exports = React.createClass
   trim: (s) ->
     s.replace /^\s+|\s+$/, ''
 
-  download: (e) ->
+  rename: (e) ->
     if @state.filename.length > 0
-      e.target.setAttribute 'href', "data:text/plain,#{encodeURIComponent(@props.content)}"
+      @props.callback? @state.filename
       @props.close()
     else
       e.preventDefault()
@@ -31,11 +31,11 @@ module.exports = React.createClass
 
   render: ->
     (ModalDialog {title: (tr '~DIALOG.DOWNLOAD'), close: @props.close},
-      (div {className: 'download-dialog'},
+      (div {className: 'rename-dialog'},
         (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
         (div {className: 'buttons'},
-          (a {href: '#', className: (if @state.filename.length is 0 then 'disabled' else ''), download: @state.filename, onClick: @download}, tr '~DOWNLOAD_DIALOG.DOWNLOAD')
-          (button {onClick: @props.close}, tr '~DOWNLOAD_DIALOG.CANCEL')
+          (button {className: (if @state.filename.length is 0 then 'disabled' else ''), onClick: @rename}, tr '~RENAME_DIALOG.RENAME')
+          (button {onClick: @props.close}, tr '~RENAME_DIALOG.CANCEL')
         )
       )
     )

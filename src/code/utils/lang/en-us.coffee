@@ -6,11 +6,13 @@ module.exports =
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
   "~MENU.DOWNLOAD": "Download"
+  "~MENU.RENAME": "Rename"
 
   "~DIALOG.SAVE": "Save"
   "~DIALOG.SAVE_AS": "Save As ..."
   "~DIALOG.OPEN": "Open"
   "~DIALOG.DOWNLOAD": "Download"
+  "~DIALOG.RENAME": "Rename"
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
@@ -24,5 +26,11 @@ module.exports =
   "~FILE_DIALOG.REMOVE": "Delete"
   "~FILE_DIALOG.REMOVE_CONFIRM": "Are you sure you want to delete %{filename}?"
   "~FILE_DIALOG.LOADING": "Loading..."
+
+  "~DOWNLOAD_DIALOG.DOWNLOAD": "Download"
+  "~DOWNLOAD_DIALOG.CANCEL": "Cancel"
+
+  "~RENAME_DIALOG.RENAME": "Rename"
+  "~RENAME_DIALOG.CANCEL": "Cancel"
 
   "~CONFIRM.UNSAVED_CHANGES": "You have unsaved changes.  Are you sure you want a new file?"

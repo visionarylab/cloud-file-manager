@@ -8,7 +8,16 @@ DropdownItem = React.createFactory React.createClass
     @props.select @props.item
 
   render: ->
-    className = "menuItem #{if @props.isActionMenu and not @props.item.action then 'disabled' else ''}"
+    enabled = if @props.item.hasOwnProperty 'enabled'
+      if typeof @props.item.enabled is 'function'
+        @props.item.enabled()
+      else
+        @props.item.enabled
+    else
+      true
+    disabled = not enabled or (@props.isActionMenu and not @props.item.action)
+
+    className = "menuItem #{if disabled then 'disabled' else ''}"
     name = @props.item.name or @props.item
     (li {className: className, onClick: @clicked }, name)
 

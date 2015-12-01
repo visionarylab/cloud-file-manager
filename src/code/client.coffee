@@ -129,6 +129,17 @@ class CloudFileManagerClient
     @_event 'getContent', {}, (content) =>
       @_ui.downloadDialog @state.metadata?.name, content, callback
 
+  renameDialog: (callback = null) ->
+    if @state.metadata
+      @_ui.renameDialog @state.metadata.name, (newName) =>
+        if newName isnt @state.metadata.name
+          @state.metadata.provider.rename @state.metadata, newName, (metadata, err) =>
+            return @_error(err) if err
+            @_fileChanged 'renamedFile', @state.content, metadata
+            callback? filename
+    else
+      callback? 'No currently active file'
+
   dirty: (isDirty = true)->
     @_setState
       dirty: isDirty
