@@ -1,4 +1,4 @@
-{div} = React.DOM
+{div, span} = React.DOM
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -40,10 +40,12 @@ class GoogleDriveProvider extends ProviderInterface
         load: true
         list: true
         remove: true
+
     @authToken = null
+    @user = null
     @clientId = @options.clientId
     if not @clientId
-      throw new Error 'Missing required clientId in googlDrive provider options'
+      throw new Error 'Missing required clientId in googleDrive provider options'
     @mimeType = @options.mimeType or "text/plain"
     @_loadGAPI()
 
@@ -54,23 +56,36 @@ class GoogleDriveProvider extends ProviderInterface
   @SHOW_POPUP = false
 
   authorized: (@authCallback) ->
-    if @authToken
-      @authCallback true
+    if @authCallback
+      if @authToken
+        @authCallback true
+      else
+        @authorize GoogleDriveProvider.IMMEDIATE
     else
-      @authorize GoogleDriveProvider.IMMEDIATE
+      @authToken isnt null
 
   authorize: (immediate) ->
     @_loadedGAPI =>
       args =
         client_id: @clientId
-        scope: 'https://www.googleapis.com/auth/drive'
+        scope: ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/userinfo.profile']
         immediate: immediate
       gapi.auth.authorize args, (authToken) =>
         @authToken = if authToken and not authToken.error then authToken else null
+        @user = null
+        if @authToken
+          gapi.client.oauth2.userinfo.get().execute (user) =>
+            @user = user
         @authCallback @authToken isnt null
 
   renderAuthorizationDialog: ->
     (GoogleDriveAuthorizationDialog {provider: @})
+
+  renderUser: ->
+    if @user
+      (span {}, (span {className: 'gdrive-icon'}), @user.name)
+    else
+      null
 
   save:  (content, metadata, callback) ->
     @_loadedGAPI =>
@@ -132,7 +147,8 @@ class GoogleDriveProvider extends ProviderInterface
     check = ->
       if window._LoadedGAPI
         gapi.client.load 'drive', 'v2', ->
-          callback.call self
+          gapi.client.load 'oauth2', 'v2', ->
+            callback.call self
       else
         setTimeout check, 10
     setTimeout check, 10

@@ -19,7 +19,6 @@ class ProviderInterface
 
   constructor: (options) ->
     {@name, @displayName, @capabilities} = options
-    @user = null
 
   @Available: -> true
 
@@ -27,9 +26,16 @@ class ProviderInterface
     @capabilities[capability]
 
   authorized: (callback) ->
-    callback true
+    if callback
+      callback true
+    else
+      true
 
-  authorizationDialog: AuthorizationNotImplementedDialog
+  renderAuthorizationDialog: ->
+    (AuthorizationNotImplementedDialog {provider: @})
+
+  renderUser: ->
+    null
 
   dialog: (callback) ->
     @_notImplemented 'dialog'

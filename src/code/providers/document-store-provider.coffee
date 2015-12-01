@@ -47,10 +47,18 @@ class DocumentStoreProvider extends ProviderInterface
         list: true
         remove: true
 
+    @user = null
+
   @Name: 'documentStore'
 
   authorized: (@authCallback) ->
-    @_checkLogin()
+    if @authCallback
+      if @user
+        @authCallback true
+      else
+        @_checkLogin()
+    else
+      @user isnt null
 
   authorize: ->
     @_showLoginWindow()
@@ -59,8 +67,8 @@ class DocumentStoreProvider extends ProviderInterface
     if @_docStoreLoaded
       @docStoreLoadedCallback()
 
-  _loginSuccessful: (data) ->
-    if @_loginWindow then @_loginWindow.close()
+  _loginSuccessful: (@user) ->
+    @_loginWindow?.close()
     @authCallback true
 
   _checkLogin: ->
@@ -124,6 +132,12 @@ class DocumentStoreProvider extends ProviderInterface
 
   renderAuthorizationDialog: ->
     (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
+
+  renderUser: ->
+    if @user
+      @user.name
+    else
+      null
 
   list: (metadata, callback) ->
     $.ajax

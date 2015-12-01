@@ -24,8 +24,12 @@ App = React.createClass
   getFilename: ->
     if @props.client.state.metadata?.hasOwnProperty('name') then @props.client.state.metadata.name else (tr "~MENUBAR.UNTITLE_DOCUMENT")
 
+  getProvider: ->
+    @props.client.state.metadata?.provider
+
   getInitialState: ->
     filename: @getFilename()
+    provider: @getProvider()
     menuItems: @props.client._ui.menu?.items or []
     menuOptions: @props.ui?.menuBar or {}
     providerDialog: null
@@ -43,6 +47,7 @@ App = React.createClass
         null
       @setState
         filename: @getFilename()
+        provider: @getProvider()
         fileStatus: fileStatus
 
       switch event.type
@@ -66,7 +71,7 @@ App = React.createClass
   render: ->
     if @props.usingIframe
       (div {className: 'app'},
-        (MenuBar {filename: @state.filename, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
+        (MenuBar {filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
         (InnerApp {app: @props.app})
         if @state.providerDialog
           (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeProviderDialog})
