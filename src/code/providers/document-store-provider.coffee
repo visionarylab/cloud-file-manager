@@ -161,7 +161,6 @@ class DocumentStoreProvider extends ProviderInterface
 
   load: (metadata, callback) ->
     $.ajax
-      dataType: 'json'
       url: loadDocumentUrl
       data:
         recordid: metadata.providerData.id
@@ -169,7 +168,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        callback null, data
+        callback null, JSON.stringify data
       error: ->
         callback "Unable to load "+metadata.name
 
@@ -219,11 +218,12 @@ class DocumentStoreProvider extends ProviderInterface
   # The document server requires the content to be JSON, and it must have
   # certain pre-defined keys in order to be listed when we query the list
   _validateContent: (content) ->
-    if typeof content isnt "object"
-      try
-        content = JSON.parse content
-      catch
-        content = {content: content}
+    # first convert to an object to easily add properties
+    try
+      content = JSON.parse content
+    catch
+      content = {content: content}
+
     content.appName     ?= @options.appName
     content.appVersion  ?= @options.appVersion
     content.appBuildNum ?= @options.appBuildNum

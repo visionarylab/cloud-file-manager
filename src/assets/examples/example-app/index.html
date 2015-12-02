@@ -95,10 +95,7 @@
               break;
 
             case 'openedFile':
-              content = event.data.content
-              if(typeof content === "object")
-                content = JSON.stringify(content)
-              setTextValue(content);
+              setTextValue(event.data.content);
               focus();
               break;
           }
