@@ -1,12 +1,13 @@
 {div, button, span} = React.DOM
 
 documentStore = "http://document-store.herokuapp.com"
-authorizeUrl     = "#{documentStore}/user/authenticate"
-checkLoginUrl    = "#{documentStore}/user/info"
-listUrl          = "#{documentStore}/document/all"
-loadDocumentUrl      = "#{documentStore}/document/open"
-saveDocumentUrl      = "#{documentStore}/document/save"
-removeDocumentUrl    = "#{documentStore}/document/delete"
+authorizeUrl      = "#{documentStore}/user/authenticate"
+checkLoginUrl     = "#{documentStore}/user/info"
+listUrl           = "#{documentStore}/document/all"
+loadDocumentUrl   = "#{documentStore}/document/open"
+saveDocumentUrl   = "#{documentStore}/document/save"
+removeDocumentUrl = "#{documentStore}/document/delete"
+renameDocumentUrl = "#{documentStore}/document/rename"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -207,6 +208,20 @@ class DocumentStoreProvider extends ProviderInterface
         callback null, data
       error: ->
         callback "Unable to load "+metadata.name
+
+  rename: (metadata, newName, callback) ->
+    $.ajax
+      url: renameDocumentUrl
+      data:
+        recordid: metadata.providerData.id
+        newRecordname: newName
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        callback null, metadata
+      error: ->
+        callback "Unable to rename "+metadata.name
 
   _addParams: (url, params) ->
     return url unless params
