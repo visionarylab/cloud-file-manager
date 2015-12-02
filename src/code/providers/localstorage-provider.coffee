@@ -61,6 +61,16 @@ class LocalStorageProvider extends ProviderInterface
     catch
       callback? 'Unable to delete'
 
+  rename: (metadata, newName, callback) ->
+    try
+      content = window.localStorage.getItem @_getKey metadata.name
+      window.localStorage.setItem @_getKey(newName), content
+      window.localStorage.removeItem @_getKey(metadata.name)
+      metadata.name = newName
+      callback null, metadata
+    catch
+      callback? 'Unable to rename'
+
   _getKey: (name = '') ->
     "cfm::#{name}"
 

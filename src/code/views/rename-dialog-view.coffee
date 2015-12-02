@@ -9,20 +9,26 @@ module.exports = React.createClass
   displayName: 'RenameDialogView'
 
   getInitialState: ->
-    filename: @trim(@props.filename or '')
+    filename = @props.filename or ''
+    state =
+      filename: filename
+      trimmedFilename: @trim filename
 
   componentDidMount: ->
     @filename = React.findDOMNode @refs.filename
     @filename.focus()
 
   updateFilename: ->
-    @setState filename: @trim(@filename.value)
+    filename = @filename.value
+    @setState
+      filename: filename
+      trimmedFilename: @trim filename
 
   trim: (s) ->
     s.replace /^\s+|\s+$/, ''
 
   rename: (e) ->
-    if @state.filename.length > 0
+    if @state.trimmedFilename.length > 0
       @props.callback? @state.filename
       @props.close()
     else
@@ -34,7 +40,7 @@ module.exports = React.createClass
       (div {className: 'rename-dialog'},
         (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
         (div {className: 'buttons'},
-          (button {className: (if @state.filename.length is 0 then 'disabled' else ''), onClick: @rename}, tr '~RENAME_DIALOG.RENAME')
+          (button {className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), onClick: @rename}, tr '~RENAME_DIALOG.RENAME')
           (button {onClick: @props.close}, tr '~RENAME_DIALOG.CANCEL')
         )
       )

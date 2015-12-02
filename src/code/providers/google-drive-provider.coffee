@@ -132,6 +132,19 @@ class GoogleDriveProvider extends ProviderInterface
       request.execute (result) ->
         callback? result?.error or null
 
+  rename: (metadata, newName, callback) ->
+    @_loadedGAPI ->
+      request = gapi.client.drive.files.patch
+        fileId: metadata.providerData.id
+        resource:
+          title: newName
+      request.execute (result) ->
+        if result?.error
+          callback? result.error
+        else
+          metadata.name = newName
+          callback null, metadata
+
   _loadGAPI: ->
     if not window._LoadingGAPI
       window._LoadingGAPI = true
@@ -142,15 +155,19 @@ class GoogleDriveProvider extends ProviderInterface
       document.head.appendChild script
 
   _loadedGAPI: (callback) ->
-    self = @
-    check = ->
-      if window._LoadedGAPI
-        gapi.client.load 'drive', 'v2', ->
-          gapi.client.load 'oauth2', 'v2', ->
-            callback.call self
-      else
-        setTimeout check, 10
-    setTimeout check, 10
+    if window._LoadedGAPIClients
+      callback()
+    else
+      self = @
+      check = ->
+        if window._LoadedGAPI
+          gapi.client.load 'drive', 'v2', ->
+            gapi.client.load 'oauth2', 'v2', ->
+              window._LoadedGAPIClients = true
+              callback.call self
+        else
+          setTimeout check, 10
+      setTimeout check, 10
 
   _downloadFromUrl: (url, token, callback) ->
     xhr = new XMLHttpRequest()

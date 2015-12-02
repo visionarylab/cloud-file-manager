@@ -9,20 +9,26 @@ module.exports = React.createClass
   displayName: 'DownloadDialogView'
 
   getInitialState: ->
-    filename: @trim(@props.filename or '')
+    filename = @props.filename or ''
+    state =
+      filename: filename
+      trimmedFilename: @trim filename
 
   componentDidMount: ->
     @filename = React.findDOMNode @refs.filename
     @filename.focus()
 
   updateFilename: ->
-    @setState filename: @trim(@filename.value)
+    filename = @filename.value
+    @setState
+      filename: filename
+      trimmedFilename: @trim filename
 
   trim: (s) ->
     s.replace /^\s+|\s+$/, ''
 
   download: (e) ->
-    if @state.filename.length > 0
+    if @state.trimmedFilename.length > 0
       e.target.setAttribute 'href', "data:text/plain,#{encodeURIComponent(@props.content)}"
       @props.close()
     else
@@ -34,7 +40,7 @@ module.exports = React.createClass
       (div {className: 'download-dialog'},
         (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
         (div {className: 'buttons'},
-          (a {href: '#', className: (if @state.filename.length is 0 then 'disabled' else ''), download: @state.filename, onClick: @download}, tr '~DOWNLOAD_DIALOG.DOWNLOAD')
+          (a {href: '#', className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), download: @state.trimmedFilename, onClick: @download}, tr '~DOWNLOAD_DIALOG.DOWNLOAD')
           (button {onClick: @props.close}, tr '~DOWNLOAD_DIALOG.CANCEL')
         )
       )

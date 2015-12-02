@@ -133,9 +133,11 @@ class CloudFileManagerClient
     if @state.metadata
       @_ui.renameDialog @state.metadata.name, (newName) =>
         if newName isnt @state.metadata.name
-          @state.metadata.provider.rename @state.metadata, newName, (metadata, err) =>
+          @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
             return @_error(err) if err
-            @_fileChanged 'renamedFile', @state.content, metadata
+            @_setState
+              metadata: metadata
+            @_event 'renamedFile', {metadata: metadata}
             callback? filename
     else
       callback? 'No currently active file'
