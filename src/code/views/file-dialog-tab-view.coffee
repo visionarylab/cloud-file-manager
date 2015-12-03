@@ -93,7 +93,7 @@ FileDialogTab = React.createClass
     if @state.metadata
       # ensure the metadata provider is the currently-showing tab
       @state.metadata.provider = @props.provider
-      @props.dialog.callback @state.metadata
+      @props.dialog.callback? @state.metadata
       @props.close()
 
   remove: ->

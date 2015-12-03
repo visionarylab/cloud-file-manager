@@ -128,6 +128,18 @@ class CloudFileManagerClient
     @_ui.saveFileAsDialog (metadata) =>
       @_dialogSave content, metadata, callback
 
+  saveCopyDialog: (content = null, callback = null) ->
+    saveCopy = (content, metadata) =>
+      metadata.provider.save content, metadata, (err) =>
+        return @_error(err) if err
+        callback? content, metadata
+    @_ui.saveCopyDialog (metadata) =>
+      if content is null
+        @_event 'getContent', {}, (content) ->
+          saveCopy content, metadata
+      else
+        saveCopy content, metadata
+
   downloadDialog: (callback = null) ->
     @_event 'getContent', {}, (content) =>
       @_ui.downloadDialog @state.metadata?.name, content, callback

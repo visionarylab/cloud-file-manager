@@ -6,11 +6,13 @@ module.exports =
   "~MENU.REOPEN": "Reopen"
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
+  "~MENU.SAVE_COPY": "Save A Copy ..."
   "~MENU.DOWNLOAD": "Download"
   "~MENU.RENAME": "Rename"
 
   "~DIALOG.SAVE": "Save"
   "~DIALOG.SAVE_AS": "Save As ..."
+  "~DIALOG.SAVE_COPY": "Save A Copy ..."
   "~DIALOG.OPEN": "Open"
   "~DIALOG.DOWNLOAD": "Download"
   "~DIALOG.RENAME": "Rename"

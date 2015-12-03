@@ -8,6 +8,7 @@ class CloudFileManagerUIEvent
 class CloudFileManagerUIMenu
 
   @DefaultMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'save', 'saveFileAsDialog', 'downloadDialog', 'renameDialog']
+  @AutoSaveMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'saveCopyDialog', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
     setAction = (action) ->
@@ -19,6 +20,8 @@ class CloudFileManagerUIMenu
           -> client.state.metadata?.provider.can 'load'
         when 'renameDialog'
           -> client.state.metadata?.provider.can 'rename'
+        when 'saveCopyDialog'
+          -> client.state.metadata?
         else
           true
 
@@ -28,6 +31,7 @@ class CloudFileManagerUIMenu
       reopenDialog: tr "~MENU.REOPEN"
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
+      saveCopyDialog: tr "~MENU.SAVE_COPY"
       downloadDialog: tr "~MENU.DOWNLOAD"
       renameDialog: tr "~MENU.RENAME"
 
@@ -77,6 +81,9 @@ class CloudFileManagerUI
 
   saveFileAsDialog: (callback) ->
     @_showProviderDialog 'saveFileAs', (tr '~DIALOG.SAVE_AS'), callback
+
+  saveCopyDialog: (callback) ->
+    @_showProviderDialog 'saveFileCopy', (tr '~DIALOG.SAVE_COPY'), callback
 
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
