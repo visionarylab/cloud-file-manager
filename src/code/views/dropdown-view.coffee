@@ -15,11 +15,15 @@ DropdownItem = React.createFactory React.createClass
         @props.item.enabled
     else
       true
-    disabled = not enabled or (@props.isActionMenu and not @props.item.action)
 
-    className = "menuItem #{if disabled then 'disabled' else ''}"
-    name = @props.item.name or @props.item
-    (li {className: className, onClick: @clicked }, name)
+    classes = ['menuItem']
+    if @props.item.separator
+      classes.push 'separator'
+      (li {className: classes.join(' ')}, '')
+    else
+      classes.push 'disabled' if not enabled or (@props.isActionMenu and not @props.item.action)
+      name = @props.item.name or @props.item
+      (li {className: classes.join(' '), onClick: @clicked }, name)
 
 DropDown = React.createClass
 
@@ -65,7 +69,7 @@ DropDown = React.createClass
       if @props.items?.length > 0
         (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
           (ul {},
-            (DropdownItem {key: item.name or item, item: item, select: @select, isActionMenu: @props.isActionMenu}) for item in @props.items
+            (DropdownItem {key: index, item: item, select: @select, isActionMenu: @props.isActionMenu}) for item, index in @props.items
           )
         )
     )
