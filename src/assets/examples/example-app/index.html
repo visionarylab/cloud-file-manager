@@ -12,10 +12,8 @@
         margin-top: 10px;
       }
     </style>
-    <script src="jiff_bundled.js"></script>
     <script type="text/javascript">
-      var cfmClient,
-          lastSavedContent;
+      var cfmClient;
 
       function newFile() {
         cfmClient && cfmClient.newFileDialog();
@@ -53,21 +51,6 @@
       function focus() {
         document.getElementById("text").focus();
       }
-
-      function setSavedContent(content) {
-        lastSavedContent = content;
-      }
-
-      function getPatchValue() {
-        try {
-          var oldDoc = JSON.parse(lastSavedContent),
-              newDoc = JSON.parse(getTextValue()),
-              diff   = jiff.diff(oldDoc, newDoc);
-          return JSON.stringify(diff);
-        } catch (e) {
-          return null;
-        }
-      }
     </script>
   </head>
   <body>
@@ -103,27 +86,17 @@
               break;
 
             case 'getContent':
-              if (event.data.patchable && (patch = getPatchValue())) {
-                event.callback(patch, true);
-              } else {
-                event.callback(getTextValue());
-              }
+              event.callback(getTextValue());
               break;
 
             case 'newedFile':
               setTextValue('');
-              setSavedContent(null);
               focus();
               break;
 
             case 'openedFile':
               setTextValue(event.data.content);
-              setSavedContent(event.data.content);
               focus();
-              break;
-
-            case 'savedFile':
-              setSavedContent(event.data.content);
               break;
           }
         });
