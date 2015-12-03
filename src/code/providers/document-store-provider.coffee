@@ -12,6 +12,7 @@ renameDocumentUrl = "#{documentStore}/document/rename"
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
+jiff = require 'jiff'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudMetadata = (require './provider-interface').CloudMetadata
@@ -54,6 +55,8 @@ class DocumentStoreProvider extends ProviderInterface
     @user = null
 
   @Name: 'documentStore'
+
+  previouslySavedContent: null
 
   authorized: (@authCallback) ->
     if @authCallback
@@ -171,6 +174,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
+        @previouslySavedContent = data
         callback null, JSON.stringify data
       error: ->
         callback "Unable to load "+metadata.name
@@ -180,19 +184,29 @@ class DocumentStoreProvider extends ProviderInterface
 
     params = {}
     if metadata.providerData.id then params.recordid = metadata.providerData.id
-    if metadata.name then params.recordname = metadata.name
 
-    url = @_addParams(saveDocumentUrl, params)
+    # See if we can patch
+    if metadata.overwritable and @previouslySavedContent and
+        diff = @_createDiff @previouslySavedContent, content
+      sendContent = diff
+      url = patchDocumentUrl
+    else
+      if metadata.name then params.recordname = metadata.name
+      url = saveDocumentUrl
+      sendContent = content
+
+    url = @_addParams(url, params)
 
     $.ajax
       dataType: 'json'
       method: 'POST'
       url: url
-      data: content
+      data: sendContent
       context: @
       xhrFields:
         withCredentials: true
       success: (data) ->
+        @previouslySavedContent = content
         if data.id then metadata.providerData.id = data.id
         callback null, data
       error: ->
@@ -268,5 +282,11 @@ class DocumentStoreProvider extends ProviderInterface
 
     return JSON.stringify content
 
+  _createDiff: (json1, json2) ->
+    try
+      diff = jiff.diff(JSON.parse(json1), JSON.parse(json2))
+      return JSON.stringify diff
+    catch
+      return null
 
 module.exports = DocumentStoreProvider
