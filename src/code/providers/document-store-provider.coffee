@@ -6,6 +6,7 @@ checkLoginUrl     = "#{documentStore}/user/info"
 listUrl           = "#{documentStore}/document/all"
 loadDocumentUrl   = "#{documentStore}/document/open"
 saveDocumentUrl   = "#{documentStore}/document/save"
+patchDocumentUrl  = "#{documentStore}/document/patch"
 removeDocumentUrl = "#{documentStore}/document/delete"
 renameDocumentUrl = "#{documentStore}/document/rename"
 
