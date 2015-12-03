@@ -2,6 +2,8 @@ tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
+CloudContent = (require './provider-interface').CloudContent
+CloudRelatedContent = (require './provider-interface').CloudRelatedContent
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 class ReadOnlyProvider extends ProviderInterface
@@ -83,8 +85,9 @@ class ReadOnlyProvider extends ProviderInterface
         children: null
       if type is CloudMetadata.Folder
         metadata.children = _convertJSONToMetadataTree json[filename], pathPrefix + filename + '/'
+      content = new CloudContent json[filename]
       tree[filename] =
-        content: json[filename]
+        content: content
         metadata: metadata
     tree
 

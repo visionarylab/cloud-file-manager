@@ -15,6 +15,8 @@ isString = require '../utils/is-string'
 jiff = require 'jiff'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
+CloudContent = (require './provider-interface').CloudContent
+CloudRelatedContent = (require './provider-interface').CloudRelatedContent
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
@@ -174,12 +176,12 @@ class DocumentStoreProvider extends ProviderInterface
         withCredentials: true
       success: (data) ->
         if @options.patch then @previouslySavedContent = data
-        callback null, JSON.stringify data
+        callback null, new CloudContent data.content
       error: ->
         callback "Unable to load "+metadata.name
 
   save: (content, metadata, callback) ->
-    content = @_validateContent content
+    content = @_wrapContent content.getContent()
 
     params = {}
     if metadata.providerData.id then params.recordid = metadata.providerData.id
@@ -248,18 +250,17 @@ class DocumentStoreProvider extends ProviderInterface
 
   # The document server requires the content to be JSON, and it must have
   # certain pre-defined keys in order to be listed when we query the list
-  _validateContent: (content) ->
+  _wrapContent: (content) ->
     # first convert to an object to easily add properties
-    try
-      content = JSON.parse content
-    catch
-      content = {content: content}
-
-    content.appName     ?= @options.appName
-    content.appVersion  ?= @options.appVersion
-    content.appBuildNum ?= @options.appBuildNum
-
-    return JSON.stringify content
+    if isString content
+      try
+        content = JSON.parse content
+      catch
+    JSON.stringify
+      appName: @options.appName
+      appVersion: @options.appVersion
+      appBuildNum: @options.appBuildNum
+      content: content
 
   _createDiff: (json1, json2) ->
     try

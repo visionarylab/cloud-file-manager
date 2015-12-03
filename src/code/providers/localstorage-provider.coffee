@@ -1,6 +1,8 @@
 tr = require '../utils/translate'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
+CloudContent = (require './provider-interface').CloudContent
+CloudRelatedContent = (require './provider-interface').CloudRelatedContent
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 class LocalStorageProvider extends ProviderInterface
@@ -28,7 +30,7 @@ class LocalStorageProvider extends ProviderInterface
 
   save: (content, metadata, callback) ->
     try
-      window.localStorage.setItem @_getKey(metadata.name), content
+      window.localStorage.setItem @_getKey(metadata.name), content.getText()
       callback? null
     catch
       callback? 'Unable to save'
@@ -36,7 +38,7 @@ class LocalStorageProvider extends ProviderInterface
   load: (metadata, callback) ->
     try
       content = window.localStorage.getItem @_getKey metadata.name
-      callback null, content
+      callback null, new CloudContent content
     catch
       callback 'Unable to load'
 

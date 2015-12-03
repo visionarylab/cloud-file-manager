@@ -16,10 +16,10 @@
       }
     </style>
     <script type="text/javascript">
-      var cfmClient;
+      var cfmClient, cfmContent;
 
       function newFile() {
-        cfmClient && cfmClient.newFile();
+        cfmClient && cfmClient.newFileDialog();
       }
 
       function openFile() {
@@ -28,23 +28,34 @@
       }
 
       function saveFile() {
-        cfmClient && cfmClient.saveContent(getTextValue());
+        cfmClient && cfmClient.save();
       }
 
       function saveFileAs() {
-        cfmClient && cfmClient.saveFileAsDialog(getTextValue());
+        cfmClient && cfmClient.saveFileAsDialog(getContent());
       }
 
-      function getTextValue() {
-        return document.getElementById("text").value;
+      function getContent() {
+        cfmContent.setText(document.getElementById("text").value);
+        return cfmContent;
       }
 
-      function setTextValue(text) {
-        document.getElementById("text").value = text;
+      function setContent(_cfmContent) {
+        cfmContent = _cfmContent;
+        document.getElementById("text").value = cfmContent.getText();
       }
 
-      function setClient(client) {
+      function connected(client) {
         cfmClient = client;
+        cfmContent = client.createTextContent(document.getElementById("text").value);
+      }
+
+      function changed() {
+        cfmClient.dirty();
+      }
+
+      function focus() {
+        document.getElementById("text").focus();
       }
     </script>
   </head>
@@ -94,20 +105,18 @@
         console.log(event);
         switch (event.type) {
           case 'connected':
-            setClient(event.data.client);
+            connected(event.data.client);
             break;
 
-          case 'getContent':
-            event.callback(getTextValue());
-            break;
+            case 'getContent':
+              event.callback(getContent());
+              break;
 
-          case 'newedFile':
-            setTextValue('');
-            break;
-
-          case 'openedFile':
-            setTextValue(event.data.content);
-            break;
+            case 'newedFile':
+            case 'openedFile':
+              setContent(event.data.content);
+              focus();
+              break;
         }
       });
 

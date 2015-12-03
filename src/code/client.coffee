@@ -8,6 +8,8 @@ ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
 
+CloudContent = (require './providers/provider-interface').CloudContent
+
 class CloudFileManagerClientEvent
 
   constructor: (@type, @data = {}, @callback = null, @state = {}) ->
@@ -51,8 +53,8 @@ class CloudFileManagerClient
     @_ui.init @appOptions.ui
 
     # check for autosave
-    if options.autoSaveInterval
-      @autoSave options.autoSaveInterval
+    if @appOptions.autoSaveInterval
+      @autoSave @appOptions.autoSaveInterval
 
   setProviderOptions: (name, newOptions) ->
     for provider in @state.availableProviders
@@ -75,9 +77,23 @@ class CloudFileManagerClient
   setMenuBarInfo: (info) ->
     @_ui.setMenuBarInfo info
 
+  getEmptyContent: ->
+    new CloudContent()
+
+  createContent: (content) ->
+    new CloudContent content
+  createTextContent: (text) ->
+    content = new CloudContent()
+    content.initText text
+    content
+  createJSONContent: (json) ->
+    content = new CloudContent()
+    content.initJSON json
+    content
+
   newFile: (callback = null) ->
     @_resetState()
-    @_event 'newedFile'
+    @_event 'newedFile', {content: @getEmptyContent()}
 
   newFileDialog: (callback = null) ->
     if @appOptions.ui?.newFileOpensInNewTab

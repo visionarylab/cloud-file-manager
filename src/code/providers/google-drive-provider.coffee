@@ -4,6 +4,8 @@ tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
+CloudContent = (require './provider-interface').CloudContent
+CloudRelatedContent = (require './provider-interface').CloudRelatedContent
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 GoogleDriveAuthorizationDialog = React.createFactory React.createClass
@@ -175,7 +177,7 @@ class GoogleDriveProvider extends ProviderInterface
     if token
       xhr.setRequestHeader 'Authorization', "Bearer #{token.access_token}"
     xhr.onload = ->
-      callback null, xhr.responseText
+      callback null, new CloudContent xhr.responseText
     xhr.onerror = ->
       callback "Unable to download #{url}"
     xhr.send()
@@ -193,7 +195,7 @@ class GoogleDriveProvider extends ProviderInterface
 
     body = [
       "\r\n--#{boundary}\r\nContent-Type: application/json\r\n\r\n#{header}",
-      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content}",
+      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content.getText()}",
       "\r\n--#{boundary}--"
     ].join ''
 
