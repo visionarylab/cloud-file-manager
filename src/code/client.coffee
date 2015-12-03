@@ -97,20 +97,22 @@ class CloudFileManagerClient
       @openFile metadata, callback
 
   save: (callback = null) ->
-    @_event 'getContent', {}, (content) =>
-      @saveContent content, callback
+    patchable = @state.metadata?.overwritable and @state.metadata?.provider.can 'patch'
+    @_event 'getContent', {patchable}, (content, isPatch) =>
+      @saveContent content, isPatch, callback
 
-  saveContent: (content, callback = null) ->
+  saveContent: (content, isPatch, callback = null) ->
     if @state.metadata
-      @saveFile content, @state.metadata, callback
+      @saveFile content, isPatch, @state.metadata, callback
     else
       @saveFileDialog content, callback
 
-  saveFile: (content, metadata, callback = null) ->
-    if metadata?.provider?.can 'save'
+  saveFile: (content, isPatch, metadata, callback = null) ->
+    if isPatch and metadata?.provider?.can(method='patch') or
+       metadata?.provider?.can(method='save')
       @_setState
         saving: metadata
-      metadata.provider.save content, metadata, (err) =>
+      metadata.provider[method] content, metadata, (err) =>
         return @_error(err) if err
         @_fileChanged 'savedFile', content, metadata
         callback? content, metadata
@@ -165,10 +167,10 @@ class CloudFileManagerClient
 
   _dialogSave: (content, metadata, callback) ->
     if content isnt null
-      @saveFile content, metadata, callback
+      @saveFile content, false, metadata, callback
     else
       @_event 'getContent', {}, (content) =>
-        @saveFile content, metadata, callback
+        @saveFile content, false, metadata, callback
 
   _error: (message) ->
     # for now an alert

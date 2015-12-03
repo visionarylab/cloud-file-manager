@@ -6,6 +6,7 @@ checkLoginUrl     = "#{documentStore}/user/info"
 listUrl           = "#{documentStore}/document/all"
 loadDocumentUrl   = "#{documentStore}/document/open"
 saveDocumentUrl   = "#{documentStore}/document/save"
+patchDocumentUrl  = "#{documentStore}/document/patch"
 removeDocumentUrl = "#{documentStore}/document/delete"
 renameDocumentUrl = "#{documentStore}/document/rename"
 
@@ -48,6 +49,7 @@ class DocumentStoreProvider extends ProviderInterface
         list: true
         remove: true
         rename: true
+        patch: true
 
     @user = null
 
@@ -195,6 +197,26 @@ class DocumentStoreProvider extends ProviderInterface
         callback null, data
       error: ->
         callback "Unable to load "+metadata.name
+
+  patch: (content, metadata, callback) ->
+    unless metadata?.overwritable and metadata.providerData.id
+      return @save(content, metadata, callback)
+
+    url = @_addParams(patchDocumentUrl, {recordid: metadata.providerData.id})
+
+    $.ajax
+      dataType: 'json'
+      method: 'POST'
+      url: url
+      data: content
+      context: @
+      xhrFields:
+        withCredentials: true
+      success: (data) ->
+        callback null, data
+      error: ->
+        callback "Unable to load "+metadata.name
+
 
   remove: (metadata, callback) ->
     $.ajax

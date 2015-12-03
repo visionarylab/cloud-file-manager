@@ -55,6 +55,9 @@ class ProviderInterface
   rename: (metadata, newName, callback) ->
     @_notImplemented 'rename'
 
+  patch: (metadata, newName, callback) ->
+    @_notImplemented 'patch'
+
   _notImplemented: (methodName) ->
     alert "#{methodName} not implemented for #{@name} provider"
 
