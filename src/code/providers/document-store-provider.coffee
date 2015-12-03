@@ -251,7 +251,6 @@ class DocumentStoreProvider extends ProviderInterface
   # The document server requires the content to be JSON, and it must have
   # certain pre-defined keys in order to be listed when we query the list
   _wrapContent: (content) ->
-    # first convert to an object to easily add properties
     if isString content
       try
         content = JSON.parse content
