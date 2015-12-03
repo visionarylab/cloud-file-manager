@@ -40,13 +40,13 @@ class CloudContent extends BaseCloudContent
 
   getRelatedContent: (name) ->
     @relatedContent[name]
-  setRelatedContent: (name, relatedContent) ->
-    relatedContent = if relatedContent instanceof CloudRelatedContent
-      relatedContent
-    else
-      new CloudRelatedContent relatedContent, {mainContent: @}
+  initRelatedContent: (name, relatedContent) ->
+    @setRelatedContent name, relatedContent, {dirty: false}
+  setRelatedContent: (name, relatedContent, options = {}) ->
+    if not (relatedContent instanceof CloudRelatedContent)
+      relatedContent = new CloudRelatedContent relatedContent, {mainContent: @}
     @relatedContent[name] = relatedContent
-    @dirtyRelatedContent[name] = true
+    @dirtyRelatedContent[name] = if options.hasOwnProperty('dirty') then options.dirty else true
     relatedContent
 
 class CloudRelatedContent extends BaseCloudContent
