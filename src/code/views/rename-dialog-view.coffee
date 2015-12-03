@@ -36,7 +36,7 @@ module.exports = React.createClass
       @filename.focus()
 
   render: ->
-    (ModalDialog {title: (tr '~DIALOG.DOWNLOAD'), close: @props.close},
+    (ModalDialog {title: (tr '~DIALOG.RENAME'), close: @props.close},
       (div {className: 'rename-dialog'},
         (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
         (div {className: 'buttons'},
