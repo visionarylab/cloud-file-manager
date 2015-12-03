@@ -171,7 +171,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        callback null, JSON.stringify data
+        callback null, data.content
       error: ->
         callback "Unable to load "+metadata.name
 
