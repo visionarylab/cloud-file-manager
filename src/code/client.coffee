@@ -175,6 +175,7 @@ class CloudFileManagerClient
     alert message
 
   _fileChanged: (type, content, metadata) ->
+    metadata.overwritable = true
     @_setState
       content: content
       metadata: metadata
