@@ -54,6 +54,14 @@ class CloudFileManagerClient
     if options.autoSaveInterval
       @autoSave options.autoSaveInterval
 
+  setProviderOptions: (name, newOptions) ->
+    for provider in @state.availableProviders
+      if provider.name is name
+        provider.options ?= {}
+        for key of newOptions
+          provider.options[key] = newOptions[key]
+        break
+
   # single client - used by the client app to register and receive callback events
   connect: (@eventCallback) ->
     @_event 'connected', {client: @}
