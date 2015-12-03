@@ -263,7 +263,9 @@ class DocumentStoreProvider extends ProviderInterface
 
   _createDiff: (json1, json2) ->
     try
-      diff = jiff.diff(JSON.parse(json1), JSON.parse(json2))
+      opts =
+        hash: @options.patchObjectHash if typeof @options.patchObjectHash is "function"
+      diff = jiff.diff(JSON.parse(json1), JSON.parse(json2), opts)
       return JSON.stringify diff
     catch
       return null
