@@ -241,6 +241,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
+        metadata.name = newName
         callback null, metadata
       error: ->
         callback "Unable to rename "+metadata.name
