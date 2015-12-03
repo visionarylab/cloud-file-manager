@@ -3,6 +3,7 @@ module.exports =
 
   "~MENU.NEW": "New"
   "~MENU.OPEN": "Open ..."
+  "~MENU.REOPEN": "Reopen"
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
   "~MENU.DOWNLOAD": "Download"
@@ -33,4 +34,6 @@ module.exports =
   "~RENAME_DIALOG.RENAME": "Rename"
   "~RENAME_DIALOG.CANCEL": "Cancel"
 
-  "~CONFIRM.UNSAVED_CHANGES": "You have unsaved changes.  Are you sure you want a new file?"
+  "~CONFIRM.OPEN_FILE": "You have unsaved changes.  Are you sure you want open a new file?"
+  "~CONFIRM.NEW_FILE": "You have unsaved changes.  Are you sure you want a new file?"
+  "~CONFIRM.REOPEN_FILE": "You have unsaved changes.  Are you sure you want reopen the file and return to its last saved state?"

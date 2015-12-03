@@ -78,7 +78,7 @@ class CloudFileManagerClient
       if @_autoSaveInterval and @state.metadata
         @save()
         @newFile()
-      else if confirm tr '~CONFIRM.UNSAVED_CHANGES'
+      else if confirm tr '~CONFIRM.NEW_FILE'
         @newFile()
     else
       @newFile()
@@ -93,8 +93,9 @@ class CloudFileManagerClient
       @openFileDialog callback
 
   openFileDialog: (callback = null) ->
-    @_ui.openFileDialog (metadata) =>
-      @openFile metadata, callback
+    if (not @state.dirty) or (confirm tr '~CONFIRM.OPEN_FILE')
+      @_ui.openFileDialog (metadata) =>
+        @openFile metadata, callback
 
   save: (callback = null) ->
     patchable = @state.metadata?.overwritable and @state.metadata?.provider.can 'patch'
@@ -141,6 +142,17 @@ class CloudFileManagerClient
               metadata: metadata
             @_event 'renamedFile', {metadata: metadata}
             callback? filename
+    else
+      callback? 'No currently active file'
+
+  reopen: (callback = null) ->
+    if @state.metadata
+      @openFile @state.metadata, callback
+
+  reopenDialog: (callback = null) ->
+    if @state.metadata
+      if (not @state.dirty) or (confirm tr '~CONFIRM.REOPEN_FILE')
+        @openFile @state.metadata, callback
     else
       callback? 'No currently active file'
 
