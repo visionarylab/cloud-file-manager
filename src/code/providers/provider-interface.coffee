@@ -20,8 +20,8 @@ class CloudMetadata
       parent = parent.parent
     _path
 
-class BaseCloudContent
-  constructor: (@_ = null) ->
+class CloudContent
+  constructor: (@_ = null, options = {}) ->
     @dirty = false
 
   getContent: -> @_
@@ -31,48 +31,13 @@ class BaseCloudContent
     @dirty = if options.hasOwnProperty('dirty') then options.dirty else true
     @
 
-  getText: -> if isString(@_) then @_ else JSON.stringify @_
+  getText: -> if @_ is null then '' else if isString(@_) then @_ else JSON.stringify @_
   initText: (text) -> @setText text, {dirty: false}
   setText: (text, options) -> @setContent text, options
 
   getJSON: -> if isString(@_) then JSON.parse @_ else @_
   initJSON: (json) -> @setJSON json, {dirty: false}
   setJSON: (json, options) -> @setContent (if isString(json) then json else JSON.stringify json), options
-
-class CloudContent extends BaseCloudContent
-  constructor: (content, options = {}) ->
-    super content
-    @relatedFiles = {}
-
-  hasRelatedContent: ->
-    if Object.keys?
-      Object.keys(@relatedFiles).length > 0
-    else
-      for own relatedFile of @relatedFiles
-        return true
-      false
-
-  getRelatedContent: (name) ->
-    @relatedFiles[name]?.content or null
-  initRelatedContent: (name, content, metadata) ->
-    @setRelatedContent name, content, metadata, {dirty: false}
-  setRelatedContent: (name, content, metadata = null, options = {}) ->
-    if not @relatedFiles.hasOwnProperty name
-      @relatedFiles[name] = new CloudFile
-        content: new CloudRelatedContent null, {mainContent: @}
-        metadata: metadata
-    @relatedFiles[name].content.setContent content, options
-    @
-
-class CloudRelatedContent extends BaseCloudContent
-  constructor: (content, options = {}) ->
-    super content
-    {@mainContent} = options
-
-AuthorizationNotImplementedDialog = React.createFactory React.createClass
-  displayName: 'AuthorizationNotImplementedDialog'
-  render: ->
-    (div {}, "Authorization dialog not yet implemented for #{@props.provider.displayName}")
 
 class ProviderInterface
 
@@ -120,7 +85,5 @@ class ProviderInterface
 module.exports =
   CloudFile: CloudFile
   CloudMetadata: CloudMetadata
-  BaseCloudContent: BaseCloudContent
   CloudContent: CloudContent
-  CloudRelatedContent: CloudRelatedContent
   ProviderInterface: ProviderInterface

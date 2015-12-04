@@ -5,7 +5,6 @@ isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudContent = (require './provider-interface').CloudContent
-CloudRelatedContent = (require './provider-interface').CloudRelatedContent
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 GoogleDriveAuthorizationDialog = React.createFactory React.createClass

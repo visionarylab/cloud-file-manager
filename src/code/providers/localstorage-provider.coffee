@@ -2,7 +2,6 @@ tr = require '../utils/translate'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudContent = (require './provider-interface').CloudContent
-CloudRelatedContent = (require './provider-interface').CloudRelatedContent
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 class LocalStorageProvider extends ProviderInterface
@@ -32,33 +31,13 @@ class LocalStorageProvider extends ProviderInterface
     try
       fileKey = @_getKey(metadata.name)
       window.localStorage.setItem fileKey, content.getText()
-      for own name, relatedFile of content.relatedFiles
-        window.localStorage.setItem [fileKey, name].join('\t'), relatedFile.content.getText()
-        relatedFile.metadata or= new CloudMetadata
-          name: name
-          type: CloudMetadata.File
-          parent: metadata.parent
-          provider: @
       callback? null
     catch
       callback "Unable to save: #{e.message}"
 
   load: (metadata, callback) ->
     try
-      prefix = @_getKey (metadata?.path() or []).join '/'
-      fileKey = @_getKey metadata.name
-      content = new CloudContent window.localStorage.getItem fileKey
-      for own key, value of window.localStorage
-        if (key.substr(0, fileKey.length) is fileKey) and key isnt fileKey
-          name = key.substr(fileKey.length).replace /\t/g, ''
-          relatedContent = window.localStorage.getItem key
-          metadata = new CloudMetadata
-            name: key.substr(prefix.length)
-            type: CloudMetadata.File
-            parent: metadata.parent
-            provider: @
-          content.initRelatedContent name, relatedContent, metadata
-      callback null, content
+      callback null, new CloudContent window.localStorage.getItem @_getKey metadata.name
     catch e
       callback "Unable to load: #{e.message}"
 
@@ -69,13 +48,11 @@ class LocalStorageProvider extends ProviderInterface
       if key.substr(0, prefix.length) is prefix
         [filename, remainder...] = key.substr(prefix.length).split('/')
         name = key.substr(prefix.length)
-        # we use tab to denote related files
-        if name.indexOf('\t') is -1
-          list.push new CloudMetadata
-            name: name
-            type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
-            parent: metadata
-            provider: @
+        list.push new CloudMetadata
+          name: name
+          type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
+          parent: metadata
+          provider: @
     callback null, list
 
   remove: (metadata, callback) ->
