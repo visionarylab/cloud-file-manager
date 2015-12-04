@@ -3,7 +3,7 @@
     <script src="../js/globals.js"></script>
     <script src="../js/app.js"></script>
     <link rel="stylesheet" href="../css/app.css">
-    <title>Examples: All Providers</title>
+    <title>Examples: Menu Madness</title>
   </head>
   <body>
     <div id="wrapper">
@@ -38,12 +38,30 @@
         ui: {
           menu: CloudFileManager.DefaultMenu,
           menuBar: {
-            info: "Version 1.0.0",
+            info: "This version modifies the menu using the different access functions",
             help: "http://lmgtfy.com/"
           }
         }
+      };
+
+      function createMenuItem(text, disabled) {
+        disabled = disabled || false
+        return {
+          name: text,
+          action: function () { alert("text")},
+          enabled: !disabled
+        }
       }
-      CloudFileManager.createFrame(options, "wrapper");
+      CloudFileManager.createFrame(options, "wrapper", function (event) {
+        if (event.type == 'connected') {
+          event.data.client
+            .appendMenuItem(createMenuItem("#1 added via appendMenuItem()"))
+            .prependMenuItem(createMenuItem("#2 added via prependMenuItem()"))
+            .replaceMenuItem('openFileDialog', createMenuItem("#3 added via replaceMenuItem('openFileDialog')"))
+            .insertMenuItemBefore(6, createMenuItem("#4 added via insertMenuItemBefore(6)"))
+            .insertMenuItemAfter('downloadDialog', createMenuItem("#5 added via insertMenuItemAfter('downloadDialog')"))
+        }
+      });
     </script>
   </body>
 </html>
