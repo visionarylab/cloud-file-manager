@@ -19,6 +19,7 @@ class CloudFileManagerClient
   constructor: (options) ->
     @state =
       availableProviders: []
+    @_listeners = []
     @_resetState()
     @_ui = new CloudFileManagerUI @
 
@@ -64,15 +65,32 @@ class CloudFileManagerClient
           provider.options[key] = newOptions[key]
         break
 
-  # single client - used by the client app to register and receive callback events
-  connect: (@eventCallback) ->
+  connect: ->
     @_event 'connected', {client: @}
 
-  # single listener - used by the React menu via to watch client state changes
-  listen: (@listenerCallback) ->
+  listen: (listener) ->
+    if listener
+      @_listeners.push listener
 
   appendMenuItem: (item) ->
     @_ui.appendMenuItem item
+    @
+
+  prependMenuItem: (item) ->
+    @_ui.prependMenuItem item
+    @
+
+  replaceMenuItem: (key, item) ->
+    @_ui.replaceMenuItem key, item
+    @
+
+  insertMenuItemBefore: (key, item) ->
+    @_ui.insertMenuItemBefore key, item
+    @
+
+  insertMenuItemAfter: (key, item) ->
+    @_ui.insertMenuItemAfter key, item
+    @
 
   setMenuBarInfo: (info) ->
     @_ui.setMenuBarInfo info
@@ -231,8 +249,8 @@ class CloudFileManagerClient
 
   _event: (type, data = {}, eventCallback = null) ->
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
-    @eventCallback? event
-    @listenerCallback? event
+    for listener in @_listeners
+      listener event
 
   _setState: (options) ->
     for own key, value of options

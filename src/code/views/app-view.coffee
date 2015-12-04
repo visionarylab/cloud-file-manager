@@ -4,6 +4,7 @@ DownloadDialog = React.createFactory require './download-dialog-view'
 RenameDialog = React.createFactory require './rename-dialog-view'
 
 tr = require '../utils/translate'
+isString = require '../utils/is-string'
 
 {div, iframe} = React.DOM
 
@@ -69,9 +70,45 @@ App = React.createClass
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
+        when 'prependMenuItem'
+          @state.menuItems.unshift event.data
+          @setState menuItems: @state.menuItems
+        when 'replaceMenuItem'
+          index = @_getMenuItemIndex event.data.key
+          if index isnt -1
+            @state.menuItems[index] = event.data.item
+            @setState menuItems: @state.menuItems
+        when 'insertMenuItemBefore'
+          index = @_getMenuItemIndex event.data.key
+          if index isnt -1
+            if index is 0
+              @state.menuItems.unshift event.data.item
+            else
+              @state.menuItems.splice index, 0, event.data.item
+            @setState menuItems: @state.menuItems
+        when 'insertMenuItemAfter'
+          index = @_getMenuItemIndex event.data.key
+          if index isnt -1
+            if index is @state.menuItems.length - 1
+              @state.menuItems.push event.data.item
+            else
+              @state.menuItems.splice index + 1, 0, event.data.item
+            @setState menuItems: @state.menuItems
         when 'setMenuBarInfo'
           @state.menuOptions.info = event.data
           @setState menuOptions: @state.menuOptions
+
+  _getMenuItemIndex: (key) ->
+    if isString key
+      for item, index in @state.menuItems
+        return index if item.key is key
+      -1
+    else
+      index = parseInt key, 10
+      if isNaN(index) or index < 0 or index > @state.menuItems.length - 1
+        -1
+      else
+        index
 
   closeDialogs: ->
     @setState

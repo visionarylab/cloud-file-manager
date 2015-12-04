@@ -79,13 +79,7 @@
           console.log(event);
           switch (event.type) {
             case 'connected':
-              var client = event.data.client;
-              connected(client);
-              client.appendMenuItem({
-                name: 'Inner Frame Callback Menu Item',
-                action: function () { alert('This is an example of a callback menu item added in the inner frame')}
-              });
-              //client.setMenuBarInfo('Version 0.0.1');
+              connected(event.data.client);
               break;
 
             case 'getContent':

@@ -17,14 +17,16 @@ class CloudFileManager
     @appOptions.usingIframe = usingIframe
     @client.setAppOptions @appOptions
 
-  createFrame: (@appOptions, elemId) ->
+  createFrame: (@appOptions, elemId, eventCallback = null) ->
     @init @appOptions, true
+    @client.listen eventCallback
     @_renderApp document.getElementById(elemId)
 
   clientConnect: (eventCallback) ->
     if not @appOptions.usingIframe
       @_createHiddenApp()
-    @client.connect eventCallback
+    @client.listen eventCallback
+    @client.connect()
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

@@ -36,16 +36,19 @@ class CloudFileManagerUIMenu
       renameDialog: tr "~MENU.RENAME"
 
     @items = []
-    for item in options.menu
+    for item, i in options.menu
       menuItem = if item is 'separator'
+        key: "seperator#{i}"
         separator: true
       else if isString item
+        key: item
         name: options.menuNames?[item] or names[item] or "Unknown item: #{item}"
         enabled: setEnabled item
         action: setAction item
       else
         # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
         if isString item.action
+          item.key = item.action
           item.enabled = setEnabled item.action
           item.action = setAction item.action
         else
@@ -72,6 +75,24 @@ class CloudFileManagerUI
 
   appendMenuItem: (item) ->
     @listenerCallback new CloudFileManagerUIEvent 'appendMenuItem', item
+
+  prependMenuItem: (item) ->
+    @listenerCallback new CloudFileManagerUIEvent 'prependMenuItem', item
+
+  replaceMenuItem: (key, item) ->
+    @listenerCallback new CloudFileManagerUIEvent 'replaceMenuItem',
+      key: key
+      item: item
+
+  insertMenuItemBefore: (key, item) ->
+    @listenerCallback new CloudFileManagerUIEvent 'insertMenuItemBefore',
+      key: key
+      item: item
+
+  insertMenuItemAfter: (key, item) ->
+    @listenerCallback new CloudFileManagerUIEvent 'insertMenuItemAfter',
+      key: key
+      item: item
 
   setMenuBarInfo: (info) ->
     @listenerCallback new CloudFileManagerUIEvent 'setMenuBarInfo', info
