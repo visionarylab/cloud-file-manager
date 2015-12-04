@@ -44,15 +44,14 @@ class LocalStorageProvider extends ProviderInterface
 
   list: (metadata, callback) ->
     list = []
-    path = metadata?.path or ''
-    prefix = @_getKey path
+    prefix = @_getKey (metadata?.path() or []).join '/'
     for own key of window.localStorage
       if key.substr(0, prefix.length) is prefix
         [name, remainder...] = key.substr(prefix.length).split('/')
         list.push new CloudMetadata
           name: key.substr(prefix.length)
-          path: "#{path}/#{name}"
           type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
+          parent: metadata
           provider: @
     callback null, list
 

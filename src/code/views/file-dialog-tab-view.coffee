@@ -21,7 +21,10 @@ FileListFile = React.createFactory React.createClass
     @lastClick = now
 
   render: ->
-    (div {key: @props.key, className: (if @props.selected then 'selected' else ''), onClick: @fileSelected}, @props.metadata.name)
+    (div {key: @props.key, className: (if @props.selected then 'selected' else ''), onClick: @fileSelected},
+      (React.DOM.i {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else 'icon-noteTool'})
+      @props.metadata.name
+    )
 
 FileList = React.createFactory React.createClass
   displayName: 'FileList'
@@ -30,22 +33,34 @@ FileList = React.createFactory React.createClass
     loading: true
 
   componentDidMount: ->
-    @load()
+    @load @props.folder
 
-  load: ->
-    @props.provider.list @props.folder, (err, list) =>
+  componentWillReceiveProps: (nextProps) ->
+    if nextProps.folder isnt @props.folder
+      @load nextProps.folder
+
+  load: (folder) ->
+    @props.provider.list folder, (err, list) =>
       return alert(err) if err
       @setState
         loading: false
       @props.listLoaded list
 
+  parentSelected: (e) ->
+    @props.fileSelected @props.folder?.parent
+
   render: ->
+    list = []
+    if @props.folder isnt null
+      list.push (div {key: 'parent', onClick: @parentSelected}, (React.DOM.i {className: 'icon-paletteArrow-collapse'}), 'Parent Folder')
+    for metadata, i in @props.list
+      list.push (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed})
+
     (div {className: 'filelist'},
       if @state.loading
         tr "~FILE_DIALOG.LOADING"
       else
-        for metadata, i in @props.list
-          (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed})
+        list
     )
 
 FileDialogTab = React.createClass
@@ -54,33 +69,43 @@ FileDialogTab = React.createClass
   mixins: [AuthorizeMixin]
 
   getInitialState: ->
-    folder: @props.client.state.metadata?.parent or null
-    metadata: @props.client.state.metadata
-    filename: @props.client.state.metadata?.name or ''
-    list: []
+    @getStateForFolder @props.client.state.metadata?.parent or null
 
   componentWillMount: ->
     @isOpen = @props.dialog.action is 'openFile'
 
   filenameChanged: (e) ->
     filename = e.target.value
-    metadata = @findMetadata filename
+    metadata = @findMetadata filename, @state.list
     @setState
       filename: filename
       metadata: metadata
 
   listLoaded: (list) ->
-    @setState list: list
+    @setState
+      list: list
+      metadata: @findMetadata $.trim(@state.filename), list
+
+  getStateForFolder: (folder) ->
+    folder: folder
+    metadata: @props.client.state.metadata
+    filename: @props.client.state.metadata?.name or ''
+    list: []
 
   fileSelected: (metadata) ->
-    if metadata?.type is CloudMetadata.File
-      @setState filename: metadata.name
-    @setState metadata: metadata
+    if metadata?.type is CloudMetadata.Folder
+      @setState @getStateForFolder metadata
+    else if metadata?.type is CloudMetadata.File
+      @setState
+        filename: metadata.name
+        metadata: metadata
+    else
+      @setState @getStateForFolder null
 
   confirm: ->
     if not @state.metadata
       filename = $.trim @state.filename
-      @state.metadata = @findMetadata filename
+      @state.metadata = @findMetadata filename, @state.list
       if not @state.metadata
         if @isOpen
           alert "#{@state.filename} not found"
@@ -111,8 +136,8 @@ FileDialogTab = React.createClass
   cancel: ->
     @props.close()
 
-  findMetadata: (filename) ->
-    for metadata in @state.list
+  findMetadata: (filename, list) ->
+    for metadata in list
       if metadata.name is filename
         return metadata
     null

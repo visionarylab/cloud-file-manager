@@ -8,9 +8,17 @@ class CloudFile
 
 class CloudMetadata
   constructor: (options) ->
-    {@name, @path, @type, @provider, @providerData={}, @overwritable} = options
+    {@name, @type, @provider, @parent = null, @providerData={}, @overwritable} = options
   @Folder: 'folder'
   @File: 'file'
+
+  path: ->
+    _path = []
+    parent = @parent
+    while parent isnt null
+      _path.unshift parent
+      parent = parent.parent
+    _path
 
 class BaseCloudContent
   constructor: (@_ = null) ->

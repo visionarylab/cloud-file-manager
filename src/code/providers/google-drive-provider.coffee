@@ -105,20 +105,18 @@ class GoogleDriveProvider extends ProviderInterface
   list: (metadata, callback) ->
     @_loadedGAPI =>
       request = gapi.client.drive.files.list
-        q: "mimeType = '#{@mimeType}'"
+        q: query = "((mimeType = '#{@mimeType}') or (mimeType = 'application/vnd.google-apps.folder')) and '#{if metadata then metadata.providerData.id else 'root'}' in parents"
       request.execute (result) =>
         return callback('Unable to list files') if not result
         list = []
         for item in result?.items
-          # TODO: for now don't allow folders
-          if item.mimeType isnt 'application/vnd.google-apps.folder'
-            list.push new CloudMetadata
-              name: item.title
-              path: ""
-              type: if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
-              provider: @
-              providerData:
-                id: item.id
+          list.push new CloudMetadata
+            name: item.title
+            type: if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
+            parent: metadata
+            provider: @
+            providerData:
+              id: item.id
         list.sort (a, b) ->
           lowerA = a.name.toLowerCase()
           lowerB = b.name.toLowerCase()

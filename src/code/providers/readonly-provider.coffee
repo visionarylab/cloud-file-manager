@@ -25,11 +25,11 @@ class ReadOnlyProvider extends ProviderInterface
   load: (metadata, callback) ->
     @_loadTree (err, tree) =>
       return callback err if err
-      parent = @_findParent metadata
-      if parent
-        if parent[metadata.name]
-          if parent[metadata.name].metadata.type is CloudMetadata.File
-            callback null, parent[metadata.name].content
+      subTree = @_findSubTree metadata
+      if subTree
+        if subTree[metadata.name]
+          if subTree[metadata.name].metadata.type is CloudMetadata.File
+            callback null, subTree[metadata.name].content
           else
             callback "#{metadata.name} is a folder"
         else
@@ -40,13 +40,19 @@ class ReadOnlyProvider extends ProviderInterface
   list: (metadata, callback) ->
     @_loadTree (err, tree) =>
       return callback err if err
-      parent = @_findParent metadata
-      if parent
-        list = []
-        list.push file.metadata for own filename, file of parent
-        callback null, list
-      else if metadata
-        callback "#{metadata.name} folder not found"
+      list = []
+      subTree = @_findSubTree metadata
+      if subTree
+        list.push file.metadata for own filename, file of subTree
+      callback null, list
+
+  _findSubTree: (metadata) ->
+    if metadata?.type is CloudMetadata.Folder
+      metadata.providerData.children
+    else if metadata?.parent
+      metadata.parent.providerData.children
+    else
+      @tree
 
   _loadTree: (callback) ->
     if @tree isnt null
@@ -73,28 +79,23 @@ class ReadOnlyProvider extends ProviderInterface
       console.error? "No json or src option found for #{@displayName} provider"
       callback null, {}
 
-  _convertJSONToMetadataTree: (json, pathPrefix = '/') ->
+  _convertJSONToMetadataTree: (json, parent = null) ->
     tree = {}
     for own filename of json
       type = if isString json[filename] then CloudMetadata.File else CloudMetadata.Folder
       metadata = new CloudMetadata
         name: filename
-        path: pathPrefix + filename
         type: type
+        parent: parent
         provider: @
-        children: null
+        providerData:
+          children: null
       if type is CloudMetadata.Folder
-        metadata.children = _convertJSONToMetadataTree json[filename], pathPrefix + filename + '/'
+        metadata.providerData.children = @_convertJSONToMetadataTree json[filename], metadata
       content = new CloudContent json[filename]
       tree[filename] =
         content: content
         metadata: metadata
     tree
-
-  _findParent: (metadata) ->
-    if not metadata
-      @tree
-    else
-      @tree
 
 module.exports = ReadOnlyProvider
