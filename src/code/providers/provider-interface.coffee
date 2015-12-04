@@ -29,7 +29,7 @@ class BaseCloudContent
   setContent: (content, options = {}) ->
     @_ = content
     @dirty = if options.hasOwnProperty('dirty') then options.dirty else true
-    @_
+    @
 
   getText: -> if isString(@_) then @_ else JSON.stringify @_
   initText: (text) -> @setText text, {dirty: false}
@@ -44,18 +44,16 @@ class CloudContent extends BaseCloudContent
     super content
     {@relatedContent} = options
     @relatedContent or= {}
-    @dirtyRelatedContent = {}
 
   getRelatedContent: (name) ->
     @relatedContent[name]
-  initRelatedContent: (name, relatedContent) ->
-    @setRelatedContent name, relatedContent, {dirty: false}
-  setRelatedContent: (name, relatedContent, options = {}) ->
-    if not (relatedContent instanceof CloudRelatedContent)
-      relatedContent = new CloudRelatedContent relatedContent, {mainContent: @}
-    @relatedContent[name] = relatedContent
-    @dirtyRelatedContent[name] = if options.hasOwnProperty('dirty') then options.dirty else true
-    relatedContent
+  initRelatedContent: (name, content) ->
+    @setRelatedContent name, content, {dirty: false}
+  setRelatedContent: (name, content, options = {}) ->
+    if not @relatedContent.hasOwnProperty name
+      @relatedContent[name] = new CloudRelatedContent null, {mainContent: @}
+    @relatedContent[name].setContent content, options
+    @
 
 class CloudRelatedContent extends BaseCloudContent
   constructor: (content, options = {}) ->
