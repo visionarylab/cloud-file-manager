@@ -203,7 +203,7 @@ class CloudFileManagerClient
     if interval > 1000
       interval = Math.round(interval / 1000)
     if interval > 0
-      @_autoSaveInterval = setInterval (=> @save() if @state.dirty and @state.metadata?), (interval * 1000)
+      @_autoSaveInterval = setInterval (=> @save() if @state.dirty and @state.metadata?.provider?.can 'save'), (interval * 1000)
 
   isAutoSaving: ->
     @_autoSaveInterval > 0
