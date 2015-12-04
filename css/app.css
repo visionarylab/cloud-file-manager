@@ -614,6 +614,9 @@
   padding: 3px;
   font-size: 20px;
 }
+.tabbed-panel .workspace-tab-component .dialogTab .filelist div i {
+  margin-right: 7px;
+}
 .tabbed-panel .workspace-tab-component .dialogTab .filelist div.selected {
   color: #fff;
   background-color: #72bfca;
