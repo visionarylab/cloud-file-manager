@@ -44,15 +44,23 @@ class CloudContent extends BaseCloudContent
     super content
     @relatedFiles = {}
 
+  hasRelatedContent: ->
+    if Object.keys?
+      Object.keys(@relatedFiles).length > 0
+    else
+      for own relatedFile of @relatedFiles
+        return true
+      false
+
   getRelatedContent: (name) ->
     @relatedFiles[name]?.content or null
-  initRelatedContent: (name, content) ->
-    @setRelatedContent name, content, {dirty: false}
-  setRelatedContent: (name, content, options = {}) ->
+  initRelatedContent: (name, content, metadata) ->
+    @setRelatedContent name, content, metadata, {dirty: false}
+  setRelatedContent: (name, content, metadata = null, options = {}) ->
     if not @relatedFiles.hasOwnProperty name
       @relatedFiles[name] = new CloudFile
         content: new CloudRelatedContent null, {mainContent: @}
-        metadata: null
+        metadata: metadata
     @relatedFiles[name].content.setContent content, options
     @
 

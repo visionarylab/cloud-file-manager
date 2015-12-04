@@ -34,19 +34,30 @@ class LocalStorageProvider extends ProviderInterface
       window.localStorage.setItem fileKey, content.getText()
       for own name, relatedFile of content.relatedFiles
         window.localStorage.setItem [fileKey, name].join('\t'), relatedFile.content.getText()
+        relatedFile.metadata or= new CloudMetadata
+          name: name
+          type: CloudMetadata.File
+          parent: metadata.parent
+          provider: @
       callback? null
     catch
       callback "Unable to save: #{e.message}"
 
   load: (metadata, callback) ->
     try
+      prefix = @_getKey (metadata?.path() or []).join '/'
       fileKey = @_getKey metadata.name
       content = new CloudContent window.localStorage.getItem fileKey
       for own key, value of window.localStorage
         if (key.substr(0, fileKey.length) is fileKey) and key isnt fileKey
           name = key.substr(fileKey.length).replace /\t/g, ''
           relatedContent = window.localStorage.getItem key
-          content.initRelatedContent name, relatedContent
+          metadata = new CloudMetadata
+            name: key.substr(prefix.length)
+            type: CloudMetadata.File
+            parent: metadata.parent
+            provider: @
+          content.initRelatedContent name, relatedContent, metadata
       callback null, content
     catch e
       callback "Unable to load: #{e.message}"
