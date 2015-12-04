@@ -83,7 +83,7 @@ App = React.createClass
     if @state.providerDialog
       (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
     else if @state.downloadDialog
-      (DownloadDialog {filename: @state.downloadDialog.filename, content: @state.downloadDialog.content, close: @closeDialogs})
+      (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})
     else if @state.renameDialog
       (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
 
