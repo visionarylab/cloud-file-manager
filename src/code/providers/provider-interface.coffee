@@ -42,17 +42,18 @@ class BaseCloudContent
 class CloudContent extends BaseCloudContent
   constructor: (content, options = {}) ->
     super content
-    {@relatedContent} = options
-    @relatedContent or= {}
+    @relatedFiles = {}
 
   getRelatedContent: (name) ->
-    @relatedContent[name]
+    @relatedFiles[name]?.content or null
   initRelatedContent: (name, content) ->
     @setRelatedContent name, content, {dirty: false}
   setRelatedContent: (name, content, options = {}) ->
-    if not @relatedContent.hasOwnProperty name
-      @relatedContent[name] = new CloudRelatedContent null, {mainContent: @}
-    @relatedContent[name].setContent content, options
+    if not @relatedFiles.hasOwnProperty name
+      @relatedFiles[name] = new CloudFile
+        content: new CloudRelatedContent null, {mainContent: @}
+        metadata: null
+    @relatedFiles[name].content.setContent content, options
     @
 
 class CloudRelatedContent extends BaseCloudContent

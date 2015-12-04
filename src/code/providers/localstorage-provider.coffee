@@ -30,29 +30,41 @@ class LocalStorageProvider extends ProviderInterface
 
   save: (content, metadata, callback) ->
     try
-      window.localStorage.setItem @_getKey(metadata.name), content.getText()
+      fileKey = @_getKey(metadata.name)
+      window.localStorage.setItem fileKey, content.getText()
+      for own name, relatedFile of content.relatedFiles
+        window.localStorage.setItem [fileKey, name].join('\t'), relatedFile.content.getText()
       callback? null
     catch
-      callback? 'Unable to save'
+      callback "Unable to save: #{e.message}"
 
   load: (metadata, callback) ->
     try
-      content = window.localStorage.getItem @_getKey metadata.name
-      callback null, new CloudContent content
-    catch
-      callback 'Unable to load'
+      fileKey = @_getKey metadata.name
+      content = new CloudContent window.localStorage.getItem fileKey
+      for own key, value of window.localStorage
+        if (key.substr(0, fileKey.length) is fileKey) and key isnt fileKey
+          name = key.substr(fileKey.length).replace /\t/g, ''
+          relatedContent = window.localStorage.getItem key
+          content.initRelatedContent name, relatedContent
+      callback null, content
+    catch e
+      callback "Unable to load: #{e.message}"
 
   list: (metadata, callback) ->
     list = []
     prefix = @_getKey (metadata?.path() or []).join '/'
     for own key of window.localStorage
       if key.substr(0, prefix.length) is prefix
-        [name, remainder...] = key.substr(prefix.length).split('/')
-        list.push new CloudMetadata
-          name: key.substr(prefix.length)
-          type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
-          parent: metadata
-          provider: @
+        [filename, remainder...] = key.substr(prefix.length).split('/')
+        name = key.substr(prefix.length)
+        # we use tab to denote related files
+        if name.indexOf('\t') is -1
+          list.push new CloudMetadata
+            name: name
+            type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
+            parent: metadata
+            provider: @
     callback null, list
 
   remove: (metadata, callback) ->
@@ -73,6 +85,6 @@ class LocalStorageProvider extends ProviderInterface
       callback? 'Unable to rename'
 
   _getKey: (name = '') ->
-    "cfm::#{name}"
+    "cfm::#{name.replace /\t/g, ' '}"
 
 module.exports = LocalStorageProvider
