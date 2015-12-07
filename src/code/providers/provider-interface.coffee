@@ -8,7 +8,7 @@ class CloudFile
 
 class CloudMetadata
   constructor: (options) ->
-    {@name, @type, @provider, @parent = null, @providerData={}, @overwritable} = options
+    {@name, @type, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId} = options
   @Folder: 'folder'
   @File: 'file'
 

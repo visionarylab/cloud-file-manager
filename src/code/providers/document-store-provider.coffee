@@ -51,6 +51,7 @@ class DocumentStoreProvider extends ProviderInterface
         list: true
         remove: true
         rename: true
+        share: true
 
     @user = null
 
@@ -165,19 +166,30 @@ class DocumentStoreProvider extends ProviderInterface
       error: ->
         callback null, []
 
+  loadSharedContent: (id, callback) ->
+    sharedMetadata = new CloudMetadata
+      sharedContentId: id
+      type: CloudMetadata.File
+    @load(sharedMetadata, callback)
+
   load: (metadata, callback) ->
+    withCredentials = unless metadata.sharedContentId then true else false
     $.ajax
       url: loadDocumentUrl
       data:
-        recordid: metadata.providerData.id
+        recordid: metadata.providerData?.id or metadata.sharedContentId
       context: @
       xhrFields:
-        withCredentials: true
+        {withCredentials}
       success: (data) ->
         if @options.patch then @previouslySavedContent = data
-        callback null, new CloudContent data.content
+        callback null, new CloudContent data.content or data
       error: ->
-        callback "Unable to load "+metadata.name
+        message = if metadata.sharedContentId
+          "Unable to load document '#{metadata.sharedContentId}'. Perhaps the file was not shared?"
+        else
+          "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
+        callback message
 
   save: (content, metadata, callback) ->
     content = @_wrapContent content.getContent()

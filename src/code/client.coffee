@@ -51,6 +51,13 @@ class CloudFileManagerClient
         else
           @_error "Unknown provider: #{providerName}"
     @_setState availableProviders: availableProviders
+
+    # add singleton shareProvider, if it exists
+    for provider in @state.availableProviders
+      if provider.can 'share'
+        @_setState shareProvider: provider
+        break
+
     @_ui.init @appOptions.ui
 
     # check for autosave
@@ -138,6 +145,11 @@ class CloudFileManagerClient
     if (not @state.dirty) or (confirm tr '~CONFIRM.OPEN_FILE')
       @_ui.openFileDialog (metadata) =>
         @openFile metadata, callback
+
+  openSharedContent: (id) ->
+    @state.shareProvider?.loadSharedContent id, (err, content) =>
+      return @_error(err) if err
+      @_fileChanged 'openedFile', content, {overwritable: false}
 
   save: (callback = null) ->
     @_event 'getContent', {}, (content) =>
@@ -238,7 +250,7 @@ class CloudFileManagerClient
     alert message
 
   _fileChanged: (type, content, metadata) ->
-    metadata.overwritable = true
+    metadata.overwritable ?= true
     @_setState
       content: content
       metadata: metadata
