@@ -3,6 +3,8 @@ AppView = React.createFactory require './views/app-view'
 CloudFileManagerUIMenu = (require './ui').CloudFileManagerUIMenu
 CloudFileManagerClient = (require './client').CloudFileManagerClient
 
+getQueryParam = require './utils/get-query-param'
+
 class CloudFileManager
 
   constructor: (options) ->
@@ -16,6 +18,10 @@ class CloudFileManager
   init: (@appOptions, usingIframe = false) ->
     @appOptions.usingIframe = usingIframe
     @client.setAppOptions @appOptions
+
+    openSharedContentId = getQueryParam "openShared"
+    if openSharedContentId
+      @client.openSharedContent openSharedContentId
 
   createFrame: (@appOptions, elemId, eventCallback = null) ->
     @init @appOptions, true
