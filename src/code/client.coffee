@@ -204,7 +204,7 @@ class CloudFileManagerClient
 
           path = document.location.origin + document.location.pathname
           shareQuery = "?openShared=#{sharedContentId}"
-          alert "Shared url: #{path}#{shareQuery}"
+          @_ui.shareUrlDialog "#{path}#{shareQuery}"
 
   downloadDialog: (callback = null) ->
     @_event 'getContent', {}, (content) =>

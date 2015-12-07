@@ -2,6 +2,7 @@ MenuBar = React.createFactory require './menu-bar-view'
 ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-view'
 DownloadDialog = React.createFactory require './download-dialog-view'
 RenameDialog = React.createFactory require './rename-dialog-view'
+ShareUrlDialog = React.createFactory require './share-url-dialog-view'
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -38,6 +39,7 @@ App = React.createClass
     providerDialog: null
     downloadDialog: null
     renameDialog: null
+    shareUrlDialog: null
     dirty: false
 
   componentWillMount: ->
@@ -67,6 +69,8 @@ App = React.createClass
           @setState downloadDialog: event.data
         when 'showRenameDialog'
           @setState renameDialog: event.data
+        when 'showShareUrlDialog'
+          @setState shareUrlDialog: event.data
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
@@ -115,6 +119,7 @@ App = React.createClass
       providerDialog: null
       downloadDialog: null
       renameDialog: null
+      shareUrlDialog: null
 
   renderDialogs: ->
     if @state.providerDialog
@@ -123,6 +128,8 @@ App = React.createClass
       (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})
     else if @state.renameDialog
       (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
+    else if @state.shareUrlDialog
+      (ShareUrlDialog {url: @state.shareUrlDialog.url, close: @closeDialogs})
 
   render: ->
     if @props.usingIframe

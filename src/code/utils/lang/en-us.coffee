@@ -17,6 +17,7 @@ module.exports =
   "~DIALOG.OPEN": "Open"
   "~DIALOG.DOWNLOAD": "Download"
   "~DIALOG.RENAME": "Rename"
+  "~DIALOG.SHARED": "Shared Document"
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
@@ -36,6 +37,8 @@ module.exports =
 
   "~RENAME_DIALOG.RENAME": "Rename"
   "~RENAME_DIALOG.CANCEL": "Cancel"
+
+  "~SHARE_DIALOG.CLOSE": "Close"
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes.  Are you sure you want open a new file?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes.  Are you sure you want a new file?"

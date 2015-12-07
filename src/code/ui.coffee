@@ -124,6 +124,10 @@ class CloudFileManagerUI
       filename: filename
       callback: callback
 
+  shareUrlDialog: (url) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showShareUrlDialog',
+      url: url
+
   _showProviderDialog: (action, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
       action: action
