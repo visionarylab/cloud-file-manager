@@ -191,11 +191,26 @@ class DocumentStoreProvider extends ProviderInterface
           "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
         callback message
 
+  saveSharedContent: (content, callback) ->
+    # for the moment, create completely random runKey and don't
+    # bother to store it.
+    runKey = Math.random().toString(16).substring(2)
+    sharedMetadata = new CloudMetadata
+      sharedContentSecretKey: runKey
+      type: CloudMetadata.File
+    @save content, sharedMetadata, (err, data) ->
+      callback err, data.id
+
   save: (content, metadata, callback) ->
-    content = @_wrapContent content.getContent()
+    content = @_wrapContent content.getContent(), metadata.sharedContentSecretKey
+
+    withCredentials = true
 
     params = {}
     if metadata.providerData.id then params.recordid = metadata.providerData.id
+    if metadata.sharedContentSecretKey
+      params.runKey = metadata.sharedContentSecretKey
+      withCredentials = false
 
     # See if we can patch
     if metadata.overwritable and @previouslySavedContent and
@@ -216,13 +231,13 @@ class DocumentStoreProvider extends ProviderInterface
       data: sendContent
       context: @
       xhrFields:
-        withCredentials: true
+        {withCredentials}
       success: (data) ->
         if @options.patch then @previouslySavedContent = content
         if data.id then metadata.providerData.id = data.id
         callback null, data
       error: ->
-        callback "Unable to load "+metadata.name
+        callback "Unable to save "+metadata.name
 
   remove: (metadata, callback) ->
     $.ajax
@@ -261,7 +276,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   # The document server requires the content to be JSON, and it must have
   # certain pre-defined keys in order to be listed when we query the list
-  _wrapContent: (content) ->
+  _wrapContent: (content, share) ->
     if isString content
       try
         content = JSON.parse content
@@ -271,6 +286,7 @@ class DocumentStoreProvider extends ProviderInterface
       appVersion: @options.appVersion
       appBuildNum: @options.appBuildNum
       content: content
+      _permissions: if share then 1 else 0
 
   _createDiff: (json1, json2) ->
     try

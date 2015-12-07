@@ -7,6 +7,7 @@ module.exports =
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
   "~MENU.SAVE_COPY": "Save A Copy ..."
+  "~MENU.SHARE": "Share"
   "~MENU.DOWNLOAD": "Download"
   "~MENU.RENAME": "Rename"
 

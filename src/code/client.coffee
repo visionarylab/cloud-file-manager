@@ -192,6 +192,20 @@ class CloudFileManagerClient
       else
         saveCopy content, metadata
 
+  share: ->
+    if @state.shareProvider
+      @_event 'getContent', {}, (content) =>
+        @_setState
+          saving: true
+        @state.shareProvider.saveSharedContent content, (err, sharedContentId) =>
+          @_setState
+            saving: false
+          return @_error(err) if err
+
+          path = document.location.origin + document.location.pathname
+          shareQuery = "?openShared=#{sharedContentId}"
+          alert "Shared url: #{path}#{shareQuery}"
+
   downloadDialog: (callback = null) ->
     @_event 'getContent', {}, (content) =>
       @_ui.downloadDialog @state.metadata?.name, @appOptions.mimeType, content, callback

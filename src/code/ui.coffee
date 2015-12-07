@@ -7,8 +7,8 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'save', 'saveFileAsDialog', 'downloadDialog', 'renameDialog']
-  @AutoSaveMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'saveCopyDialog', 'downloadDialog', 'renameDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'save', 'saveFileAsDialog', 'share', 'downloadDialog', 'renameDialog']
+  @AutoSaveMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'saveCopyDialog', 'share', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
     setAction = (action) ->
@@ -22,6 +22,8 @@ class CloudFileManagerUIMenu
           -> client.state.metadata?.provider?.can 'rename'
         when 'saveCopyDialog'
           -> client.state.metadata?
+        when 'share'
+          -> client.state.shareProvider?
         else
           true
 
@@ -32,6 +34,7 @@ class CloudFileManagerUIMenu
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
       saveCopyDialog: tr "~MENU.SAVE_COPY"
+      share: tr "~MENU.SHARE"
       downloadDialog: tr "~MENU.DOWNLOAD"
       renameDialog: tr "~MENU.RENAME"
 
