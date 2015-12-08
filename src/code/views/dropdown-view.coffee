@@ -1,4 +1,4 @@
-{div, i, span, ul, li} = React.DOM
+{div, i, span, ul, li, svg, g, rect} = React.DOM
 
 DropdownItem = React.createFactory React.createClass
 
@@ -62,9 +62,14 @@ DropDown = React.createClass
     select = (item) =>
       ( => @select(item))
     (div {className: 'menu'},
-      (span {className: 'menu-anchor', onClick: => @select(null)},
-        @props.anchor
-        (i {className: 'icon-arrow-expand'})
+      (div {className: 'menu-anchor', onClick: => @select(null)},
+        (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
+          (g {},
+            (rect {y: 2, width: 16, height: 2})
+            (rect {y: 7, width: 16, height: 2})
+            (rect {y: 12, width: 16, height: 2})
+          )
+        )
       )
       if @props.items?.length > 0
         (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},

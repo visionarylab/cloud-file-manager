@@ -134,7 +134,7 @@ App = React.createClass
   render: ->
     if @props.usingIframe
       (div {className: 'app'},
-        (MenuBar {filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
+        (MenuBar {client: @props.client, filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
         (InnerApp {app: @props.app})
         @renderDialogs()
       )
