@@ -171,7 +171,9 @@ class DocumentStoreProvider extends ProviderInterface
     sharedMetadata = new CloudMetadata
       sharedContentId: id
       type: CloudMetadata.File
-    @load(sharedMetadata, callback)
+      overwritable: false
+    @load sharedMetadata, (err, content) ->
+      callback err, content, sharedMetadata
 
   load: (metadata, callback) ->
     withCredentials = unless metadata.sharedContentId then true else false

@@ -149,9 +149,9 @@ class CloudFileManagerClient
         @openFile metadata, callback
 
   openSharedContent: (id) ->
-    @state.shareProvider?.loadSharedContent id, (err, content) =>
+    @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
       return @_error(err) if err
-      @_fileChanged 'openedFile', content, null, {overwritable: false, openedContent: content.clone()}
+      @_fileChanged 'openedFile', content, metadata, {overwritable: false, openedContent: content.clone()}
 
   save: (callback = null) ->
     @_event 'getContent', {}, (content) =>
