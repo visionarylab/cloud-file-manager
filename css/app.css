@@ -258,23 +258,15 @@
   background-color: #3c94a1;
 }
 .menu {
-  display: inline;
+  float: left;
   padding-left: 10px;
 }
 .menu .menu-anchor {
+  display: inline-block;
   cursor: pointer;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: normal;
-  font-size: 13px;
-  font-family: 'Montserrat', sans-serif;
-  text-transform: none;
-  font-family: 'Museo Sans', 'Montserrat', sans-serif;
-  text-transform: uppercase;
-  font-size: 13px;
 }
-.menu .menu-anchor i {
-  font-size: 7px;
+.menu .menu-anchor svg {
+  fill: #fff;
 }
 .menu-hidden {
   display: none;
@@ -296,7 +288,7 @@
 .menu-showing ul {
   text-align: left;
   display: block;
-  margin: 0.5em;
+  margin-top: 0.5em;
   padding: 4px;
   list-style: none;
   -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.15);
@@ -368,10 +360,24 @@
   padding-right: 0.5em;
 }
 .menu-bar .menu-bar-content-filename {
-  flex-grow: 1;
-  flex-shrink: 0;
-  -webkit-flex-grow: 1;
-  -webkit-flex-shrink: 0;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  font-size: 13px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  display: inline-block;
+  padding-left: 10px;
+  padding-top: 1px;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .menu-bar .menu-bar-file-status-alert {
   font-style: normal;
@@ -389,6 +395,7 @@
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
+  margin-left: 10px;
 }
 .menu-bar .menu-bar-file-status-info {
   font-style: italic;
