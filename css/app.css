@@ -298,6 +298,7 @@
 }
 .menu-hidden li,
 .menu-showing li {
+  white-space: nowrap;
   font: light 12px sans-serif;
   display: block;
   position: relative;
@@ -317,6 +318,11 @@
   padding: 0;
   height: 1px;
   margin: 4px;
+}
+.menu-hidden li i,
+.menu-showing li i {
+  float: right;
+  margin-right: -10px;
 }
 .menu-hidden li:hover,
 .menu-showing li:hover {
