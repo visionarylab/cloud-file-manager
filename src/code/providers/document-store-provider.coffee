@@ -194,30 +194,32 @@ class DocumentStoreProvider extends ProviderInterface
           "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
         callback message
 
-  saveSharedContent: (content, callback) ->
+  share: (content, metadata, callback) ->
     # for the moment, create completely random runKey and don't
     # bother to store it.
     runKey = Math.random().toString(16).substring(2)
-    sharedMetadata = new CloudMetadata
-      sharedContentSecretKey: runKey
-      type: CloudMetadata.File
-    @save content, sharedMetadata, (err, data) ->
+    metadata ?= new CloudMetadata {type: CloudMetadata.File}  # we may not have metadata yet
+    metadata.sharedContentSecretKey = runKey
+
+    @save content, metadata, (err, data) ->
       callback err, data.id
 
   save: (content, metadata, callback) ->
     content = @_wrapContent content.getContent(), metadata.sharedContentSecretKey
 
     withCredentials = true
+    isSharing = metadata.sharedContentSecretKey?
 
     params = {}
-    if metadata.providerData.id then params.recordid = metadata.providerData.id
-    if metadata.sharedContentSecretKey
+    if isSharing
       params.runKey = metadata.sharedContentSecretKey
       withCredentials = false
+    else if metadata.providerData.id then params.recordid = metadata.providerData.id
+
 
     # See if we can patch
-    if metadata.overwritable and @previouslySavedContent and
-        diff = @_createDiff @previouslySavedContent, content
+    canOverwrite = metadata.overwritable and @previouslySavedContent and not isSharing
+    if canOverwrite and diff = @_createDiff @previouslySavedContent, content
       sendContent = diff
       url = patchDocumentUrl
     else
@@ -236,8 +238,11 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         {withCredentials}
       success: (data) ->
-        if @options.patch then @previouslySavedContent = content
-        if data.id then metadata.providerData.id = data.id
+        if not isSharing
+          if @options.patch then @previouslySavedContent = content
+          if data.id then metadata.providerData.id = data.id
+        # clear share info from metadata
+        metadata.sharedContentSecretKey = null
         callback null, data
       error: ->
         callback "Unable to save "+metadata.name

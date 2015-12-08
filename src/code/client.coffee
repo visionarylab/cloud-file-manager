@@ -201,7 +201,7 @@ class CloudFileManagerClient
       @_event 'getContent', {}, (content) =>
         @_setState
           saving: true
-        @state.shareProvider.saveSharedContent content, (err, sharedContentId) =>
+        @state.shareProvider.share content, @state.metadata, (err, sharedContentId) =>
           @_setState
             saving: false
           return @_error(err) if err
