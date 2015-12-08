@@ -117,6 +117,7 @@ class CloudFileManagerClient
     content
 
   newFile: (callback = null) ->
+    @_closeCurrentFile()
     @_resetState()
     @_event 'newedFile', {content: @getEmptyContent()}
 
@@ -136,6 +137,7 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'load'
       metadata.provider.load metadata, (err, content) =>
         return @_error(err) if err
+        @_closeCurrentFile()
         @_fileChanged 'openedFile', content, metadata
         callback? content, metadata
     else
@@ -167,6 +169,8 @@ class CloudFileManagerClient
         saving: metadata
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
+        if @state.metadata isnt metadata
+          @_closeCurrentFile()
         @_fileChanged 'savedFile', content, metadata
         callback? content, metadata
     else
@@ -290,6 +294,10 @@ class CloudFileManagerClient
       dirty: false
       saving: null
       saved: false
+
+  _closeCurrentFile: ->
+    if @state.metadata?.provider?.can 'close'
+      @state.metadata.provider.close @state.metadata
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

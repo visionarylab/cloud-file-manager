@@ -112,8 +112,8 @@ FileDialogTab = React.createClass
         else
           @state.metadata = new CloudMetadata
             name: filename
-            path: "/#{filename}" # TODO: Fix path
             type: CloudMetadata.File
+            parent: @state.folder or null
             provider: @props.provider
     if @state.metadata
       # ensure the metadata provider is the currently-showing tab

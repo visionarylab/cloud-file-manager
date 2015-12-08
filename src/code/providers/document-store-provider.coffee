@@ -52,6 +52,7 @@ class DocumentStoreProvider extends ProviderInterface
         remove: true
         rename: true
         share: true
+        close: false
 
     @user = null
 

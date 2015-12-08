@@ -2,10 +2,17 @@
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
+jsdiff = require 'diff'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 CloudContent = (require './provider-interface').CloudContent
 CloudMetadata = (require './provider-interface').CloudMetadata
+
+class RealTimeInfo extends Error
+  constructor: -> @name = 'RealTimeInfo'
+
+class RealTimeError extends Error
+  constructor: -> @name = 'RealTimeError'
 
 GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   displayName: 'GoogleDriveAuthorizationDialog'
@@ -40,6 +47,7 @@ class GoogleDriveProvider extends ProviderInterface
         list: true
         remove: true
         rename: true
+        close: true
 
     @authToken = null
     @user = null
@@ -47,6 +55,9 @@ class GoogleDriveProvider extends ProviderInterface
     if not @clientId
       throw new Error 'Missing required clientId in googleDrive provider options'
     @mimeType = @options.mimeType or "text/plain"
+    @useRealTimeAPI = @options.useRealTimeAPI or false
+    if @useRealTimeAPI
+      @mimeType += '+cfm_realtime'
     @_loadGAPI()
 
   @Name: 'googleDrive'
@@ -89,17 +100,17 @@ class GoogleDriveProvider extends ProviderInterface
 
   save:  (content, metadata, callback) ->
     @_loadedGAPI =>
-      @_sendFile content, metadata, callback
+      if @useRealTimeAPI
+        @_saveRealTimeFile content, metadata, callback
+      else
+        @_saveFile content, metadata, callback
 
   load: (metadata, callback) ->
     @_loadedGAPI =>
-      request = gapi.client.drive.files.get
-        fileId: metadata.providerData.id
-      request.execute (file) =>
-        if file?.downloadUrl
-          @_downloadFromUrl file.downloadUrl, @authToken, callback
-        else
-          callback 'Unable to get download url'
+      if @useRealTimeAPI
+        @_loadOrCreateRealTimeFile metadata, callback
+      else
+        @_loadFile metadata, callback
 
   list: (metadata, callback) ->
     @_loadedGAPI =>
@@ -113,6 +124,7 @@ class GoogleDriveProvider extends ProviderInterface
             name: item.title
             type: if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
             parent: metadata
+            overwritable: item.editable
             provider: @
             providerData:
               id: item.id
@@ -144,6 +156,10 @@ class GoogleDriveProvider extends ProviderInterface
           metadata.name = newName
           callback null, metadata
 
+  close: (metadata, callback) ->
+    if metadata.providerData?.realTime?.doc?
+      metadata.providerData.realTime.doc.close()
+
   _loadGAPI: ->
     if not window._LoadingGAPI
       window._LoadingGAPI = true
@@ -162,28 +178,37 @@ class GoogleDriveProvider extends ProviderInterface
         if window._LoadedGAPI
           gapi.client.load 'drive', 'v2', ->
             gapi.client.load 'oauth2', 'v2', ->
-              window._LoadedGAPIClients = true
-              callback.call self
+              gapi.load 'drive-realtime', ->
+                window._LoadedGAPIClients = true
+                callback.call self
         else
           setTimeout check, 10
       setTimeout check, 10
 
-  _downloadFromUrl: (url, token, callback) ->
-    xhr = new XMLHttpRequest()
-    xhr.open 'GET', url
-    if token
-      xhr.setRequestHeader 'Authorization', "Bearer #{token.access_token}"
-    xhr.onload = ->
-      callback null, new CloudContent xhr.responseText
-    xhr.onerror = ->
-      callback "Unable to download #{url}"
-    xhr.send()
+  _loadFile: (metadata, callback) ->
+    request = gapi.client.drive.files.get
+      fileId: metadata.providerData.id
+    request.execute (file) =>
+      if file?.downloadUrl
+        xhr = new XMLHttpRequest()
+        xhr.open 'GET', file.downloadUrl
+        if @authToken
+          xhr.setRequestHeader 'Authorization', "Bearer #{@authToken.access_token}"
+        xhr.onload = ->
+          callback null, new CloudContent xhr.responseText
+        xhr.onerror = ->
+          callback "Unable to download #{url}"
+        xhr.send()
+      else
+        callback 'Unable to get download url'
 
-  _sendFile: (content, metadata, callback) ->
+  _saveFile: (content, metadata, callback) ->
     boundary = '-------314159265358979323846'
     header = JSON.stringify
       title: metadata.name
       mimeType: @mimeType
+      parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
+    header = JSON.stringify headerData
 
     [method, path] = if metadata.providerData?.id
       ['PUT', "/upload/drive/v2/files/#{metadata.providerData.id}"]
@@ -211,5 +236,61 @@ class GoogleDriveProvider extends ProviderInterface
           callback null, file
         else
           callback 'Unabled to upload file'
+
+  _loadOrCreateRealTimeFile: (metadata, callback) ->
+    fileLoaded = (doc) ->
+      content = doc.getModel().getRoot().get 'content'
+      if metadata.overwritable
+        throwError = (e) ->
+          if not e.isLocal
+            throw new RealTimeError 'Another user has made edits to this file'
+        #content.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, throwError
+        #content.addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, throwError
+      metadata.providerData.realTime =
+        doc: doc
+        content: content
+      callback null, new CloudContent content.getText()
+
+    init = (model) ->
+      content = model.createString ''
+      model.getRoot().set 'content', content
+
+    if metadata.providerData?.id
+      request = gapi.client.drive.files.get
+        fileId: metadata.providerData.id
+    else
+      request = gapi.client.drive.files.insert
+        title: metadata.name
+        mimeType: @mimeType
+        parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
+
+    request.execute (file) ->
+      if file?.id
+        metadata.overwritable = file.editable
+        metadata.providerData = id: file.id
+        gapi.drive.realtime.load file.id, fileLoaded, init
+      else
+        callback 'Unable to load file'
+
+  _saveRealTimeFile: (content, metadata, callback) ->
+    if metadata.providerData?.model
+      @_diffAndUpdateRealTimeModel content, metadata, callback
+    else
+      @_loadOrCreateRealTimeFile metadata, (err) =>
+        return callback err if err
+        @_diffAndUpdateRealTimeModel content, metadata, callback
+
+  _diffAndUpdateRealTimeModel: (content, metadata, callback) ->
+    index = 0
+    realTimeContent = metadata.providerData.realTime.content
+    diffs = jsdiff.diffChars realTimeContent.getText(), content.getText()
+    for diff in diffs
+      if diff.removed
+        realTimeContent.removeRange index, index + diff.value.length
+      else
+        if diff.added
+          realTimeContent.insertString index, diff.value
+        index += diff.count
+    callback null
 
 module.exports = GoogleDriveProvider

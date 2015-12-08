@@ -16,6 +16,7 @@ class LocalStorageProvider extends ProviderInterface
         list: true
         remove: true
         rename: true
+        close: false
 
   @Name: 'localStorage'
   @Available: ->
