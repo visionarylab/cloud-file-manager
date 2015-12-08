@@ -84,10 +84,17 @@ class GoogleDriveProvider extends ProviderInterface
       gapi.auth.authorize args, (authToken) =>
         @authToken = if authToken and not authToken.error then authToken else null
         @user = null
+        @autoRenewToken @authToken
         if @authToken
           gapi.client.oauth2.userinfo.get().execute (user) =>
             @user = user
         @authCallback @authToken isnt null
+
+  autoRenewToken: (authToken) ->
+    if @_autoRenewTimeout
+      clearTimeout @_autoRenewTimeout
+    if authToken and not authToken.error
+      @_autoRenewTimeout = setTimeout (=> @authorize GoogleDriveProvider.IMMEDIATE), (parseInt(authToken.expires_in, 10) * 0.75) * 1000
 
   renderAuthorizationDialog: ->
     (GoogleDriveAuthorizationDialog {provider: @})
@@ -255,6 +262,12 @@ class GoogleDriveProvider extends ProviderInterface
       content = model.createString ''
       model.getRoot().set 'content', content
 
+    error = (err) =>
+      if err.type is 'TOKEN_REFRESH_REQUIRED'
+        @authorize GoogleDriveProvider.IMMEDIATE
+      else
+        alert err.message
+
     if metadata.providerData?.id
       request = gapi.client.drive.files.get
         fileId: metadata.providerData.id
@@ -268,7 +281,7 @@ class GoogleDriveProvider extends ProviderInterface
       if file?.id
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
-        gapi.drive.realtime.load file.id, fileLoaded, init
+        gapi.drive.realtime.load file.id, fileLoaded, init, error
       else
         callback 'Unable to load file'
 
