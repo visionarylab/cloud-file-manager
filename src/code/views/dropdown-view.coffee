@@ -37,7 +37,11 @@ DropdownItem = React.createFactory React.createClass
     else
       classes.push 'disabled' if not enabled or (@props.isActionMenu and not @props.item.action)
       name = @props.item.name or @props.item
-      (li {ref: 'item', className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter }, name)
+      (li {ref: 'item', className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
+        name
+        if @props.item.items
+          (i {className: 'icon-inspectorArrow-collapse'})
+      )
 
 DropDown = React.createClass
 
