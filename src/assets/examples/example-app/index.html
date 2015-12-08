@@ -13,7 +13,7 @@
       }
     </style>
     <script type="text/javascript">
-      var cfmClient, cfmContent;
+      var cfmClient;
 
       function newFile() {
         cfmClient && cfmClient.newFileDialog();
@@ -33,18 +33,15 @@
       }
 
       function getContent() {
-        cfmContent.setText(document.getElementById("text").value);
-        return cfmContent;
+        return document.getElementById("text").value;
       }
 
-      function setContent(_cfmContent) {
-        cfmContent = _cfmContent;
-        document.getElementById("text").value = cfmContent.getText();
+      function setContent(cfmContent) {
+        document.getElementById("text").value = cfmContent;
       }
 
       function connected(client) {
         cfmClient = client;
-        cfmContent = client.createTextContent(document.getElementById("text").value);
       }
 
       function changed() {

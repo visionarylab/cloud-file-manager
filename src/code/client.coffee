@@ -102,24 +102,10 @@ class CloudFileManagerClient
   setMenuBarInfo: (info) ->
     @_ui.setMenuBarInfo info
 
-  getEmptyContent: ->
-    new CloudContent()
-
-  createContent: (content) ->
-    new CloudContent content
-  createTextContent: (text) ->
-    content = new CloudContent()
-    content.initText text
-    content
-  createJSONContent: (json) ->
-    content = new CloudContent()
-    content.initJSON json
-    content
-
   newFile: (callback = null) ->
     @_closeCurrentFile()
     @_resetState()
-    @_event 'newedFile', {content: @getEmptyContent()}
+    @_event 'newedFile', {content: ""}
 
   newFileDialog: (callback = null) ->
     if @appOptions.ui?.newFileOpensInNewTab
@@ -154,19 +140,20 @@ class CloudFileManagerClient
       @_fileChanged 'openedFile', content, metadata, {overwritable: false, openedContent: content.clone()}
 
   save: (callback = null) ->
-    @_event 'getContent', {}, (content) =>
-      @saveContent content, callback
+    @_event 'getContent', {}, (stringContent) =>
+      @saveContent stringContent, callback
 
-  saveContent: (content, callback = null) ->
+  saveContent: (stringContent, callback = null) ->
     if @state.metadata
-      @saveFile content, @state.metadata, callback
+      @saveFile stringContent, @state.metadata, callback
     else
-      @saveFileDialog content, callback
+      @saveFileDialog stringContent, callback
 
-  saveFile: (content, metadata, callback = null) ->
+  saveFile: (stringContent, metadata, callback = null) ->
     if metadata?.provider?.can 'save'
       @_setState
         saving: metadata
+      content = new CloudContent stringContent
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
         if @state.metadata isnt metadata
@@ -174,15 +161,15 @@ class CloudFileManagerClient
         @_fileChanged 'savedFile', content, metadata, {saved: true}
         callback? content, metadata
     else
-      @saveFileDialog content, callback
+      @saveFileDialog stringContent, callback
 
-  saveFileDialog: (content = null, callback = null) ->
+  saveFileDialog: (stringContent = null, callback = null) ->
     @_ui.saveFileDialog (metadata) =>
-      @_dialogSave content, metadata, callback
+      @_dialogSave stringContent, metadata, callback
 
-  saveFileAsDialog: (content = null, callback = null) ->
+  saveFileAsDialog: (stringContent = null, callback = null) ->
     @_ui.saveFileAsDialog (metadata) =>
-      @_dialogSave content, metadata, callback
+      @_dialogSave stringContent, metadata, callback
 
   saveCopyDialog: (content = null, callback = null) ->
     saveCopy = (content, metadata) =>
@@ -198,7 +185,8 @@ class CloudFileManagerClient
 
   share: ->
     if @state.shareProvider
-      @_event 'getContent', {}, (content) =>
+      @_event 'getContent', {}, (stringContent) =>
+        content = new CloudContent stringContent
         @_setState
           saving: true
         @state.shareProvider.share content, @state.metadata, (err, sharedContentId) =>
@@ -259,12 +247,12 @@ class CloudFileManagerClient
   isAutoSaving: ->
     @_autoSaveInterval > 0
 
-  _dialogSave: (content, metadata, callback) ->
-    if content isnt null
-      @saveFile content, metadata, callback
+  _dialogSave: (stringContent, metadata, callback) ->
+    if stringContent isnt null
+      @saveFile stringContent, metadata, callback
     else
-      @_event 'getContent', {}, (content) =>
-        @saveFile content, metadata, callback
+      @_event 'getContent', {}, (stringContent) =>
+        @saveFile stringContent, metadata, callback
 
   _error: (message) ->
     # for now an alert
@@ -280,7 +268,7 @@ class CloudFileManagerClient
     for own key, value of additionalState
       state[key] = value
     @_setState state
-    @_event type, {content: content, metadata: metadata}
+    @_event type, {content: content.getText()}
 
   _event: (type, data = {}, eventCallback = null) ->
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
