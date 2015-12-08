@@ -10,7 +10,6 @@ class CloudFileManager
   constructor: (options) ->
     # since the module exports an instance of the class we need to fake a class variable as an instance variable
     @DefaultMenu = CloudFileManagerUIMenu.DefaultMenu
-    @AutoSaveMenu = CloudFileManagerUIMenu.AutoSaveMenu
 
     @client = new CloudFileManagerClient()
     @appOptions = {}

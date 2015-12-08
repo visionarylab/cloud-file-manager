@@ -7,58 +7,83 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'save', 'saveFileAsDialog', 'share', 'downloadDialog', 'renameDialog']
-  @AutoSaveMenu: ['newFileDialog', 'openFileDialog', 'reopenDialog', 'separator', 'saveCopyDialog', 'share', 'downloadDialog', 'renameDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'saveFileAsDialog', 'shareSubMenu', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
+    @items = @parseMenuItems options.menu, client
+    console.dir @items
+
+  parseMenuItems: (menuItems, client) ->
     setAction = (action) ->
       client[action]?.bind(client) or (-> alert "No #{action} action is available in the client")
 
     setEnabled = (action) ->
       switch action
+        when 'revertSubMenu'
+          -> (client.state.openedContent? and client.state.metadata?) or client.state.shareProvider?
         when 'reopenDialog'
           -> client.state.openedContent? and client.state.metadata?
+        when 'revertSharedDialog'
+          -> true # TODO: what should the check be here?
         when 'renameDialog'
           -> client.state.metadata?.provider?.can 'rename'
         when 'saveCopyDialog'
           -> client.state.metadata?
-        when 'share'
+        when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
         else
           true
 
+    getItems = (subMenuItems) =>
+      if subMenuItems
+        @parseMenuItems subMenuItems, client
+      else
+        null
+
     names =
       newFileDialog: tr "~MENU.NEW"
       openFileDialog: tr "~MENU.OPEN"
-      reopenDialog: tr "~MENU.REOPEN"
+      reopenDialog: tr "~MENU.REVERT_TO_LAST_OPENED"
+      revertToSharedDialog: tr "~MENU.REVERT_TO_SHARED_VIEW"
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
       saveCopyDialog: tr "~MENU.SAVE_COPY"
-      share: tr "~MENU.SHARE"
+      share: tr "~MENU.SHARE_GET_LINK"
+      shareUpdate: tr "~MENU.SHARE_UPDATE"
       downloadDialog: tr "~MENU.DOWNLOAD"
       renameDialog: tr "~MENU.RENAME"
+      revertSubMenu: tr "~MENU.REVERT_TO"
+      shareSubMenu: tr "~MENU.SHARE"
 
-    @items = []
-    for item, i in options.menu
-      menuItem = if item is 'separator'
-        key: "seperator#{i}"
-        separator: true
+    subMenus =
+      revertSubMenu: ['reopenDialog', 'revertToSharedDialog']
+      shareSubMenu: ['share', 'shareUpdate']
+
+    items = []
+    for item, i in menuItems
+      if item is 'separator'
+        menuItem =
+          key: "seperator#{i}"
+          separator: true
       else if isString item
-        key: item
-        name: options.menuNames?[item] or names[item] or "Unknown item: #{item}"
-        enabled: setEnabled item
-        action: setAction item
+        menuItem =
+          key: item
+          name: options.menuNames?[item] or names[item] or "Unknown item: #{item}"
+          enabled: setEnabled item
+          items: getItems subMenus[item]
+          action: setAction item
       else
-        # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
+        menuItem = item
+          # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
         if isString item.action
-          item.key = item.action
-          item.enabled = setEnabled item.action
-          item.action = setAction item.action
+          menuItem.key = item.action
+          menuItem.enabled = setEnabled item.action
+          menuItem.action = setAction item.action
         else
-          item.enabled or= true
-        item
-      if menuItem
-        @items.push menuItem
+          menuItem.enabled or= true
+        menuItem.items = item.items or getItems item.name
+      items.push menuItem
+    items
 
 class CloudFileManagerUI
 
