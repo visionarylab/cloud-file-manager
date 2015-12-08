@@ -379,6 +379,23 @@
   -ms-user-select: none;
   user-select: none;
 }
+.menu-bar .menu-bar-content-filename input {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  font-size: 13px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  width: 300px;
+  outline: none;
+}
 .menu-bar .menu-bar-file-status-alert {
   font-style: normal;
   font-variant: normal;
