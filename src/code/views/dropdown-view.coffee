@@ -35,7 +35,7 @@ DropdownItem = React.createFactory React.createClass
       classes.push 'separator'
       (li {className: classes.join(' ')}, '')
     else
-      classes.push 'disabled' if not enabled or (@props.isActionMenu and not @props.item.action)
+      classes.push 'disabled' if not enabled or not (@props.item.action or @props.item.items)
       name = @props.item.name or @props.item
       (li {ref: 'item', className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
         name
@@ -46,11 +46,6 @@ DropdownItem = React.createFactory React.createClass
 DropDown = React.createClass
 
   displayName: 'Dropdown'
-
-  getDefaultProps: ->
-    isActionMenu: true              # Whether each item contains its own action
-    onSelect: (item) ->             # If not, @props.onSelect is called
-      log.info "Selected #{item}"
 
   getInitialState: ->
     showingMenu: false
@@ -71,13 +66,11 @@ DropDown = React.createClass
     @setState subMenu: subMenu
 
   select: (item) ->
+    return if item?.items
     nextState = (not @state.showingMenu)
     @setState {showingMenu: nextState}
     return unless item
-    if @props.isActionMenu and item.action
-      item.action()
-    else
-      @props.onSelect item
+    item.action?()
 
   render: ->
     menuClass = if @state.showingMenu then 'menu-showing' else 'menu-hidden'
@@ -96,12 +89,12 @@ DropDown = React.createClass
       if @props.items?.length > 0
         (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
           (ul {},
-            (DropdownItem {key: index, item: item, select: @select, isActionMenu: @props.isActionMenu, setSubMenu: @setSubMenu}) for item, index in @props.items
+            (DropdownItem {key: index, item: item, select: @select, setSubMenu: @setSubMenu}) for item, index in @props.items
           )
           if @state.subMenu
             (div {className: menuClass, style: @state.subMenu.style},
               (ul {},
-                (DropdownItem {key: index, item: item, select: @select, isActionMenu: @props.isActionMenu}) for item, index in @state.subMenu.items
+                (DropdownItem {key: index, item: item, select: @select}) for item, index in @state.subMenu.items
               )
             )
         )
