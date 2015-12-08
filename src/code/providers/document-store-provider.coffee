@@ -186,6 +186,7 @@ class DocumentStoreProvider extends ProviderInterface
         {withCredentials}
       success: (data) ->
         if @options.patch then @previouslySavedContent = data
+        metadata.name ?= data.docName
         callback null, new CloudContent data.content or data
       error: ->
         message = if metadata.sharedContentId
@@ -205,7 +206,7 @@ class DocumentStoreProvider extends ProviderInterface
       callback err, data.id
 
   save: (content, metadata, callback) ->
-    content = @_wrapContent content.getContent(), metadata.sharedContentSecretKey
+    content = @_wrapContent content.getContent(), metadata
 
     withCredentials = true
     isSharing = metadata.sharedContentSecretKey?
@@ -223,7 +224,7 @@ class DocumentStoreProvider extends ProviderInterface
       sendContent = diff
       url = patchDocumentUrl
     else
-      if metadata.name then params.recordname = metadata.name
+      if metadata.name and not isSharing then params.recordname = metadata.name
       url = saveDocumentUrl
       sendContent = content
 
@@ -284,17 +285,19 @@ class DocumentStoreProvider extends ProviderInterface
 
   # The document server requires the content to be JSON, and it must have
   # certain pre-defined keys in order to be listed when we query the list
-  _wrapContent: (content, share) ->
+  _wrapContent: (content, metadata) ->
     if isString content
       try
         content = JSON.parse content
       catch
+    docName = metadata.name or ""
     JSON.stringify
       appName: @options.appName
       appVersion: @options.appVersion
       appBuildNum: @options.appBuildNum
+      docName: docName
       content: content
-      _permissions: if share then 1 else 0
+      _permissions: if metadata.sharedContentSecretKey then 1 else 0
 
   _createDiff: (json1, json2) ->
     try
