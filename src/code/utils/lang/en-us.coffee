@@ -3,7 +3,7 @@ module.exports =
 
   "~MENU.NEW": "New"
   "~MENU.OPEN": "Open ..."
-  "~MENU.REOPEN": "Reopen"
+  "~MENU.REOPEN": "Revert to recently opened state"
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
   "~MENU.SAVE_COPY": "Save A Copy ..."

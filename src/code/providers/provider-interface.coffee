@@ -30,6 +30,7 @@ class CloudContent
     @_ = content
     @dirty = if options.hasOwnProperty('dirty') then options.dirty else true
     @
+  clone: -> new CloudContent _.cloneDeep @_
 
   getText: -> if @_ is null then '' else if isString(@_) then @_ else JSON.stringify @_
   initText: (text) -> @setText text, {dirty: false}

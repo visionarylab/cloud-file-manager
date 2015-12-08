@@ -17,7 +17,7 @@ class CloudFileManagerUIMenu
     setEnabled = (action) ->
       switch action
         when 'reopenDialog'
-          -> client.state.metadata?.provider?.can 'load'
+          -> client.state.openedContent? and client.state.metadata?
         when 'renameDialog'
           -> client.state.metadata?.provider?.can 'rename'
         when 'saveCopyDialog'

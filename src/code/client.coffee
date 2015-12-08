@@ -138,7 +138,7 @@ class CloudFileManagerClient
       metadata.provider.load metadata, (err, content) =>
         return @_error(err) if err
         @_closeCurrentFile()
-        @_fileChanged 'openedFile', content, metadata
+        @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
         callback? content, metadata
     else
       @openFileDialog callback
@@ -151,7 +151,7 @@ class CloudFileManagerClient
   openSharedContent: (id) ->
     @state.shareProvider?.loadSharedContent id, (err, content) =>
       return @_error(err) if err
-      @_fileChanged 'openedFile', content, {overwritable: false}
+      @_fileChanged 'openedFile', content, null, {overwritable: false, openedContent: content.clone()}
 
   save: (callback = null) ->
     @_event 'getContent', {}, (content) =>
@@ -171,7 +171,7 @@ class CloudFileManagerClient
         return @_error(err) if err
         if @state.metadata isnt metadata
           @_closeCurrentFile()
-        @_fileChanged 'savedFile', content, metadata
+        @_fileChanged 'savedFile', content, metadata, {saved: true}
         callback? content, metadata
     else
       @saveFileDialog content, callback
@@ -231,15 +231,15 @@ class CloudFileManagerClient
       callback? 'No currently active file'
 
   reopen: (callback = null) ->
-    if @state.metadata
-      @openFile @state.metadata, callback
+    if @state.openedContent? and @state.metadata
+      @_fileChanged 'openedFile', @state.openedContent, @state.metadata
 
   reopenDialog: (callback = null) ->
-    if @state.metadata
+    if @state.openedContent? and @state.metadata
       if (not @state.dirty) or (confirm tr '~CONFIRM.REOPEN_FILE')
-        @openFile @state.metadata, callback
+        @reopen callback
     else
-      callback? 'No currently active file'
+      callback? 'No initial opened version was found for the currently active file'
 
   dirty: (isDirty = true)->
     @_setState
@@ -270,14 +270,16 @@ class CloudFileManagerClient
     # for now an alert
     alert message
 
-  _fileChanged: (type, content, metadata) ->
+  _fileChanged: (type, content, metadata, additionalState={}) ->
     metadata.overwritable ?= true
-    @_setState
-      content: content
+    state =
       metadata: metadata
       saving: null
-      saved: type is 'savedFile'
+      saved: false
       dirty: false
+    for own key, value of additionalState
+      state[key] = value
+    @_setState state
     @_event type, {content: content, metadata: metadata}
 
   _event: (type, data = {}, eventCallback = null) ->
@@ -292,7 +294,7 @@ class CloudFileManagerClient
 
   _resetState: ->
     @_setState
-      content: null
+      openedContent: null
       metadata: null
       dirty: false
       saving: null
