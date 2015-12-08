@@ -215,7 +215,6 @@ class GoogleDriveProvider extends ProviderInterface
       title: metadata.name
       mimeType: @mimeType
       parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
-    header = JSON.stringify headerData
 
     [method, path] = if metadata.providerData?.id
       ['PUT', "/upload/drive/v2/files/#{metadata.providerData.id}"]
