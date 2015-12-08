@@ -8,6 +8,7 @@ ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
 
+cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
 CloudContent = (require './providers/provider-interface').CloudContent
 
 class CloudFileManagerClientEvent
@@ -63,6 +64,12 @@ class CloudFileManagerClient
     # check for autosave
     if @appOptions.autoSaveInterval
       @autoSave @appOptions.autoSaveInterval
+
+    # initialize the cloudContentFactory with all data we want in the envelope
+    cloudContentFactory.setEnvelopeMetadata
+      appName: @appOptions.appName or ""
+      appVersion: @appOptions.appVersion or ""
+      appBuildNum: @appOptions.appBuildNum or ""
 
   setProviderOptions: (name, newOptions) ->
     for provider in @state.availableProviders
@@ -153,7 +160,7 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'save'
       @_setState
         saving: metadata
-      content = new CloudContent stringContent
+      content = cloudContentFactory.createEnvelopedCloudContent stringContent
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
         if @state.metadata isnt metadata
@@ -186,7 +193,7 @@ class CloudFileManagerClient
   share: ->
     if @state.shareProvider
       @_event 'getContent', {}, (stringContent) =>
-        content = new CloudContent stringContent
+        content = cloudContentFactory.createEnvelopedCloudContent stringContent
         @_setState
           saving: true
         @state.shareProvider.share content, @state.metadata, (err, sharedContentId) =>

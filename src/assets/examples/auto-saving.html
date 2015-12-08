@@ -13,6 +13,9 @@
         app: "example-app",
         autoSaveInterval: 5,
         mimeType: "text/plain",
+        appName: "CFM_Demo",
+        appVersion: "0.1",
+        appBuildNum: "1",
         providers: [
           "localStorage",
           {
@@ -29,11 +32,6 @@
           },
           {
             "name": "documentStore",
-            // These parameters are optional. If the saved file is JSON with
-            // these parameters already set, these will be ignored
-            "appName": "CFM_Demo",
-            "appVersion": "0.1",
-            "appBuildNum": "1",
             "patch": true
           }
         ],

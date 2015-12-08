@@ -2,7 +2,7 @@ tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
-CloudContent = (require './provider-interface').CloudContent
+cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 class ReadOnlyProvider extends ProviderInterface
@@ -92,7 +92,7 @@ class ReadOnlyProvider extends ProviderInterface
           children: null
       if type is CloudMetadata.Folder
         metadata.providerData.children = @_convertJSONToMetadataTree json[filename], metadata
-      content = new CloudContent json[filename]
+      content = cloudContentFactory.createEnvelopedCloudContent json[filename]
       tree[filename] =
         content: content
         metadata: metadata

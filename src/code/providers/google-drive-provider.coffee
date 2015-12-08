@@ -5,7 +5,7 @@ isString = require '../utils/is-string'
 jsdiff = require 'diff'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
-CloudContent = (require './provider-interface').CloudContent
+cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 class RealTimeInfo extends Error
@@ -202,7 +202,7 @@ class GoogleDriveProvider extends ProviderInterface
         if @authToken
           xhr.setRequestHeader 'Authorization', "Bearer #{@authToken.access_token}"
         xhr.onload = ->
-          callback null, new CloudContent xhr.responseText
+          callback null, cloudContentFactory.createEnvelopedCloudContent xhr.responseText
         xhr.onerror = ->
           callback "Unable to download #{url}"
         xhr.send()
@@ -223,7 +223,7 @@ class GoogleDriveProvider extends ProviderInterface
 
     body = [
       "\r\n--#{boundary}\r\nContent-Type: application/json\r\n\r\n#{header}",
-      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content.getText()}",
+      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content.getContentAsJSON()}",
       "\r\n--#{boundary}--"
     ].join ''
 
@@ -255,7 +255,7 @@ class GoogleDriveProvider extends ProviderInterface
       metadata.providerData.realTime =
         doc: doc
         content: content
-      callback null, new CloudContent content.getText()
+      callback null, cloudContentFactory.createEnvelopedCloudContent content.getText()
 
     init = (model) ->
       content = model.createString ''
@@ -295,7 +295,7 @@ class GoogleDriveProvider extends ProviderInterface
   _diffAndUpdateRealTimeModel: (content, metadata, callback) ->
     index = 0
     realTimeContent = metadata.providerData.realTime.content
-    diffs = jsdiff.diffChars realTimeContent.getText(), content.getText()
+    diffs = jsdiff.diffChars realTimeContent.getContentAsJSON(), content.getContentAsJSON()
     for diff in diffs
       if diff.removed
         realTimeContent.removeRange index, index + diff.value.length

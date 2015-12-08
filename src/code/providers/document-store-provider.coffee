@@ -15,7 +15,7 @@ isString = require '../utils/is-string'
 jiff = require 'jiff'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
-CloudContent = (require './provider-interface').CloudContent
+cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
@@ -187,7 +187,7 @@ class DocumentStoreProvider extends ProviderInterface
       success: (data) ->
         if @options.patch then @previouslySavedContent = data
         metadata.name ?= data.docName
-        callback null, new CloudContent data.content or data
+        callback null, cloudContentFactory.createEnvelopedCloudContent data
       error: ->
         message = if metadata.sharedContentId
           "Unable to load document '#{metadata.sharedContentId}'. Perhaps the file was not shared?"
@@ -205,9 +205,8 @@ class DocumentStoreProvider extends ProviderInterface
     @save content, metadata, (err, data) ->
       callback err, data.id
 
-  save: (content, metadata, callback) ->
-    content = @_wrapContent content.getContent(), metadata
-
+  save: (cloudContent, metadata, callback) ->
+    content = cloudContent.getContentAsJSON()
     withCredentials = true
     isSharing = metadata.sharedContentSecretKey?
 
@@ -285,19 +284,19 @@ class DocumentStoreProvider extends ProviderInterface
 
   # The document server requires the content to be JSON, and it must have
   # certain pre-defined keys in order to be listed when we query the list
-  _wrapContent: (content, metadata) ->
-    if isString content
-      try
-        content = JSON.parse content
-      catch
-    docName = metadata.name or ""
-    JSON.stringify
-      appName: @options.appName
-      appVersion: @options.appVersion
-      appBuildNum: @options.appBuildNum
-      docName: docName
-      content: content
-      _permissions: if metadata.sharedContentSecretKey then 1 else 0
+  # _wrapContent: (content, metadata) ->
+  #   if isString content
+  #     try
+  #       content = JSON.parse content
+  #     catch
+  #   docName = metadata.name or ""
+  #   JSON.stringify
+  #     appName: @options.appName
+  #     appVersion: @options.appVersion
+  #     appBuildNum: @options.appBuildNum
+  #     docName: docName
+  #     content: content
+  #     _permissions: if metadata.sharedContentSecretKey then 1 else 0
 
   _createDiff: (json1, json2) ->
     try

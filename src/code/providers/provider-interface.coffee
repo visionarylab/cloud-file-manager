@@ -20,25 +20,53 @@ class CloudMetadata
       parent = parent.parent
     _path
 
+# singleton that can create CloudContent wrapped with global options
+class CloudContentFactory
+  constructor: ->
+    @envelopeMetadata = {}
+
+  # set initial envelopeMetadata or update individual properties
+  setEnvelopeMetadata: (envelopeMetadata) ->
+    for key of envelopeMetadata
+      @envelopeMetadata[key] = envelopeMetadata[key]
+
+  # returns new CloudContent containing enveloped data
+  createEnvelopedCloudContent: (content) ->
+    new CloudContent @envelopContent content
+
+  # envelops content with metadata, returns an object.
+  # If content was already an object (Object or JSON) with metadata,
+  # any existing metadata will be retained.
+  # Note: calling `envelopContent` may be safely called on something that
+  # has already had `envelopContent` called on it, and will be a no-op.
+  envelopContent: (content) ->
+    envelopedCloudContent = @_wrapIfNeeded content
+    for key of @envelopeMetadata
+      envelopedCloudContent[key] ?= @envelopeMetadata[key]
+    return envelopedCloudContent
+
+  # envelops content in {content: content} if needed, returns an object
+  _wrapIfNeeded: (content) ->
+    if isString content
+      try content = JSON.parse content
+    if content.content?
+      return content
+    else
+      return {content}
+
 class CloudContent
-  constructor: (@_ = null, options = {}) ->
-    @dirty = false
+  constructor: (@_ = {}) ->
 
   getContent: -> @_
-  initContent: (content) -> @setContent content, {dirty: false}
-  setContent: (content, options = {}) ->
-    @_ = content
-    @dirty = if options.hasOwnProperty('dirty') then options.dirty else true
-    @
+  getContentAsJSON:  -> JSON.stringify @_
+
   clone: -> new CloudContent _.cloneDeep @_
 
-  getText: -> if @_ is null then '' else if isString(@_) then @_ else JSON.stringify @_
-  initText: (text) -> @setText text, {dirty: false}
-  setText: (text, options) -> @setContent text, options
+  setText: (text) -> @_.content = text
+  getText: -> if @_.content is null then '' else if isString(@_.content) then @_.content else JSON.stringify @_.content
 
-  getJSON: -> if isString(@_) then JSON.parse @_ else @_
-  initJSON: (json) -> @setJSON json, {dirty: false}
-  setJSON: (json, options) -> @setContent (if isString(json) then json else JSON.stringify json), options
+  addMetadata: (metadata) -> @_[key] = metadata[key] for key of metadata
+  get: (prop) -> @_[prop]
 
 class ProviderInterface
 
@@ -90,4 +118,5 @@ module.exports =
   CloudFile: CloudFile
   CloudMetadata: CloudMetadata
   CloudContent: CloudContent
+  cloudContentFactory: new CloudContentFactory()
   ProviderInterface: ProviderInterface
