@@ -43,8 +43,11 @@ module.exports =
   "~RENAME_DIALOG.RENAME": "Rename"
   "~RENAME_DIALOG.CANCEL": "Cancel"
 
+  "~SHARE_DIALOG.COPY": "Copy"
   "~SHARE_DIALOG.VIEW": "View"
   "~SHARE_DIALOG.CLOSE": "Close"
+  "~SHARE_DIALOG.COPY_SUCCESS": "The share url has been copied to the clipboard."
+  "~SHARE_DIALOG.COPY_ERROR": "Sorry, the share url was not able to be copied to the clipboard."
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes.  Are you sure you want open a new file?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes.  Are you sure you want a new file?"
