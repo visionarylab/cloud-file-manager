@@ -32,7 +32,7 @@ class CloudFileManagerUIMenu
         when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
         when 'shareUpdate'
-          -> client.state.openedContent?.get("shareEditKey")?
+          -> client.state.currentContent?.get("shareEditKey")?
         else
           true
 
