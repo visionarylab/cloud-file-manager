@@ -517,6 +517,11 @@
   float: right;
   cursor: pointer;
 }
+.modal .modal-content .modal-dialog .modal-dialog-wrapper .modal-dialog-blocking-message {
+  padding: 20px;
+  min-width: 400px;
+  text-align: center;
+}
 .modal-dialog-alert {
   font-size: 12px;
   color: #d96835;
