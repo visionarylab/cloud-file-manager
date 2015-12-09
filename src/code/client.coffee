@@ -212,7 +212,8 @@ class CloudFileManagerClient
     if sharedDocumentId
       showShareDialog sharedDocumentId
     else
-      @share (sharedDocumentId) ->
+      @share (sharedDocumentId) =>
+        @dirty()
         showShareDialog sharedDocumentId
 
   shareUpdate: ->
