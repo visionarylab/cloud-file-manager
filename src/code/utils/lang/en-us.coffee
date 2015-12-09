@@ -1,5 +1,5 @@
 module.exports =
-  "~MENUBAR.UNTITLE_DOCUMENT": "Untitled Document"
+  "~MENUBAR.UNTITLED_DOCUMENT": "Untitled Document"
 
   "~MENU.NEW": "New"
   "~MENU.OPEN": "Open ..."
@@ -43,6 +43,7 @@ module.exports =
   "~RENAME_DIALOG.RENAME": "Rename"
   "~RENAME_DIALOG.CANCEL": "Cancel"
 
+  "~SHARE_DIALOG.VIEW": "View"
   "~SHARE_DIALOG.CLOSE": "Close"
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes.  Are you sure you want open a new file?"

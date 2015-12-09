@@ -87,24 +87,19 @@ class CloudFileManagerClient
       @_listeners.push listener
 
   appendMenuItem: (item) ->
-    @_ui.appendMenuItem item
-    @
+    @_ui.appendMenuItem item; @
 
   prependMenuItem: (item) ->
-    @_ui.prependMenuItem item
-    @
+    @_ui.prependMenuItem item; @
 
   replaceMenuItem: (key, item) ->
-    @_ui.replaceMenuItem key, item
-    @
+    @_ui.replaceMenuItem key, item; @
 
   insertMenuItemBefore: (key, item) ->
-    @_ui.insertMenuItemBefore key, item
-    @
+    @_ui.insertMenuItemBefore key, item; @
 
   insertMenuItemAfter: (key, item) ->
-    @_ui.insertMenuItemAfter key, item
-    @
+    @_ui.insertMenuItemAfter key, item; @
 
   setMenuBarInfo: (info) ->
     @_ui.setMenuBarInfo info
@@ -160,19 +155,16 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'save'
       @_setState
         saving: metadata
-      if @state.openedContent?
-        cloudContent = @state.openedContent
-        cloudContent.setText stringContent
-      else
-        cloudContent = cloudContentFactory.createEnvelopedCloudContent stringContent
-      cloudContent.addMetadata docName: metadata.name
 
-      metadata.provider.save cloudContent, metadata, (err) =>
+      currentContent = @_createOrUpdateCurrentContent stringContent
+      currentContent.addMetadata docName: metadata.name
+
+      metadata.provider.save currentContent, metadata, (err) =>
         return @_error(err) if err
         if @state.metadata isnt metadata
           @_closeCurrentFile()
-        @_fileChanged 'savedFile', cloudContent, metadata, {saved: true}
-        callback? cloudContent, metadata
+        @_fileChanged 'savedFile', currentContent, metadata, {saved: true, currentContent: currentContent}
+        callback? currentContent, metadata
     else
       @saveFileDialog stringContent, callback
 
@@ -197,7 +189,8 @@ class CloudFileManagerClient
         saveCopy content, metadata
 
   shareGetLink: ->
-    if sharedDocumentId = @state.openedContent?.get "sharedDocumentId"
+    sharedDocumentId = @state.currentContent?.get "sharedDocumentId"
+    if sharedDocumentId
       @_showShareDialog sharedDocumentId
     else
       @share (sharedDocumentId) =>
@@ -209,18 +202,13 @@ class CloudFileManagerClient
   share: (callback) ->
     if @state.shareProvider
       @_event 'getContent', {}, (stringContent) =>
-        if @state.openedContent?
-          cloudContent = @state.openedContent
-          cloudContent.setText stringContent
-        else
-          cloudContent = cloudContentFactory.createEnvelopedCloudContent stringContent
-
         @_setState
           saving: true
-        @state.shareProvider.share cloudContent, @state.metadata, (err, sharedContentId) =>
+        currentContent = @_createOrUpdateCurrentContent stringContent
+        @state.shareProvider.share currentContent, @state.metadata, (err, sharedContentId) =>
           @_setState
             saving: false
-            openedContent: cloudContent.clone()
+            currentContent: currentContent
           return @_error(err) if err
           callback? sharedContentId
 
@@ -239,8 +227,7 @@ class CloudFileManagerClient
         return @_error(err) if err
         @_setState
           metadata: metadata
-        if @state.openedContent
-          @state.openedContent.addMetadata docName: metadata.name
+        @state.currentContent?.addMetadata docName: metadata.name
         @_event 'renamedFile', {metadata: metadata}
         callback? newName
 
@@ -253,7 +240,7 @@ class CloudFileManagerClient
 
   reopen: (callback = null) ->
     if @state.openedContent? and @state.metadata
-      @_fileChanged 'openedFile', @state.openedContent, @state.metadata
+      @_fileChanged 'openedFile', @state.openedContent, @state.metadata, {openedContent: @state.openedContent.clone()}
 
   reopenDialog: (callback = null) ->
     if @state.openedContent? and @state.metadata
@@ -316,6 +303,7 @@ class CloudFileManagerClient
   _resetState: ->
     @_setState
       openedContent: null
+      currentContent: null
       metadata: null
       dirty: false
       saving: null
@@ -324,6 +312,14 @@ class CloudFileManagerClient
   _closeCurrentFile: ->
     if @state.metadata?.provider?.can 'close'
       @state.metadata.provider.close @state.metadata
+
+  _createOrUpdateCurrentContent: (stringContent) ->
+    if @state.currentContent?
+      currentContent = @state.currentContent
+      currentContent.setText stringContent
+    else
+      currentContent = cloudContentFactory.createEnvelopedCloudContent stringContent
+    currentContent
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

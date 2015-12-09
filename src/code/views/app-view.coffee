@@ -26,7 +26,10 @@ App = React.createClass
   displayName: 'CloudFileManager'
 
   getFilename: ->
-    if @props.client.state.metadata?.hasOwnProperty('name') then @props.client.state.metadata.name else (tr "~MENUBAR.UNTITLE_DOCUMENT")
+    if @props.client.state.metadata?.hasOwnProperty('name') and @props.client.state.metadata.name.length > 0
+      @props.client.state.metadata.name
+    else
+      (tr "~MENUBAR.UNTITLED_DOCUMENT")
 
   getProvider: ->
     @props.client.state.metadata?.provider
