@@ -185,9 +185,10 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         {withCredentials}
       success: (data) ->
-        if @options.patch then @previouslySavedContent = data
+        content = cloudContentFactory.createEnvelopedCloudContent data
+        if @options.patch then @previouslySavedContent = content.clone()
         metadata.name ?= data.docName
-        callback null, cloudContentFactory.createEnvelopedCloudContent data
+        callback null, content
       error: ->
         message = if metadata.sharedContentId
           "Unable to load document '#{metadata.sharedContentId}'. Perhaps the file was not shared?"
@@ -196,34 +197,51 @@ class DocumentStoreProvider extends ProviderInterface
         callback message
 
   share: (content, metadata, callback) ->
-    # for the moment, create completely random runKey and don't
-    # bother to store it.
-    runKey = Math.random().toString(16).substring(2)
-    metadata ?= new CloudMetadata {type: CloudMetadata.File}  # we may not have metadata yet
-    metadata.sharedContentSecretKey = runKey
+    runKey = content.get("shareEditKey") or Math.random().toString(16).substring(2)
 
-    @save content, metadata, (err, data) ->
-      callback err, data.id
+    params =
+      runKey: runKey
+
+    if content.get("sharedDocumentId")
+      params.recordid = content.get("sharedDocumentId")
+
+    content.addMetadata
+      _permissions: 1
+      shareEditKey: null            # strip these out of the shared data if they
+      sharedDocumentId: null        # exist (they'll be re-added on success)
+
+    url = @_addParams(saveDocumentUrl, params)
+
+    $.ajax
+      dataType: 'json'
+      method: 'POST'
+      url: url
+      data: content.getContentAsJSON()
+      context: @
+      xhrFields:
+        withCredentials: false
+      success: (data) ->
+        content.addMetadata
+          sharedDocumentId: data.id
+          shareEditKey: runKey
+          _permissions: 0
+        callback null, data.id
+      error: ->
+        callback "Unable to save "+metadata.name
 
   save: (cloudContent, metadata, callback) ->
-    content = cloudContent.getContentAsJSON()
-    withCredentials = true
-    isSharing = metadata.sharedContentSecretKey?
+    content = cloudContent.getContent()
 
     params = {}
-    if isSharing
-      params.runKey = metadata.sharedContentSecretKey
-      withCredentials = false
-    else if metadata.providerData.id then params.recordid = metadata.providerData.id
-
+    if metadata.providerData.id then params.recordid = metadata.providerData.id
 
     # See if we can patch
-    canOverwrite = metadata.overwritable and @previouslySavedContent and not isSharing
-    if canOverwrite and diff = @_createDiff @previouslySavedContent, content
+    canOverwrite = metadata.overwritable and @previouslySavedContent?
+    if canOverwrite and diff = @_createDiff @previouslySavedContent.getContent(), content
       sendContent = diff
       url = patchDocumentUrl
     else
-      if metadata.name and not isSharing then params.recordname = metadata.name
+      if metadata.name then params.recordname = metadata.name
       url = saveDocumentUrl
       sendContent = content
 
@@ -233,16 +251,14 @@ class DocumentStoreProvider extends ProviderInterface
       dataType: 'json'
       method: 'POST'
       url: url
-      data: sendContent
+      data: JSON.stringify sendContent
       context: @
       xhrFields:
-        {withCredentials}
+        withCredentials: true
       success: (data) ->
-        if not isSharing
-          if @options.patch then @previouslySavedContent = content
-          if data.id then metadata.providerData.id = data.id
-        # clear share info from metadata
-        metadata.sharedContentSecretKey = null
+        if @options.patch then @previouslySavedContent = cloudContent.clone()
+        if data.id then metadata.providerData.id = data.id
+
         callback null, data
       error: ->
         callback "Unable to save "+metadata.name
@@ -282,28 +298,12 @@ class DocumentStoreProvider extends ProviderInterface
       kvp.push [key, value].map(encodeURI).join "="
     return url + "?" + kvp.join "&"
 
-  # The document server requires the content to be JSON, and it must have
-  # certain pre-defined keys in order to be listed when we query the list
-  # _wrapContent: (content, metadata) ->
-  #   if isString content
-  #     try
-  #       content = JSON.parse content
-  #     catch
-  #   docName = metadata.name or ""
-  #   JSON.stringify
-  #     appName: @options.appName
-  #     appVersion: @options.appVersion
-  #     appBuildNum: @options.appBuildNum
-  #     docName: docName
-  #     content: content
-  #     _permissions: if metadata.sharedContentSecretKey then 1 else 0
-
-  _createDiff: (json1, json2) ->
+  _createDiff: (obj1, obj2) ->
     try
       opts =
         hash: @options.patchObjectHash if typeof @options.patchObjectHash is "function"
-      diff = jiff.diff(JSON.parse(json1), JSON.parse(json2), opts)
-      return JSON.stringify diff
+      diff = jiff.diff(obj1, obj2, opts)
+      return diff
     catch
       return null
 

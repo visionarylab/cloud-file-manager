@@ -160,13 +160,17 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'save'
       @_setState
         saving: metadata
-      content = cloudContentFactory.createEnvelopedCloudContent stringContent
-      metadata.provider.save content, metadata, (err) =>
+      if @state.openedContent?
+        cloudContent = @state.openedContent
+        cloudContent.setText stringContent
+      else
+        cloudContent = cloudContentFactory.createEnvelopedCloudContent stringContent
+      metadata.provider.save cloudContent, metadata, (err) =>
         return @_error(err) if err
         if @state.metadata isnt metadata
           @_closeCurrentFile()
-        @_fileChanged 'savedFile', content, metadata, {saved: true}
-        callback? content, metadata
+        @_fileChanged 'savedFile', cloudContent, metadata, {saved: true}
+        callback? cloudContent, metadata
     else
       @saveFileDialog stringContent, callback
 
@@ -193,12 +197,18 @@ class CloudFileManagerClient
   share: ->
     if @state.shareProvider
       @_event 'getContent', {}, (stringContent) =>
-        content = cloudContentFactory.createEnvelopedCloudContent stringContent
+        if @state.openedContent?
+          cloudContent = @state.openedContent
+          cloudContent.setText stringContent
+        else
+          cloudContent = cloudContentFactory.createEnvelopedCloudContent stringContent
+
         @_setState
           saving: true
-        @state.shareProvider.share content, @state.metadata, (err, sharedContentId) =>
+        @state.shareProvider.share cloudContent, @state.metadata, (err, sharedContentId) =>
           @_setState
             saving: false
+            openedContent: cloudContent.clone()
           return @_error(err) if err
 
           path = document.location.origin + document.location.pathname
