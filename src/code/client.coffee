@@ -165,6 +165,8 @@ class CloudFileManagerClient
         cloudContent.setText stringContent
       else
         cloudContent = cloudContentFactory.createEnvelopedCloudContent stringContent
+      cloudContent.addMetadata docName: metadata.name
+
       metadata.provider.save cloudContent, metadata, (err) =>
         return @_error(err) if err
         if @state.metadata isnt metadata
@@ -225,6 +227,8 @@ class CloudFileManagerClient
         return @_error(err) if err
         @_setState
           metadata: metadata
+        if @state.openedContent
+          @state.openedContent.addMetadata docName: metadata.name
         @_event 'renamedFile', {metadata: metadata}
         callback? newName
 

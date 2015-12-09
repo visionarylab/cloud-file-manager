@@ -225,6 +225,7 @@ class DocumentStoreProvider extends ProviderInterface
           sharedDocumentId: data.id
           shareEditKey: runKey
           _permissions: 0
+        metadata?.name = data.docName
         callback null, data.id
       error: ->
         callback "Unable to save "+metadata.name
