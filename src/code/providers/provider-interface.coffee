@@ -118,6 +118,12 @@ class ProviderInterface
   close: (metadata, callback) ->
     @_notImplemented 'close'
 
+  openSaved: (openSavedParams, callback) ->
+    @_notImplemented 'openSaved'
+
+  getOpenSavedParams: (metadata) ->
+    @_notImplemented 'getOpenSavedParams'
+
   _notImplemented: (methodName) ->
     alert "#{methodName} not implemented for #{@name} provider"
 

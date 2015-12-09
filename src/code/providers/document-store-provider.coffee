@@ -292,6 +292,18 @@ class DocumentStoreProvider extends ProviderInterface
       error: ->
         callback "Unable to rename "+metadata.name
 
+  openSaved: (openSavedParams, callback) ->
+    metadata = new CloudMetadata
+      type: CloudMetadata.File
+      provider: @
+      providerData:
+        id: openSavedParams
+    @load metadata, (err, content) ->
+      callback err, content, metadata
+      
+  getOpenSavedParams: (metadata) ->
+    metadata.providerData.id
+
   _addParams: (url, params) ->
     return url unless params
     kvp = []

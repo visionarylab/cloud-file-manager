@@ -23,6 +23,7 @@ class CloudFileManagerClient
     @_listeners = []
     @_resetState()
     @_ui = new CloudFileManagerUI @
+    @providers = {}
 
   setAppOptions: (@appOptions = {})->
     # flter for available providers
@@ -48,7 +49,9 @@ class CloudFileManagerClient
       else
         if allProviders[providerName]
           Provider = allProviders[providerName]
-          availableProviders.push new Provider providerOptions
+          provider = new Provider providerOptions
+          @providers[providerName] = provider
+          availableProviders.push provider
         else
           @_error "Unknown provider: #{providerName}"
     @_setState availableProviders: availableProviders
@@ -72,6 +75,7 @@ class CloudFileManagerClient
       appBuildNum: @appOptions.appBuildNum or ""
 
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
+    @saveCopyOpensInNewTab = if @appOptions.ui?.hasOwnProperty('saveCopyOpensInNewTab') then @appOptions.ui.saveCopyOpensInNewTab else true
 
   setProviderOptions: (name, newOptions) ->
     for provider in @state.availableProviders
@@ -113,7 +117,7 @@ class CloudFileManagerClient
 
   newFileDialog: (callback = null) ->
     if @newFileOpensInNewTab
-      window.open window.location, '_blank'
+      window.open @_getCurrentUrl(), '_blank'
     else if @state.dirty
       if @_autoSaveInterval and @state.metadata
         @save()
@@ -142,6 +146,16 @@ class CloudFileManagerClient
     @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
       return @_error(err) if err
       @_fileChanged 'openedFile', content, metadata, {overwritable: false, openedContent: content.clone()}
+
+  openSaved: (params) ->
+    [providerName, providerParams] = params.split ':'
+    provider = @providers[providerName]
+    if provider
+      provider.authorized (authorized) =>
+        if authorized
+          provider.openSaved providerParams, (err, content, metadata) =>
+            return @_error(err) if err
+            @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
 
   save: (callback = null) ->
     @_event 'getContent', {}, (stringContent) =>
@@ -175,21 +189,24 @@ class CloudFileManagerClient
     @_ui.saveFileAsDialog (metadata) =>
       @_dialogSave stringContent, metadata, callback
 
-  saveCopyDialog: (content = null, callback = null) ->
-    saveCopy = (content, metadata) =>
+  saveCopyDialog: (stringContent = null, callback = null) ->
+    saveCopy = (stringContent, metadata) =>
+      content = cloudContentFactory.createEnvelopedCloudContent stringContent
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
+        if @saveCopyOpensInNewTab
+          window.open @_getCurrentUrl "openSaved=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}"
         callback? content, metadata
     @_ui.saveCopyDialog (metadata) =>
-      if content is null
-        @_event 'getContent', {}, (content) ->
-          saveCopy content, metadata
+      if stringContent is null
+        @_event 'getContent', {}, (stringContent) ->
+          saveCopy stringContent, metadata
       else
-        saveCopy content, metadata
+        saveCopy stringContent, metadata
 
   shareGetLink: ->
     showShareDialog = (sharedDocumentId) =>
-      @_ui.shareUrlDialog "#{document.location.origin}#{document.location.pathname}?openShared=#{sharedDocumentId}"
+      @_ui.shareUrlDialog @_getCurrentUrl "openShared=#{sharedDocumentId}"
 
     sharedDocumentId = @state.currentContent?.get "sharedDocumentId"
     if sharedDocumentId
@@ -329,6 +346,10 @@ class CloudFileManagerClient
     if metadata?
       currentContent.addMetadata docName: metadata.name
     currentContent
+
+  _getCurrentUrl: (queryString = null) ->
+    suffix = if queryString? then "?#{queryString}" else ""
+    "#{document.location.origin}#{document.location.pathname}#{suffix}"
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

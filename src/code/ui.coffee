@@ -7,7 +7,7 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'saveFileAsDialog', 'shareSubMenu', 'downloadDialog', 'renameDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'saveCopyDialog', 'shareSubMenu', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
     @items = @parseMenuItems options.menu, client
@@ -25,8 +25,6 @@ class CloudFileManagerUIMenu
           -> client.state.openedContent? and client.state.metadata?
         when 'renameDialog'
           -> client.state.metadata?.provider?.can 'rename'
-        when 'saveCopyDialog'
-          -> client.state.metadata?
         when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
         when 'revertToSharedDialog'

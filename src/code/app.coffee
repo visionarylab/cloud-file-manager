@@ -30,8 +30,11 @@ class CloudFileManager
     @client.connect()
 
     openSharedContentId = getQueryParam "openShared"
+    openSavedParams = getQueryParam "openSaved"
     if openSharedContentId
       @client.openSharedContent openSharedContentId
+    else if openSavedParams
+      @client.openSaved openSavedParams
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

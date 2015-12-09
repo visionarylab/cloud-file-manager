@@ -167,6 +167,18 @@ class GoogleDriveProvider extends ProviderInterface
     if metadata.providerData?.realTime?.doc?
       metadata.providerData.realTime.doc.close()
 
+  openSaved: (openSavedParams, callback) ->
+    metadata = new CloudMetadata
+      type: CloudMetadata.File
+      provider: @
+      providerData:
+        id: openSavedParams
+    @load metadata, (err, content) ->
+      callback err, content, metadata
+
+  getOpenSavedParams: (metadata) ->
+    metadata.providerData.id
+
   _loadGAPI: ->
     if not window._LoadingGAPI
       window._LoadingGAPI = true
@@ -197,6 +209,9 @@ class GoogleDriveProvider extends ProviderInterface
       fileId: metadata.providerData.id
     request.execute (file) =>
       if file?.downloadUrl
+        metadata.name = file.title
+        metadata.overwritable = file.editable
+        metadata.providerData = id: file.id
         xhr = new XMLHttpRequest()
         xhr.open 'GET', file.downloadUrl
         if @authToken
@@ -207,7 +222,7 @@ class GoogleDriveProvider extends ProviderInterface
           callback "Unable to download #{url}"
         xhr.send()
       else
-        callback 'Unable to get download url'
+        callback @_apiError file, 'Unable to get download url'
 
   _saveFile: (content, metadata, callback) ->
     boundary = '-------314159265358979323846'
@@ -234,14 +249,15 @@ class GoogleDriveProvider extends ProviderInterface
       headers: {'Content-Type': 'multipart/related; boundary="' + boundary + '"'}
       body: body
 
-    request.execute (file) ->
+    request.execute (file) =>
       if callback
         if file?.error
           callback "Unabled to upload file: #{file.error.message}"
         else if file
+          metadata.providerData = id: file.id
           callback null, file
         else
-          callback 'Unabled to upload file'
+          callback @_apiError file, 'Unabled to upload file'
 
   _loadOrCreateRealTimeFile: (metadata, callback) ->
     fileLoaded = (doc) ->
@@ -276,13 +292,14 @@ class GoogleDriveProvider extends ProviderInterface
         mimeType: @mimeType
         parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
 
-    request.execute (file) ->
+    request.execute (file) =>
       if file?.id
+        metadata.name = file.title
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
         gapi.drive.realtime.load file.id, fileLoaded, init, error
       else
-        callback 'Unable to load file'
+        callback @_apiError file, 'Unable to load file'
 
   _saveRealTimeFile: (content, metadata, callback) ->
     if metadata.providerData?.model
@@ -304,5 +321,11 @@ class GoogleDriveProvider extends ProviderInterface
           realTimeContent.insertString index, diff.value
         index += diff.count
     callback null
+
+  _apiError: (result, prefix) ->
+    if result?.message?
+      "#{prefix}: #{result.message}"
+    else
+      prefix
 
 module.exports = GoogleDriveProvider

@@ -33,7 +33,7 @@ class LocalStorageProvider extends ProviderInterface
       fileKey = @_getKey(metadata.name)
       window.localStorage.setItem fileKey, content.getContentAsJSON()
       callback? null
-    catch
+    catch e
       callback "Unable to save: #{e.message}"
 
   load: (metadata, callback) ->
@@ -72,6 +72,18 @@ class LocalStorageProvider extends ProviderInterface
       callback null, metadata
     catch
       callback? 'Unable to rename'
+
+  openSaved: (openSavedParams, callback) ->
+    metadata = new CloudMetadata
+      name: openSavedParams
+      type: CloudMetadata.File
+      parent: null
+      provider: @
+    @load metadata, (err, content) ->
+      callback err, content, metadata
+
+  getOpenSavedParams: (clientMetadata, savedMetadata) ->
+    savedMetadata.name
 
   _getKey: (name = '') ->
     "cfm::#{name.replace /\t/g, ' '}"
