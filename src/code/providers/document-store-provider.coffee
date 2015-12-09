@@ -315,6 +315,10 @@ class DocumentStoreProvider extends ProviderInterface
     try
       opts =
         hash: @options.patchObjectHash if typeof @options.patchObjectHash is "function"
+      # clean objects before diffing
+      [obj1,obj2].map (content) ->
+        for key of content
+          delete content[key] unless content[key]?
       diff = jiff.diff(obj1, obj2, opts)
       return diff
     catch
