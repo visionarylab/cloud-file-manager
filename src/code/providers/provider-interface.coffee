@@ -68,6 +68,13 @@ class CloudContent
   addMetadata: (metadata) -> @_[key] = metadata[key] for key of metadata
   get: (prop) -> @_[prop]
 
+  copyMetadataTo: (to) ->
+    metadata = {}
+    for own key, value of @_
+      if key isnt 'content'
+        metadata[key] = value
+    to.addMetadata metadata
+
 class ProviderInterface
 
   constructor: (options) ->

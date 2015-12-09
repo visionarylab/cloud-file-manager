@@ -18,10 +18,6 @@ class CloudFileManager
     @appOptions.usingIframe = usingIframe
     @client.setAppOptions @appOptions
 
-    openSharedContentId = getQueryParam "openShared"
-    if openSharedContentId
-      @client.openSharedContent openSharedContentId
-
   createFrame: (@appOptions, elemId, eventCallback = null) ->
     @init @appOptions, true
     @client.listen eventCallback
@@ -32,6 +28,10 @@ class CloudFileManager
       @_createHiddenApp()
     @client.listen eventCallback
     @client.connect()
+
+    openSharedContentId = getQueryParam "openShared"
+    if openSharedContentId
+      @client.openSharedContent openSharedContentId
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

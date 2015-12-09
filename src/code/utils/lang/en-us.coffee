@@ -3,7 +3,6 @@ module.exports =
 
   "~MENU.NEW": "New"
   "~MENU.OPEN": "Open ..."
-  "~MENU.REOPEN": "Revert to recently opened state"
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
   "~MENU.SAVE_COPY": "Save A Copy ..."
@@ -51,4 +50,5 @@ module.exports =
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes.  Are you sure you want open a new file?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes.  Are you sure you want a new file?"
-  "~CONFIRM.REOPEN_FILE": "You have unsaved changes.  Are you sure you want reopen the file and return to its last saved state?"
+  "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want revert the file to its most recently opened state?"
+  "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want revert the file to currently shared view?"

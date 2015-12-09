@@ -20,17 +20,17 @@ class CloudFileManagerUIMenu
     setEnabled = (action) ->
       switch action
         when 'revertSubMenu'
-          -> (client.state.openedContent? and client.state.metadata?) or client.state.shareProvider?
-        when 'reopenDialog'
+          -> (client.state.openedContent? and client.state.metadata?) or client.state.currentContent?.get("shareEditKey")?
+        when 'revertToLastOpenedDialog'
           -> client.state.openedContent? and client.state.metadata?
-        when 'revertSharedDialog'
-          -> true # TODO: what should the check be here?
         when 'renameDialog'
           -> client.state.metadata?.provider?.can 'rename'
         when 'saveCopyDialog'
           -> client.state.metadata?
         when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
+        when 'revertToSharedDialog'
+          -> client.state.currentContent?.get("sharedDocumentId")
         when 'shareUpdate'
           -> client.state.currentContent?.get("shareEditKey")?
         else
@@ -45,7 +45,7 @@ class CloudFileManagerUIMenu
     names =
       newFileDialog: tr "~MENU.NEW"
       openFileDialog: tr "~MENU.OPEN"
-      reopenDialog: tr "~MENU.REVERT_TO_LAST_OPENED"
+      revertToLastOpenedDialog: tr "~MENU.REVERT_TO_LAST_OPENED"
       revertToSharedDialog: tr "~MENU.REVERT_TO_SHARED_VIEW"
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
@@ -58,7 +58,7 @@ class CloudFileManagerUIMenu
       shareSubMenu: tr "~MENU.SHARE"
 
     subMenus =
-      revertSubMenu: ['reopenDialog', 'revertToSharedDialog']
+      revertSubMenu: ['revertToLastOpenedDialog', 'revertToSharedDialog']
       shareSubMenu: ['shareGetLink', 'shareUpdate']
 
     items = []

@@ -155,15 +155,12 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'save'
       @_setState
         saving: metadata
-
-      currentContent = @_createOrUpdateCurrentContent stringContent
-      currentContent.addMetadata docName: metadata.name
-
+      currentContent = @_createOrUpdateCurrentContent stringContent, metadata
       metadata.provider.save currentContent, metadata, (err) =>
         return @_error(err) if err
         if @state.metadata isnt metadata
           @_closeCurrentFile()
-        @_fileChanged 'savedFile', currentContent, metadata, {saved: true, currentContent: currentContent}
+        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}
         callback? currentContent, metadata
     else
       @saveFileDialog stringContent, callback
@@ -189,12 +186,15 @@ class CloudFileManagerClient
         saveCopy content, metadata
 
   shareGetLink: ->
+    showShareDialog = (sharedDocumentId) =>
+      @_ui.shareUrlDialog "#{document.location.origin}#{document.location.pathname}?openShared=#{sharedDocumentId}"
+
     sharedDocumentId = @state.currentContent?.get "sharedDocumentId"
     if sharedDocumentId
-      @_showShareDialog sharedDocumentId
+      showShareDialog sharedDocumentId
     else
-      @share (sharedDocumentId) =>
-        @_showShareDialog sharedDocumentId
+      @share (sharedDocumentId) ->
+        showShareDialog sharedDocumentId
 
   shareUpdate: ->
     @share()
@@ -203,19 +203,25 @@ class CloudFileManagerClient
     if @state.shareProvider
       @_event 'getContent', {}, (stringContent) =>
         @_setState
-          saving: true
+          sharing: true
         currentContent = @_createOrUpdateCurrentContent stringContent
         @state.shareProvider.share currentContent, @state.metadata, (err, sharedContentId) =>
-          @_setState
-            saving: false
-            currentContent: currentContent
           return @_error(err) if err
+          @_fileChanged 'sharedFile', currentContent, @state.metadata
           callback? sharedContentId
 
-  _showShareDialog: (sharedDocumentId) ->
-    path = document.location.origin + document.location.pathname
-    shareQuery = "?openShared=#{sharedDocumentId}"
-    @_ui.shareUrlDialog "#{path}#{shareQuery}"
+  revertToShared: (callback = null) ->
+    id = @state.currentContent?.get("sharedDocumentId")
+    if id and @state.shareProvider?
+      @state.shareProvider.loadSharedContent id, (err, content, metadata) =>
+        return @_error(err) if err
+        @state.currentContent.copyMetadataTo content
+        @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
+        callback? null
+
+  revertToSharedDialog: (callback = null) ->
+    if @state.currentContent?.get("sharedDocumentId") and @state.shareProvider? and confirm tr "~CONFIRM.REVERT_TO_SHARED_VIEW"
+      @revertToShared callback
 
   downloadDialog: (callback = null) ->
     @_event 'getContent', {}, (content) =>
@@ -225,10 +231,8 @@ class CloudFileManagerClient
     if newName isnt @state.metadata.name
       @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
         return @_error(err) if err
-        @_setState
-          metadata: metadata
         @state.currentContent?.addMetadata docName: metadata.name
-        @_event 'renamedFile', {metadata: metadata}
+        @_fileChanged 'renamedFile', @state.currentContent, metadata
         callback? newName
 
   renameDialog: (callback = null) ->
@@ -238,14 +242,14 @@ class CloudFileManagerClient
     else
       callback? 'No currently active file'
 
-  reopen: (callback = null) ->
+  revertToLastOpened: (callback = null) ->
     if @state.openedContent? and @state.metadata
       @_fileChanged 'openedFile', @state.openedContent, @state.metadata, {openedContent: @state.openedContent.clone()}
 
-  reopenDialog: (callback = null) ->
+  revertToLastOpenedDialog: (callback = null) ->
     if @state.openedContent? and @state.metadata
-      if (not @state.dirty) or (confirm tr '~CONFIRM.REOPEN_FILE')
-        @reopen callback
+      if confirm tr '~CONFIRM.REVERT_TO_LAST_OPENED'
+        @revertToLastOpened callback
     else
       callback? 'No initial opened version was found for the currently active file'
 
@@ -265,7 +269,7 @@ class CloudFileManagerClient
       @_autoSaveInterval = setInterval (=> @save() if @state.dirty and @state.metadata?.provider?.can 'save'), (interval * 1000)
 
   isAutoSaving: ->
-    @_autoSaveInterval > 0
+    @_autoSaveInterval?
 
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null
@@ -279,8 +283,9 @@ class CloudFileManagerClient
     alert message
 
   _fileChanged: (type, content, metadata, additionalState={}) ->
-    metadata.overwritable ?= true
+    metadata?.overwritable ?= true
     state =
+      currentContent: content
       metadata: metadata
       saving: null
       saved: false
@@ -313,12 +318,14 @@ class CloudFileManagerClient
     if @state.metadata?.provider?.can 'close'
       @state.metadata.provider.close @state.metadata
 
-  _createOrUpdateCurrentContent: (stringContent) ->
+  _createOrUpdateCurrentContent: (stringContent, metadata = null) ->
     if @state.currentContent?
       currentContent = @state.currentContent
       currentContent.setText stringContent
     else
       currentContent = cloudContentFactory.createEnvelopedCloudContent stringContent
+    if metadata?
+      currentContent.addMetadata docName: metadata.name
     currentContent
 
 module.exports =
