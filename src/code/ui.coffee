@@ -31,6 +31,8 @@ class CloudFileManagerUIMenu
           -> client.state.metadata?
         when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
+        when 'shareUpdate'
+          -> client.state.openedContent?.get("shareEditKey")?
         else
           true
 
@@ -48,7 +50,7 @@ class CloudFileManagerUIMenu
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
       saveCopyDialog: tr "~MENU.SAVE_COPY"
-      share: tr "~MENU.SHARE_GET_LINK"
+      shareGetLink: tr "~MENU.SHARE_GET_LINK"
       shareUpdate: tr "~MENU.SHARE_UPDATE"
       downloadDialog: tr "~MENU.DOWNLOAD"
       renameDialog: tr "~MENU.RENAME"
@@ -57,7 +59,7 @@ class CloudFileManagerUIMenu
 
     subMenus =
       revertSubMenu: ['reopenDialog', 'revertToSharedDialog']
-      shareSubMenu: ['share', 'shareUpdate']
+      shareSubMenu: ['shareGetLink', 'shareUpdate']
 
     items = []
     for item, i in menuItems

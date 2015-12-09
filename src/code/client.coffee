@@ -196,7 +196,17 @@ class CloudFileManagerClient
       else
         saveCopy content, metadata
 
-  share: ->
+  shareGetLink: ->
+    if sharedDocumentId = @state.openedContent?.get "sharedDocumentId"
+      @_showShareDialog sharedDocumentId
+    else
+      @share (sharedDocumentId) =>
+        @_showShareDialog sharedDocumentId
+
+  shareUpdate: ->
+    @share()
+
+  share: (callback) ->
     if @state.shareProvider
       @_event 'getContent', {}, (stringContent) =>
         if @state.openedContent?
@@ -212,10 +222,12 @@ class CloudFileManagerClient
             saving: false
             openedContent: cloudContent.clone()
           return @_error(err) if err
+          callback? sharedContentId
 
-          path = document.location.origin + document.location.pathname
-          shareQuery = "?openShared=#{sharedContentId}"
-          @_ui.shareUrlDialog "#{path}#{shareQuery}"
+  _showShareDialog: (sharedDocumentId) ->
+    path = document.location.origin + document.location.pathname
+    shareQuery = "?openShared=#{sharedDocumentId}"
+    @_ui.shareUrlDialog "#{path}#{shareQuery}"
 
   downloadDialog: (callback = null) ->
     @_event 'getContent', {}, (content) =>
