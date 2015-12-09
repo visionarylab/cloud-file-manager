@@ -71,6 +71,8 @@ class CloudFileManagerClient
       appVersion: @appOptions.appVersion or ""
       appBuildNum: @appOptions.appBuildNum or ""
 
+    @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
+
   setProviderOptions: (name, newOptions) ->
     for provider in @state.availableProviders
       if provider.name is name
@@ -110,7 +112,7 @@ class CloudFileManagerClient
     @_event 'newedFile', {content: ""}
 
   newFileDialog: (callback = null) ->
-    if @appOptions.ui?.newFileOpensInNewTab
+    if @newFileOpensInNewTab
       window.open window.location, '_blank'
     else if @state.dirty
       if @_autoSaveInterval and @state.metadata
