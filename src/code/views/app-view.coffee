@@ -3,6 +3,7 @@ ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-vie
 DownloadDialog = React.createFactory require './download-dialog-view'
 RenameDialog = React.createFactory require './rename-dialog-view'
 ShareUrlDialog = React.createFactory require './share-url-dialog-view'
+BlockingModal = React.createFactory require './blocking-modal-view'
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -74,6 +75,8 @@ App = React.createClass
           @setState renameDialog: event.data
         when 'showShareUrlDialog'
           @setState shareUrlDialog: event.data
+        when 'showBlockingModal'
+          @setState blockingModalProps: event.data
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
@@ -125,7 +128,9 @@ App = React.createClass
       shareUrlDialog: null
 
   renderDialogs: ->
-    if @state.providerDialog
+    if @state.blockingModalProps
+      (BlockingModal @state.blockingModalProps)
+    else if @state.providerDialog
       (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
     else if @state.downloadDialog
       (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})

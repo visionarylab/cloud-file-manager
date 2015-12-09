@@ -49,7 +49,7 @@ class CloudFileManagerClient
       else
         if allProviders[providerName]
           Provider = allProviders[providerName]
-          provider = new Provider providerOptions
+          provider = new Provider providerOptions, @
           @providers[providerName] = provider
           availableProviders.push provider
         else
@@ -289,6 +289,9 @@ class CloudFileManagerClient
 
   isAutoSaving: ->
     @_autoSaveInterval?
+
+  showBlockingModal: (modalProps) ->
+    @_ui.blockingModal modalProps
 
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null

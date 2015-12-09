@@ -7,7 +7,7 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 
 class ReadOnlyProvider extends ProviderInterface
 
-  constructor: (@options = {}) ->
+  constructor: (@options = {}, @client) ->
     super
       name: ReadOnlyProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.READ_ONLY')

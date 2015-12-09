@@ -8,12 +8,6 @@ ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
-class RealTimeInfo extends Error
-  constructor: -> @name = 'RealTimeInfo'
-
-class RealTimeError extends Error
-  constructor: -> @name = 'RealTimeError'
-
 GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   displayName: 'GoogleDriveAuthorizationDialog'
 
@@ -37,7 +31,7 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
 
 class GoogleDriveProvider extends ProviderInterface
 
-  constructor: (@options = {}) ->
+  constructor: (@options = {}, @client) ->
     super
       name: GoogleDriveProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.GOOGLE_DRIVE')
@@ -260,17 +254,23 @@ class GoogleDriveProvider extends ProviderInterface
           callback @_apiError file, 'Unabled to upload file'
 
   _loadOrCreateRealTimeFile: (metadata, callback) ->
+    self = @
     fileLoaded = (doc) ->
       content = doc.getModel().getRoot().get 'content'
       if metadata.overwritable
         throwError = (e) ->
-          if not e.isLocal
-            throw new RealTimeError 'Another user has made edits to this file'
-        #content.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, throwError
-        #content.addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, throwError
+          if not e.isLocal and e.sessionId isnt metadata.providerData.realTime.sessionId
+            self.client.showBlockingModal
+              title: 'Concurrent Edit Lock'
+              message: 'An edit was made to this file from another browser window. This app is now locked for input.'
+        content.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, throwError
+        content.addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, throwError
+      for collaborator in doc.getCollaborators()
+        sessionId = collaborator.sessionId if collaborator.isMe
       metadata.providerData.realTime =
         doc: doc
         content: content
+        sessionId: sessionId
       callback null, cloudContentFactory.createEnvelopedCloudContent content.getText()
 
     init = (model) ->
@@ -312,7 +312,7 @@ class GoogleDriveProvider extends ProviderInterface
   _diffAndUpdateRealTimeModel: (content, metadata, callback) ->
     index = 0
     realTimeContent = metadata.providerData.realTime.content
-    diffs = jsdiff.diffChars realTimeContent.getContentAsJSON(), content.getContentAsJSON()
+    diffs = jsdiff.diffChars realTimeContent.getText(), content.getContentAsJSON()
     for diff in diffs
       if diff.removed
         realTimeContent.removeRange index, index + diff.value.length

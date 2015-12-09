@@ -41,7 +41,7 @@ DocumentStoreAuthorizationDialog = React.createFactory React.createClass
 
 class DocumentStoreProvider extends ProviderInterface
 
-  constructor: (@options = {}) ->
+  constructor: (@options = {}, @client) ->
     super
       name: DocumentStoreProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
@@ -300,7 +300,7 @@ class DocumentStoreProvider extends ProviderInterface
         id: openSavedParams
     @load metadata, (err, content) ->
       callback err, content, metadata
-      
+
   getOpenSavedParams: (metadata) ->
     metadata.providerData.id
 

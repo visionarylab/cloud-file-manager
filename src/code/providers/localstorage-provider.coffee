@@ -6,7 +6,7 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 
 class LocalStorageProvider extends ProviderInterface
 
-  constructor: (@options = {}) ->
+  constructor: (@options = {}, @client) ->
     super
       name: LocalStorageProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.LOCAL_STORAGE')

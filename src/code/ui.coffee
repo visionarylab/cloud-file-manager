@@ -153,6 +153,9 @@ class CloudFileManagerUI
     @listenerCallback new CloudFileManagerUIEvent 'showShareUrlDialog',
       url: url
 
+  blockingModal: (modalProps) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showBlockingModal', modalProps
+
   _showProviderDialog: (action, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
       action: action
