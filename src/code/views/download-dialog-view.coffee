@@ -29,7 +29,7 @@ module.exports = React.createClass
 
   download: (e) ->
     if @state.trimmedFilename.length > 0
-      e.target.setAttribute 'href', "data:#{@props.mimeType},#{encodeURIComponent(@props.content.getText())}"
+      e.target.setAttribute 'href', "data:#{@props.mimeType},#{encodeURIComponent(@props.content)}"
       @props.close()
     else
       e.preventDefault()
