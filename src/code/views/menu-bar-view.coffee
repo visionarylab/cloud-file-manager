@@ -16,14 +16,11 @@ module.exports = React.createClass
   filenameClicked: (e) ->
     e.preventDefault()
     e.stopPropagation()
-    now = (new Date()).getTime()
-    if now - @lastClick <= 250
-      if @props.client.state.metadata?.provider?.can 'rename'
-        @setState editingFilename: true
-        setTimeout (=> @focusFilename()), 10
-      else
-        @props.client.saveFileDialog()
-    @lastClick = now
+    if @props.client.state.metadata?.provider?.can 'rename'
+      @setState editingFilename: true
+      setTimeout (=> @focusFilename()), 10
+    else
+      @props.client.saveFileDialog()
 
   filenameChanged: ->
     @setState filename: @filename().value
