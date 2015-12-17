@@ -339,6 +339,66 @@
 .menu-showing li:hover.separator {
   background: none;
 }
+.document-store-auth .document-store-concord-logo {
+  background: url("../img/concord-logo.png") no-repeat top left;
+  width: 332px;
+  height: 106px;
+  padding: 0;
+  margin: 50px 50px 10px 50px;
+}
+.document-store-auth .document-store-footer {
+  text-align: center;
+}
+.document-store-auth .document-store-footer button {
+  padding: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #72bfca;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 0;
+}
+.document-store-auth .document-store-footer button:hover {
+  background-color: #3c94a1;
+}
+.google-drive-auth .google-drive-concord-logo {
+  background: url("../img/google-drive-logo.png") no-repeat top left;
+  width: 351px;
+  height: 113px;
+  padding: 0;
+  margin: 50px 35px 0 35px;
+}
+.google-drive-auth .google-drive-footer {
+  text-align: center;
+}
+.google-drive-auth .google-drive-footer button {
+  padding: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #72bfca;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 0;
+}
+.google-drive-auth .google-drive-footer button:hover {
+  background-color: #3c94a1;
+}
 .menu-bar {
   font-family: 'Arial', 'Helvetica', 'sans-serif';
   width: 100%;
@@ -389,7 +449,7 @@
   border: 0;
   padding: 0;
   margin: 0;
-  background: none;
+  background: #fff;
   font-style: normal;
   font-variant: normal;
   font-weight: normal;
@@ -398,7 +458,7 @@
   text-transform: none;
   font-family: 'Museo Sans', 'Montserrat', sans-serif;
   text-transform: uppercase;
-  color: #fff;
+  color: #000;
   width: 300px;
   outline: none;
 }
