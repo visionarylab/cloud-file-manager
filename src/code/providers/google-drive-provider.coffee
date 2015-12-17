@@ -22,11 +22,14 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
     @props.provider.authorize GoogleDriveProvider.SHOW_POPUP
 
   render: ->
-    (div {},
-      if @state.loadedGAPI
-        (button {onClick: @authenticate}, 'Authorization Needed')
-      else
-        'Waiting for the Google Client API to load...'
+    (div {className: 'google-drive-auth'},
+      (div {className: 'google-drive-concord-logo'}, '')
+      (div {className: 'google-drive-footer'},
+        if @state.loadedGAPI
+          (button {onClick: @authenticate}, 'Login to Google')
+        else
+          'Trying to log into Google...'
+      )
     )
 
 class GoogleDriveProvider extends ProviderInterface
