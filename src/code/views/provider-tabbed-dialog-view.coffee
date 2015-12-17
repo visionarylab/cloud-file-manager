@@ -14,6 +14,7 @@ module.exports = React.createClass
       when 'openFile' then ['list', FileDialogTab]
       when 'saveFile', 'saveFileAs' then ['save', FileDialogTab]
       when 'saveFileCopy', 'saveFileCopy' then ['save', FileDialogTab]
+      when 'saveFileAs', 'saveFileAs' then ['save', FileDialogTab]
       when 'selectProvider' then [null, SelectProviderDialogTab]
 
     tabs = []
@@ -26,7 +27,7 @@ module.exports = React.createClass
           close: @props.close
           provider: provider
         tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component}
-        if provider is @props.client.state.metadata?.provider
-          selectedTabIndex = i
+        if provider.name is @props.client.state.metadata?.provider?.name
+          selectedTabIndex = tabs.length - 1
 
     (ModalTabbedDialog {title: (tr @props.dialog.title), close: @props.close, tabs: tabs, selectedTabIndex: selectedTabIndex})
