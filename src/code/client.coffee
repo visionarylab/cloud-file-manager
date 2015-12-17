@@ -63,7 +63,8 @@ class CloudFileManagerClient
         break
 
     @appOptions.ui or= {}
-    @appOptions.ui.windowTitlePrefix or= "#{document.title}: "
+    @appOptions.ui.windowTitleSuffix or= document.title
+    @appOptions.ui.windowTitleSeparator or= ' - '
     @_setWindowTitle()
 
     @_ui.init @appOptions.ui
@@ -361,8 +362,8 @@ class CloudFileManagerClient
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
 
   _setWindowTitle: (name) ->
-    if @appOptions?.ui?.windowTitlePrefix
-      document.title = "#{@appOptions.ui.windowTitlePrefix}#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}"
+    if @appOptions?.ui?.windowTitleSuffix
+      document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
