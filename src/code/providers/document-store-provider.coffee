@@ -32,11 +32,14 @@ DocumentStoreAuthorizationDialog = React.createFactory React.createClass
     @props.provider.authorize()
 
   render: ->
-    (div {},
-      if @state.docStoreAvailable
-        (button {onClick: @authenticate}, 'Authorization Needed')
-      else
-        'Trying to log into the Document Store...'
+    (div {className: 'document-store-auth'},
+      (div {className: 'document-store-concord-logo'}, '')
+      (div {className: 'document-store-footer'},
+        if @state.docStoreAvailable
+          (button {onClick: @authenticate}, 'Login to Concord')
+        else
+          'Trying to log into Concord...'
+      )
     )
 
 class DocumentStoreProvider extends ProviderInterface
