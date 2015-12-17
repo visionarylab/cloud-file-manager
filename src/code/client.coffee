@@ -62,6 +62,10 @@ class CloudFileManagerClient
         @_setState shareProvider: provider
         break
 
+    @appOptions.ui or= {}
+    @appOptions.ui.windowTitlePrefix or= "#{document.title}: "
+    @_setWindowTitle()
+
     @_ui.init @appOptions.ui
 
     # check for autosave
@@ -315,6 +319,7 @@ class CloudFileManagerClient
       dirty: false
     for own key, value of additionalState
       state[key] = value
+    @_setWindowTitle metadata?.name
     @_setState state
     @_event type, {content: content.getText()}
 
@@ -354,6 +359,10 @@ class CloudFileManagerClient
   _getCurrentUrl: (queryString = null) ->
     suffix = if queryString? then "?#{queryString}" else ""
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
+
+  _setWindowTitle: (name) ->
+    if @appOptions?.ui?.windowTitlePrefix
+      document.title = "#{@appOptions.ui.windowTitlePrefix}#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}"
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
