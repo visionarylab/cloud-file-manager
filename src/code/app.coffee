@@ -3,7 +3,7 @@ AppView = React.createFactory require './views/app-view'
 CloudFileManagerUIMenu = (require './ui').CloudFileManagerUIMenu
 CloudFileManagerClient = (require './client').CloudFileManagerClient
 
-getQueryParam = require './utils/get-query-param'
+getHashParam = require './utils/get-hash-param'
 
 class CloudFileManager
 
@@ -29,12 +29,13 @@ class CloudFileManager
     @client.listen eventCallback
     @client.connect()
 
-    openSharedContentId = getQueryParam "openShared"
-    openSavedParams = getQueryParam "openSaved"
-    if openSharedContentId
-      @client.openSharedContent openSharedContentId
-    else if openSavedParams
-      @client.openSaved openSavedParams
+    sharedContentId = getHashParam "shared"
+    fileParams = getHashParam "file"
+    if sharedContentId
+      @client.openSharedContent sharedContentId
+    else if fileParams
+      [providerName, providerParams] = fileParams.split ':'
+      @client.openProviderFile providerName, providerParams
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

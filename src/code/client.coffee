@@ -119,6 +119,7 @@ class CloudFileManagerClient
   newFile: (callback = null) ->
     @_closeCurrentFile()
     @_resetState()
+    window.location.hash = ""
     @_event 'newedFile', {content: ""}
 
   newFileDialog: (callback = null) ->
@@ -138,7 +139,7 @@ class CloudFileManagerClient
       metadata.provider.load metadata, (err, content) =>
         return @_error(err) if err
         @_closeCurrentFile()
-        @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
+        @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
         callback? content, metadata
     else
       @openFileDialog callback
@@ -153,15 +154,14 @@ class CloudFileManagerClient
       return @_error(err) if err
       @_fileChanged 'openedFile', content, metadata, {overwritable: false, openedContent: content.clone()}
 
-  openSaved: (params) ->
-    [providerName, providerParams] = params.split ':'
+  openProviderFile: (providerName, providerParams) ->
     provider = @providers[providerName]
     if provider
       provider.authorized (authorized) =>
         if authorized
           provider.openSaved providerParams, (err, content, metadata) =>
             return @_error(err) if err
-            @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
+            @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   save: (callback = null) ->
     @_event 'getContent', {}, (stringContent) =>
@@ -182,7 +182,7 @@ class CloudFileManagerClient
         return @_error(err) if err
         if @state.metadata isnt metadata
           @_closeCurrentFile()
-        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}
+        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
         callback? currentContent, metadata
     else
       @saveFileDialog stringContent, callback
@@ -201,7 +201,7 @@ class CloudFileManagerClient
       metadata.provider.save content, metadata, (err) =>
         return @_error(err) if err
         if @saveCopyOpensInNewTab
-          window.open @_getCurrentUrl "openSaved=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}"
+          window.open @_getCurrentUrl @_getHashParams metadata
         callback? content, metadata
     @_ui.saveCopyDialog (metadata) =>
       if stringContent is null
@@ -212,7 +212,7 @@ class CloudFileManagerClient
 
   shareGetLink: ->
     showShareDialog = (sharedDocumentId) =>
-      @_ui.shareUrlDialog @_getCurrentUrl "openShared=#{sharedDocumentId}"
+      @_ui.shareUrlDialog @_getCurrentUrl "#shared=#{sharedDocumentId}"
 
     sharedDocumentId = @state.currentContent?.get "sharedDocumentId"
     if sharedDocumentId
@@ -257,7 +257,7 @@ class CloudFileManagerClient
     dirty = @state.dirty
     _rename = (metadata) =>
       @state.currentContent?.addMetadata docName: metadata.name
-      @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}
+      @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}, @_getHashParams metadata
       callback? newName
     if newName isnt @state.metadata?.name
       if @state.metadata?.provider?.can 'rename'
@@ -320,7 +320,7 @@ class CloudFileManagerClient
     # for now an alert
     alert message
 
-  _fileChanged: (type, content, metadata, additionalState={}) ->
+  _fileChanged: (type, content, metadata, additionalState={}, hashParams=null) ->
     metadata?.overwritable ?= true
     state =
       currentContent: content
@@ -331,6 +331,8 @@ class CloudFileManagerClient
     for own key, value of additionalState
       state[key] = value
     @_setWindowTitle metadata?.name
+    if hashParams isnt null
+      window.location.hash = hashParams
     @_setState state
     @_event type, {content: content?.getText()}
 
@@ -374,6 +376,9 @@ class CloudFileManagerClient
   _setWindowTitle: (name) ->
     if @appOptions?.ui?.windowTitleSuffix
       document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
+
+  _getHashParams: (metadata) ->
+    if metadata?.provider? then "#file=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}" else ""
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

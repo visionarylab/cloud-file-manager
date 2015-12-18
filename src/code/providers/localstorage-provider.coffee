@@ -82,8 +82,8 @@ class LocalStorageProvider extends ProviderInterface
     @load metadata, (err, content) ->
       callback err, content, metadata
 
-  getOpenSavedParams: (clientMetadata, savedMetadata) ->
-    savedMetadata.name
+  getOpenSavedParams: (metadata) ->
+    metadata.name
 
   _getKey: (name = '') ->
     "cfm::#{name.replace /\t/g, ' '}"
