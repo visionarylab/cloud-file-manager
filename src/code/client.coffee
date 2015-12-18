@@ -254,10 +254,11 @@ class CloudFileManagerClient
 
   rename: (metadata, newName, callback) ->
     if newName isnt @state.metadata.name
+      dirty = @state.dirty
       @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
         return @_error(err) if err
         @state.currentContent?.addMetadata docName: metadata.name
-        @_fileChanged 'renamedFile', @state.currentContent, metadata
+        @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}
         callback? newName
 
   renameDialog: (callback = null) ->
