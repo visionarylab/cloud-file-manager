@@ -9,7 +9,7 @@ module.exports = React.createClass
   displayName: 'DownloadDialogView'
 
   getInitialState: ->
-    filename = @props.filename or ''
+    filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}.json"
     state =
       filename: filename
       trimmedFilename: @trim filename
@@ -29,7 +29,7 @@ module.exports = React.createClass
 
   download: (e) ->
     if @state.trimmedFilename.length > 0
-      e.target.setAttribute 'href', "data:#{@props.mimeType},#{encodeURIComponent(@props.content)}"
+      e.target.setAttribute 'href', "data:application/json,#{encodeURIComponent(@props.content.getContentAsJSON())}"
       @props.close()
     else
       e.preventDefault()

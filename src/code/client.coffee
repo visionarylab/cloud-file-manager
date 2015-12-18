@@ -250,7 +250,7 @@ class CloudFileManagerClient
 
   downloadDialog: (callback = null) ->
     @_event 'getContent', {}, (content) =>
-      @_ui.downloadDialog @state.metadata?.name, @appOptions.mimeType, content, callback
+      @_ui.downloadDialog @state.metadata?.name, (cloudContentFactory.createEnvelopedCloudContent content), callback
 
   rename: (metadata, newName, callback) ->
     if newName isnt @state.metadata.name
