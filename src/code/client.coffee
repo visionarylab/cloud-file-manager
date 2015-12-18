@@ -10,6 +10,7 @@ DocumentStoreProvider = require './providers/document-store-provider'
 
 cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
 CloudContent = (require './providers/provider-interface').CloudContent
+CloudMetadata = (require './providers/provider-interface').CloudMetadata
 
 class CloudFileManagerClientEvent
 
@@ -253,20 +254,28 @@ class CloudFileManagerClient
       @_ui.downloadDialog @state.metadata?.name, (cloudContentFactory.createEnvelopedCloudContent content), callback
 
   rename: (metadata, newName, callback) ->
-    if newName isnt @state.metadata.name
-      dirty = @state.dirty
-      @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
-        return @_error(err) if err
-        @state.currentContent?.addMetadata docName: metadata.name
-        @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}
-        callback? newName
+    dirty = @state.dirty
+    _rename = (metadata) =>
+      @state.currentContent?.addMetadata docName: metadata.name
+      @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}
+      callback? newName
+    if newName isnt @state.metadata?.name
+      if @state.metadata?.provider?.can 'rename'
+        @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
+          return @_error(err) if err
+          _rename metadata
+      else
+        if metadata
+          metadata.name = newName
+        else
+          metadata = new CloudMetadata
+            name: newName
+            type: CloudMetadata.File
+        _rename metadata
 
   renameDialog: (callback = null) ->
-    if @state.metadata
-      @_ui.renameDialog @state.metadata.name, (newName) =>
-        @rename @state.metadata, newName, callback
-    else
-      callback? 'No currently active file'
+    @_ui.renameDialog @state.metadata?.name, (newName) =>
+      @rename @state.metadata, newName, callback
 
   revertToLastOpened: (callback = null) ->
     if @state.openedContent? and @state.metadata
@@ -323,7 +332,7 @@ class CloudFileManagerClient
       state[key] = value
     @_setWindowTitle metadata?.name
     @_setState state
-    @_event type, {content: content.getText()}
+    @_event type, {content: content?.getText()}
 
   _event: (type, data = {}, eventCallback = null) ->
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state

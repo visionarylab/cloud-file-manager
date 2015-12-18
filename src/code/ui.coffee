@@ -23,8 +23,6 @@ class CloudFileManagerUIMenu
           -> (client.state.openedContent? and client.state.metadata?) or client.state.currentContent?.get("shareEditKey")?
         when 'revertToLastOpenedDialog'
           -> client.state.openedContent? and client.state.metadata?
-        when 'renameDialog'
-          -> client.state.metadata?.provider?.can 'rename'
         when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
         when 'revertToSharedDialog'

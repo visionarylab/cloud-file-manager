@@ -1,29 +1,39 @@
 {div, i, span, input} = React.DOM
 
 Dropdown = React.createFactory require './dropdown-view'
+tr = require '../utils/translate'
 
 module.exports = React.createClass
 
   displayName: 'MenuBar'
 
+  getFilename: (props) ->
+    if props.filename?.length > 0 then props.filename else (tr "~MENUBAR.UNTITLED_DOCUMENT")
+
+  getEditableFilename: (props) ->
+    if props.filename?.length > 0 then props.filename else ""
+
   getInitialState: ->
-    editingFilename: false
-    filename: @props.filename
+    state =
+      editingFilename: false
+      filename: @getFilename @props
+      editableFilename: @getEditableFilename @props
 
   componentWillReceiveProps: (nextProps) ->
-    @setState filename: nextProps.filename
+    @setState
+      filename: @getFilename nextProps
+      editableFilename: @getEditableFilename nextProps
+      provider: nextProps.provider
 
   filenameClicked: (e) ->
     e.preventDefault()
     e.stopPropagation()
-    if @props.client.state.metadata?.provider?.can 'rename'
-      @setState editingFilename: true
-      setTimeout (=> @focusFilename()), 10
-    else
-      @props.client.saveFileDialog()
+    @setState editingFilename: true
+    setTimeout (=> @focusFilename()), 10
 
   filenameChanged: ->
-    @setState filename: @filename().value
+    @setState
+      editableFilename: @filename().value
 
   filenameBlurred: ->
     @rename()
@@ -42,18 +52,21 @@ module.exports = React.createClass
       range.select()
 
   rename: ->
-    filename = @state.filename.replace /^\s+|\s+$/, ''
+    filename = @state.editableFilename.replace /^\s+|\s+$/, ''
     if filename.length > 0
       @props.client.rename @props.client.state.metadata, filename
-    @setState editingFilename: false
+      @setState
+        editingFilename: false
+        filename: filename
+        editableFilename: filename
+    else
+      @setState editingFilename: false
 
   watchForEnter: (e) ->
     if e.keyCode is 13
       @rename()
     else if e.keyCode is 27
-      @setState
-        filename: @props.filename
-        editingFilename: false
+      @setState editingFilename: false
 
   help: ->
     window.open @props.options.help, '_blank'
@@ -64,7 +77,7 @@ module.exports = React.createClass
         (Dropdown {items: @props.items})
         if @state.editingFilename
           (div {className:'menu-bar-content-filename'},
-            (input {ref: 'filename', value: @state.filename, onChange: @filenameChanged, onBlur: @filenameBlurred, onKeyDown: @watchForEnter})
+            (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onBlur: @filenameBlurred, onKeyDown: @watchForEnter})
           )
         else
           (div {className:'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
@@ -74,7 +87,7 @@ module.exports = React.createClass
       (div {className: 'menu-bar-right'},
         if @props.options.info
           (span {className: 'menu-bar-info'}, @props.options.info)
-        if @props.provider and @props.provider.authorized()
+        if @props.provider?.authorized()
           @props.provider.renderUser()
         if @props.options.help
           (i {style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: @help})
