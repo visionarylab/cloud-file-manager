@@ -21,7 +21,8 @@ module.exports = React.createClass
     selectedTabIndex = 0
     for provider, i in @props.client.state.availableProviders
       if not capability or provider.capabilities[capability]
-        component = TabComponent
+        filteredTabComponent = provider.filterTabComponent capability, TabComponent
+        component = filteredTabComponent
           client: @props.client
           dialog: @props.dialog
           close: @props.close

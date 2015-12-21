@@ -97,6 +97,9 @@ class ProviderInterface
   renderUser: ->
     null
 
+  filterTabComponent: (capability, defaultComponent) ->
+    defaultComponent
+
   dialog: (callback) ->
     @_notImplemented 'dialog'
 

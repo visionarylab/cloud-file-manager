@@ -7,6 +7,7 @@ LocalStorageProvider = require './providers/localstorage-provider'
 ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
+LocalFileProvider = require './providers/local-file-provider'
 
 cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
 CloudContent = (require './providers/provider-interface').CloudContent
@@ -29,7 +30,7 @@ class CloudFileManagerClient
   setAppOptions: (@appOptions = {})->
     # flter for available providers
     allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider]
+    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider, LocalFileProvider]
       if Provider.Available()
         allProviders[Provider.Name] = Provider
 
@@ -378,7 +379,7 @@ class CloudFileManagerClient
       document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
   _getHashParams: (metadata) ->
-    if metadata?.provider? then "#file=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}" else ""
+    if metadata?.provider?.canOpenSaved() then "#file=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}" else ""
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

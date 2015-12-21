@@ -27,6 +27,7 @@ module.exports =
   "~PROVIDER.READ_ONLY": "Read Only"
   "~PROVIDER.GOOGLE_DRIVE": "Google Drive"
   "~PROVIDER.DOCUMENT_STORE": "Document Store"
+  "~PROVIDER.LOCAL_FILE": "Local File"
 
   "~FILE_DIALOG.FILENAME": "Filename"
   "~FILE_DIALOG.OPEN": "Open"
