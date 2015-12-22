@@ -13,8 +13,7 @@ module.exports = React.createClass
     [capability, TabComponent] = switch @props.dialog.action
       when 'openFile' then ['list', FileDialogTab]
       when 'saveFile', 'saveFileAs' then ['save', FileDialogTab]
-      when 'saveFileCopy', 'saveFileCopy' then ['save', FileDialogTab]
-      when 'saveFileAs', 'saveFileAs' then ['save', FileDialogTab]
+      when 'createCopy' then ['save', FileDialogTab]
       when 'selectProvider' then [null, SelectProviderDialogTab]
 
     tabs = []

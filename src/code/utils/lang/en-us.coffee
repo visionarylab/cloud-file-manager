@@ -5,7 +5,7 @@ module.exports =
   "~MENU.OPEN": "Open ..."
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
-  "~MENU.SAVE_COPY": "Save A Copy ..."
+  "~MENU.CREATE_COPY": "Create A Copy ..."
   "~MENU.SHARE": "Share..."
   "~MENU.SHARE_GET_LINK": "Get link to shared view"
   "~MENU.SHARE_UPDATE": "Update shared view"
@@ -17,7 +17,7 @@ module.exports =
 
   "~DIALOG.SAVE": "Save"
   "~DIALOG.SAVE_AS": "Save As ..."
-  "~DIALOG.SAVE_COPY": "Save A Copy ..."
+  "~DIALOG.CREATE_COPY": "Create A Copy ..."
   "~DIALOG.OPEN": "Open"
   "~DIALOG.DOWNLOAD": "Download"
   "~DIALOG.RENAME": "Rename"

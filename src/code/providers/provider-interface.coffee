@@ -121,6 +121,8 @@ class ProviderInterface
   close: (metadata, callback) ->
     @_notImplemented 'close'
 
+  canOpenSaved: -> true
+
   openSaved: (openSavedParams, callback) ->
     @_notImplemented 'openSaved'
 

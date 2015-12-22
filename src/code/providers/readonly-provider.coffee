@@ -46,6 +46,8 @@ class ReadOnlyProvider extends ProviderInterface
         list.push file.metadata for own filename, file of subTree
       callback null, list
 
+  canOpenSaved: -> false
+
   _findSubTree: (metadata) ->
     if metadata?.type is CloudMetadata.Folder
       metadata.providerData.children

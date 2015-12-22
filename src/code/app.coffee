@@ -31,11 +31,14 @@ class CloudFileManager
 
     sharedContentId = getHashParam "shared"
     fileParams = getHashParam "file"
+    copyParams = getHashParam "copy"
     if sharedContentId
       @client.openSharedContent sharedContentId
     else if fileParams
       [providerName, providerParams] = fileParams.split ':'
       @client.openProviderFile providerName, providerParams
+    else if copyParams
+      @client.openCopiedFile copyParams
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

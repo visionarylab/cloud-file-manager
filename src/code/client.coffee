@@ -82,7 +82,6 @@ class CloudFileManagerClient
       appBuildNum: @appOptions.appBuildNum or ""
 
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
-    @saveCopyOpensInNewTab = if @appOptions.ui?.hasOwnProperty('saveCopyOpensInNewTab') then @appOptions.ui.saveCopyOpensInNewTab else true
 
   setProviderOptions: (name, newOptions) ->
     for provider in @state.availableProviders
@@ -196,20 +195,48 @@ class CloudFileManagerClient
     @_ui.saveFileAsDialog (metadata) =>
       @_dialogSave stringContent, metadata, callback
 
-  saveCopyDialog: (stringContent = null, callback = null) ->
-    saveCopy = (stringContent, metadata) =>
-      content = cloudContentFactory.createEnvelopedCloudContent stringContent
-      metadata.provider.save content, metadata, (err) =>
-        return @_error(err) if err
-        if @saveCopyOpensInNewTab
-          window.open @_getCurrentUrl @_getHashParams metadata
-        callback? content, metadata
-    @_ui.saveCopyDialog (metadata) =>
-      if stringContent is null
-        @_event 'getContent', {}, (stringContent) ->
-          saveCopy stringContent, metadata
-      else
-        saveCopy stringContent, metadata
+  createCopy: (stringContent = null, callback = null) ->
+    saveAndOpenCopy = (stringContent) =>
+      @saveCopiedFile stringContent, @state.metadata?.name, (err, copyParams) =>
+        return callback? err if err
+        window.open @_getCurrentUrl "#copy=#{copyParams}"
+        callback? copyParams
+    if stringContent is null
+      @_event 'getContent', {}, (stringContent) ->
+        saveAndOpenCopy stringContent
+    else
+      saveAndOpenCopy stringContent
+
+  saveCopiedFile: (stringContent, name, callback) ->
+    try
+      prefix = 'cfm-copy::'
+      maxCopyNumber = 0
+      for own key of window.localStorage
+        if key.substr(0, prefix.length) is prefix
+          copyNumber = parseInt(key.substr(prefix.length), 10)
+          maxCopyNumber = Math.max(maxCopyNumber, copyNumber)
+      maxCopyNumber++
+      value = JSON.stringify
+        name: if name?.length > 0 then "Copy of #{name}" else "Copy of Untitled Document"
+        stringContent: stringContent
+      window.localStorage.setItem "#{prefix}#{maxCopyNumber}", value
+      callback? null, maxCopyNumber
+    catch e
+      callback "Unable to temporarily save copied file"
+
+  openCopiedFile: (copyParams) ->
+    try
+      key = "cfm-copy::#{copyParams}"
+      copied = JSON.parse window.localStorage.getItem key
+      content = cloudContentFactory.createEnvelopedCloudContent copied.stringContent
+      metadata = new CloudMetadata
+        name: copied.name
+        type: CloudMetadata.File
+      @_fileChanged 'openedFile', content, metadata, {dirty: true, openedContent: content.clone()}
+      window.location.hash = ""
+      window.localStorage.removeItem key
+    catch e
+      callback "Unable to load copied file"
 
   shareGetLink: ->
     showShareDialog = (sharedDocumentId) =>

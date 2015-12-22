@@ -7,7 +7,7 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'saveCopyDialog', 'shareSubMenu', 'downloadDialog', 'renameDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
     @items = @parseMenuItems options.menu, client
@@ -45,7 +45,7 @@ class CloudFileManagerUIMenu
       revertToSharedDialog: tr "~MENU.REVERT_TO_SHARED_VIEW"
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
-      saveCopyDialog: tr "~MENU.SAVE_COPY"
+      createCopy: tr "~MENU.CREATE_COPY"
       shareGetLink: tr "~MENU.SHARE_GET_LINK"
       shareUpdate: tr "~MENU.SHARE_UPDATE"
       downloadDialog: tr "~MENU.DOWNLOAD"
@@ -128,9 +128,6 @@ class CloudFileManagerUI
 
   saveFileAsDialog: (callback) ->
     @_showProviderDialog 'saveFileAs', (tr '~DIALOG.SAVE_AS'), callback
-
-  saveCopyDialog: (callback) ->
-    @_showProviderDialog 'saveFileCopy', (tr '~DIALOG.SAVE_COPY'), callback
 
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
