@@ -55,6 +55,14 @@
       function focus() {
         document.getElementById("text").focus();
       }
+
+      function importLocalFile(e) {
+        cfmClient && cfmClient.importLocalFile(e.target.files[0]);
+      }
+
+      function openLocalFile(e) {
+        cfmClient && cfmClient.openLocalFile(e.target.files[0]);
+      }
     </script>
   </head>
   <body>
@@ -70,6 +78,12 @@
       <button onclick="openFile()">Open</button>
       <button onclick="saveFile()">Save</button>
       <button onclick="saveFileAs()">Save As</button>
+    </div>
+    <div>
+      Import Local File: <input type="file" onchange="importLocalFile(event)">
+    </div>
+    <div>
+      Open Local File: <input type="file" onchange="openLocalFile(event)">
     </div>
     <script type="text/javascript">
       var cfm = parent && parent.CloudFileManager ? parent.CloudFileManager : null,
@@ -94,7 +108,7 @@
               break;
 
             case 'importedData':
-              appendContent(event.data.content);
+              appendContent(JSON.stringify(event.data, null, 2));
               focus();
               break;
           }

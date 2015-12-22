@@ -649,18 +649,129 @@
   background-color: #777;
 }
 .share-dialog {
-  padding: 20px;
-  width: 400px;
+  width: 600px;
 }
-.share-dialog input {
-  margin: 10px 0;
-  width: 100%;
-  font-size: 20px;
+.share-dialog .share-top-dialog {
+  padding: 30px;
+}
+.share-dialog .share-status {
+  margin: 30px;
+  font-size: 32px;
+  text-align: center;
+}
+.share-dialog .share-status a {
+  font-size: 14px;
+  margin-left: 10px;
+}
+.share-dialog .share-button button {
+  padding: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: none;
+  font-family: 'Museo Sans', 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #72bfca;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 0;
+  float: left;
+}
+.share-dialog .share-button button:hover {
+  background-color: #3c94a1;
+}
+.share-dialog .share-button .share-button-help-not-sharing {
+  margin-left: 175px;
+  padding-top: 10px;
+}
+.share-dialog .share-button .share-button-help-sharing {
+  margin-left: 210px;
+  padding-top: 10px;
+}
+.share-dialog .sharing-tabs {
+  clear: both;
+  margin-top: 30px;
+}
+.share-dialog .sharing-tabs .sharing-tab {
+  border: 1px solid #000;
+  border-bottom: none;
+  float: left;
   padding: 5px;
+  cursor: pointer;
+}
+.share-dialog .sharing-tabs .sharing-tab-embed {
+  border-left: none;
+}
+.share-dialog .sharing-tabs .sharing-tab-selected {
+  background-color: #ddd;
+}
+.share-dialog .sharing-tab-contents {
+  clear: both;
+  padding: 20px;
+  height: 100px;
+  background-color: #ddd;
+}
+.share-dialog .sharing-tab-contents .copy-link {
+  margin-left: 10px;
+}
+.share-dialog .sharing-tab-contents .social-icons {
+  margin-top: 10px;
+}
+.share-dialog .sharing-tab-contents .social-icons .social-icon {
+  display: inline-block;
+  margin-right: 7px;
+  width: 32px;
+  height: 32px;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.share-dialog .sharing-tab-contents .social-icons .social-icon .social-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.share-dialog .sharing-tab-contents .social-icons .social-icon .social-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  fill-rule: evenodd;
+}
+.share-dialog .sharing-tab-contents .social-icons .social-icon .social-svg-background,
+.share-dialog .sharing-tab-contents .social-icons .social-icon .social-svg-icon,
+.share-dialog .sharing-tab-contents .social-icons .social-icon .social-svg-mask {
+  transition: fill 170ms ease-in-out;
+  fill: transparent;
+}
+.share-dialog .sharing-tab-contents .social-icons .social-icon .social-svg-mask {
+  fill: #0f0b0b;
+}
+.share-dialog .sharing-tab-contents input {
+  margin-top: 5px;
+  padding: 5px;
+  width: 100%;
+}
+.share-dialog .sharing-tab-contents textarea {
+  margin-top: 5px;
+  width: 100%;
+  padding: 5px;
+  height: 75px;
 }
 .share-dialog .buttons {
+  clear: both;
   float: right;
-  margin: 10px 0;
+  margin: 10px;
 }
 .share-dialog .buttons button {
   padding: 15px;
