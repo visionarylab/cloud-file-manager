@@ -40,6 +40,10 @@
         document.getElementById("text").value = cfmContent;
       }
 
+      function appendContent(cfmContent) {
+        document.getElementById("text").value += '\n\nImported data: ' + cfmContent;
+      }
+
       function connected(client) {
         cfmClient = client;
       }
@@ -86,6 +90,11 @@
             case 'newedFile':
             case 'openedFile':
               setContent(event.data.content);
+              focus();
+              break;
+
+            case 'importedData':
+              appendContent(event.data.content);
               focus();
               break;
           }
