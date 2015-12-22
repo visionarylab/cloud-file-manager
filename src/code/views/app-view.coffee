@@ -4,6 +4,7 @@ DownloadDialog = React.createFactory require './download-dialog-view'
 RenameDialog = React.createFactory require './rename-dialog-view'
 ShareUrlDialog = React.createFactory require './share-url-dialog-view'
 BlockingModal = React.createFactory require './blocking-modal-view'
+ImportTabbedDialog = React.createFactory require './import-tabbed-dialog-view'
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -67,6 +68,8 @@ App = React.createClass
           @setState downloadDialog: event.data
         when 'showRenameDialog'
           @setState renameDialog: event.data
+        when 'showImportDialog'
+          @setState importDialog: event.data
         when 'showShareUrlDialog'
           @setState shareUrlDialog: event.data
         when 'showBlockingModal'
@@ -120,6 +123,7 @@ App = React.createClass
       downloadDialog: null
       renameDialog: null
       shareUrlDialog: null
+      importDialog: null
 
   renderDialogs: ->
     if @state.blockingModalProps
@@ -130,6 +134,8 @@ App = React.createClass
       (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})
     else if @state.renameDialog
       (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
+    else if @state.importDialog
+      (ImportTabbedDialog {client: @props.client, dialog: @state.importDialog, close: @closeDialogs})
     else if @state.shareUrlDialog
       (ShareUrlDialog {url: @state.shareUrlDialog.url, close: @closeDialogs})
 

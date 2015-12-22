@@ -3,6 +3,7 @@ module.exports =
 
   "~MENU.NEW": "New"
   "~MENU.OPEN": "Open ..."
+  "~MENU.IMPORT_DATA": "Import data..."
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
   "~MENU.CREATE_COPY": "Create A Copy ..."
@@ -22,6 +23,7 @@ module.exports =
   "~DIALOG.DOWNLOAD": "Download"
   "~DIALOG.RENAME": "Rename"
   "~DIALOG.SHARED": "Shared Document"
+  "~DIALOG.IMPORT_DATA": "Import Data"
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
@@ -57,3 +59,5 @@ module.exports =
   "~LOCAL_FILE_DIALOG.DROP_FILE_HERE": "Drop file here or click here to select file."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED": "Sorry, you can choose only one file to open."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED": "Sorry, you can't drop more than one file."
+
+  "~IMPORT.LOCAL_FILE": "Local File"

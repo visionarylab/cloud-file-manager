@@ -149,6 +149,14 @@ class CloudFileManagerClient
       @_ui.openFileDialog (metadata) =>
         @openFile metadata, callback
 
+  importData: (data, callback = null) ->
+    @_event 'importedData', data
+    callback? data
+
+  importDataDialog: (callback = null) ->
+    @_ui.importDataDialog (data) =>
+      @importData data, callback
+
   openSharedContent: (id) ->
     @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
       return @_error(err) if err

@@ -132,6 +132,10 @@ class CloudFileManagerUI
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
 
+  importDataDialog: (callback) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showImportDialog',
+      callback: callback
+
   downloadDialog: (filename, content, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showDownloadDialog',
       filename: filename
