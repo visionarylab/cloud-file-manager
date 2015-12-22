@@ -67,6 +67,7 @@ class CloudContent
 
   addMetadata: (metadata) -> @_[key] = metadata[key] for key of metadata
   get: (prop) -> @_[prop]
+  remove: (prop) -> delete @_[prop]
 
   copyMetadataTo: (to) ->
     metadata = {}

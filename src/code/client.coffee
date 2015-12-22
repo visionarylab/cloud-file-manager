@@ -124,7 +124,7 @@ class CloudFileManagerClient
 
   newFileDialog: (callback = null) ->
     if @newFileOpensInNewTab
-      window.open @_getCurrentUrl(), '_blank'
+      window.open @getCurrentUrl(), '_blank'
     else if @state.dirty
       if @_autoSaveInterval and @state.metadata
         @save()
@@ -155,6 +155,25 @@ class CloudFileManagerClient
 
   importDataDialog: (callback = null) ->
     @_ui.importDataDialog (data) =>
+      @importData data, callback
+
+  readLocalFile: (file, callback=null) ->
+    reader = new FileReader()
+    reader.onload = (loaded) ->
+      callback? {name: file.name, content: loaded.target.result}
+    reader.readAsText file
+
+  openLocalFile: (file, callback=null) ->
+    @readLocalFile file, (data) =>
+      content = cloudContentFactory.createEnvelopedCloudContent data.content
+      metadata = new CloudMetadata
+        name: data.name
+        type: CloudMetadata.File
+      @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
+      callback? content, metadata
+
+  importLocalFile: (file, callback=null) ->
+    @readLocalFile file, (data) =>
       @importData data, callback
 
   openSharedContent: (id) ->
@@ -207,7 +226,7 @@ class CloudFileManagerClient
     saveAndOpenCopy = (stringContent) =>
       @saveCopiedFile stringContent, @state.metadata?.name, (err, copyParams) =>
         return callback? err if err
-        window.open @_getCurrentUrl "#copy=#{copyParams}"
+        window.open @getCurrentUrl "#copy=#{copyParams}"
         callback? copyParams
     if stringContent is null
       @_event 'getContent', {}, (stringContent) ->
@@ -247,19 +266,18 @@ class CloudFileManagerClient
       callback "Unable to load copied file"
 
   shareGetLink: ->
-    showShareDialog = (sharedDocumentId) =>
-      @_ui.shareUrlDialog @_getCurrentUrl "#shared=#{sharedDocumentId}"
-
-    sharedDocumentId = @state.currentContent?.get "sharedDocumentId"
-    if sharedDocumentId
-      showShareDialog sharedDocumentId
-    else
-      @share (sharedDocumentId) =>
-        @dirty()
-        showShareDialog sharedDocumentId
+    @_ui.shareDialog @
 
   shareUpdate: ->
     @share()
+
+  toggleShare: (callback) ->
+    if @state.currentContent?.get "sharedDocumentId"
+      @state.currentContent?.remove "sharedDocumentId"
+      @_fileChanged 'unsharedFile', @state.currentContent, @state.metadata, {sharing: false}
+      callback? false
+    else
+      @share callback
 
   share: (callback) ->
     if @state.shareProvider
@@ -345,6 +363,10 @@ class CloudFileManagerClient
   showBlockingModal: (modalProps) ->
     @_ui.blockingModal modalProps
 
+  getCurrentUrl: (queryString = null) ->
+    suffix = if queryString? then "?#{queryString}" else ""
+    "#{document.location.origin}#{document.location.pathname}#{suffix}"
+
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null
       @saveFile stringContent, metadata, callback
@@ -404,10 +426,6 @@ class CloudFileManagerClient
     if metadata?
       currentContent.addMetadata docName: metadata.name
     currentContent
-
-  _getCurrentUrl: (queryString = null) ->
-    suffix = if queryString? then "?#{queryString}" else ""
-    "#{document.location.origin}#{document.location.pathname}#{suffix}"
 
   _setWindowTitle: (name) ->
     if @appOptions?.ui?.windowTitleSuffix

@@ -11,7 +11,6 @@ class CloudFileManagerUIMenu
 
   constructor: (options, client) ->
     @items = @parseMenuItems options.menu, client
-    console.dir @items
 
   parseMenuItems: (menuItems, client) ->
     setAction = (action) ->
@@ -147,9 +146,9 @@ class CloudFileManagerUI
       filename: filename
       callback: callback
 
-  shareUrlDialog: (url) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showShareUrlDialog',
-      url: url
+  shareDialog: (client) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showShareDialog',
+      client: client
 
   blockingModal: (modalProps) ->
     @listenerCallback new CloudFileManagerUIEvent 'showBlockingModal', modalProps

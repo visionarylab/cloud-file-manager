@@ -2,7 +2,7 @@ MenuBar = React.createFactory require './menu-bar-view'
 ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-view'
 DownloadDialog = React.createFactory require './download-dialog-view'
 RenameDialog = React.createFactory require './rename-dialog-view'
-ShareUrlDialog = React.createFactory require './share-url-dialog-view'
+ShareDialog = React.createFactory require './share-dialog-view'
 BlockingModal = React.createFactory require './blocking-modal-view'
 ImportTabbedDialog = React.createFactory require './import-tabbed-dialog-view'
 
@@ -38,7 +38,7 @@ App = React.createClass
     providerDialog: null
     downloadDialog: null
     renameDialog: null
-    shareUrlDialog: null
+    shareDialog: null
     dirty: false
 
   componentWillMount: ->
@@ -70,8 +70,8 @@ App = React.createClass
           @setState renameDialog: event.data
         when 'showImportDialog'
           @setState importDialog: event.data
-        when 'showShareUrlDialog'
-          @setState shareUrlDialog: event.data
+        when 'showShareDialog'
+          @setState shareDialog: event.data
         when 'showBlockingModal'
           @setState blockingModalProps: event.data
         when 'appendMenuItem'
@@ -122,7 +122,7 @@ App = React.createClass
       providerDialog: null
       downloadDialog: null
       renameDialog: null
-      shareUrlDialog: null
+      shareDialog: null
       importDialog: null
 
   renderDialogs: ->
@@ -136,8 +136,8 @@ App = React.createClass
       (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
     else if @state.importDialog
       (ImportTabbedDialog {client: @props.client, dialog: @state.importDialog, close: @closeDialogs})
-    else if @state.shareUrlDialog
-      (ShareUrlDialog {url: @state.shareUrlDialog.url, close: @closeDialogs})
+    else if @state.shareDialog
+      (ShareDialog {client: @props.client, close: @closeDialogs})
 
   render: ->
     if @props.usingIframe

@@ -22,7 +22,7 @@ module.exports =
   "~DIALOG.OPEN": "Open"
   "~DIALOG.DOWNLOAD": "Download"
   "~DIALOG.RENAME": "Rename"
-  "~DIALOG.SHARED": "Shared Document"
+  "~DIALOG.SHARED": "Share"
   "~DIALOG.IMPORT_DATA": "Import Data"
 
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
