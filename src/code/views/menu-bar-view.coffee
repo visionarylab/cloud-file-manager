@@ -11,13 +11,14 @@ module.exports = React.createClass
     if props.filename?.length > 0 then props.filename else (tr "~MENUBAR.UNTITLED_DOCUMENT")
 
   getEditableFilename: (props) ->
-    if props.filename?.length > 0 then props.filename else ""
+    if props.filename?.length > 0 then props.filename else (tr "~MENUBAR.UNTITLED_DOCUMENT")
 
   getInitialState: ->
     state =
       editingFilename: false
       filename: @getFilename @props
       editableFilename: @getEditableFilename @props
+      initialEditableFilename: @getEditableFilename @props
 
   componentWillReceiveProps: (nextProps) ->
     @setState
@@ -44,12 +45,12 @@ module.exports = React.createClass
   focusFilename: ->
     el = @filename()
     el.focus()
-    if typeof el.selectionStart is 'number'
-      el.selectionStart = el.selectionEnd = el.value.length
-    else if typeof el.createTextRange isnt 'undefined'
-      range = el.createTextRange()
-      range.collapse false
-      range.select()
+    el.select()
+
+  cancelEdit: ->
+    @setState
+      editingFilename: false
+      editableFilename: if @state.filename?.length > 0 then @state.filename else @state.initialEditableFilename
 
   rename: ->
     filename = @state.editableFilename.replace /^\s+|\s+$/, ''
@@ -60,13 +61,13 @@ module.exports = React.createClass
         filename: filename
         editableFilename: filename
     else
-      @setState editingFilename: false
+      @cancelEdit()
 
   watchForEnter: (e) ->
     if e.keyCode is 13
       @rename()
     else if e.keyCode is 27
-      @setState editingFilename: false
+      @cancelEdit()
 
   help: ->
     window.open @props.options.help, '_blank'
