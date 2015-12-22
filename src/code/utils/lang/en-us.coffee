@@ -53,3 +53,7 @@ module.exports =
   "~CONFIRM.NEW_FILE": "You have unsaved changes.  Are you sure you want a new file?"
   "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want revert the file to its most recently opened state?"
   "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want revert the file to currently shared view?"
+
+  "~LOCAL_FILE_DIALOG.DROP_FILE_HERE": "Drop file here or click here to select file."
+  "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED": "Sorry, you can choose only one file to open."
+  "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED": "Sorry, you can't drop more than one file."

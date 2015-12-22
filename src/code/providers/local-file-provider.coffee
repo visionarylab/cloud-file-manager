@@ -1,4 +1,4 @@
-{div, input} = React.DOM
+{div, input, button} = React.DOM
 tr = require '../utils/translate'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
@@ -9,24 +9,56 @@ LocalFileListTab = React.createFactory React.createClass
 
   displayName: 'LocalFileListTab'
 
+  getInitialState: ->
+    hover: false
+
   changed: (e) ->
     files = e.target.files
     if files.length > 1
-      alert "Sorry, you can choose only one file to open."
+      alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"
     else if files.length is 1
-      metadata = new CloudMetadata
-        name: files[0].name.split('.')[0]
-        type: CloudMetadata.File
-        parent: null
-        provider: @props.provider
-        providerData:
-          file: files[0]
-      @props.dialog.callback? metadata
-      @props.close()
+      @openFile files[0]
+
+  openFile: (file) ->
+    metadata = new CloudMetadata
+      name: file.name.split('.')[0]
+      type: CloudMetadata.File
+      parent: null
+      provider: @props.provider
+      providerData:
+        file: file
+    @props.dialog.callback? metadata
+    @props.close()
+
+  cancel: ->
+    @props.close()
+
+  dragEnter: (e) ->
+    e.preventDefault()
+    @setState hover: true
+
+  dragLeave: (e) ->
+    e.preventDefault()
+    @setState hover: false
+
+  drop: (e) ->
+    e.preventDefault()
+    droppedFiles = if e.dataTransfer then e.dataTransfer.files else e.target.files
+    if droppedFiles.length > 1
+      alert "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"
+    else if droppedFiles.length is 1
+      @openFile droppedFiles[0]
 
   render: ->
-    (div {className: 'dialogTab'},
-      (input {type: 'file', onChange: @changed})
+    dropClass = "dropArea#{if @state.hover then ' dropHover' else ''}"
+    (div {className: 'dialogTab localFileLoad'},
+      (div {className: dropClass, onDragEnter: @dragEnter, onDragLeave: @dragLeave, onDrop: @drop},
+        (tr "~LOCAL_FILE_DIALOG.DROP_FILE_HERE")
+        (input {type: 'file', onChange: @changed})
+      )
+      (div {className: 'buttons'},
+        (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
+      )
     )
 
 class LocalFileProvider extends ProviderInterface
