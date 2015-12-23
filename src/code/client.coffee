@@ -273,6 +273,8 @@ class CloudFileManagerClient
 
   toggleShare: (callback) ->
     if @state.currentContent?.get "sharedDocumentId"
+      @state.currentContent?.remove "_permissions"
+      @state.currentContent?.remove "shareEditKey"
       @state.currentContent?.remove "sharedDocumentId"
       @_fileChanged 'unsharedFile', @state.currentContent, @state.metadata, {sharing: false}
       callback? false
