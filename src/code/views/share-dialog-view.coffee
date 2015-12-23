@@ -1,4 +1,4 @@
-{div, input, a, button, strong, textarea, svg, g, path, span, circle} = React.DOM
+{div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = React.DOM
 
 ModalDialog = React.createFactory require './modal-dialog-view'
 
@@ -137,9 +137,9 @@ module.exports = React.createClass
         )
         if sharing
           (div {},
-            (div {className: 'sharing-tabs'},
-              (div {className: "sharing-tab#{if @state.linkTabSelected then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, 'Link')
-              (div {className: "sharing-tab sharing-tab-embed#{if not @state.linkTabSelected then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, 'Embed')
+            (ul {className: 'sharing-tabs'},
+              (li {className: "sharing-tab#{if @state.linkTabSelected then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, 'Link')
+              (li {className: "sharing-tab sharing-tab-embed#{if not @state.linkTabSelected then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, 'Embed')
             )
             (div {className: 'sharing-tab-contents'},
               if @state.linkTabSelected
@@ -148,7 +148,7 @@ module.exports = React.createClass
                   if document.execCommand or window.clipboardData
                     (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
                   (div {},
-                    (input {value: @state.link})
+                    (input {value: @state.link, readOnly: true})
                   )
                   (div {className: 'social-icons'},
                     (SocialIcon {icon: 'facebook', url: "https://www.facebook.com/sharer/sharer.php?u=#{encodeURIComponent @state.link}"})
@@ -160,7 +160,7 @@ module.exports = React.createClass
                 (div {},
                   "Embed code for including in webpages or other web-based content",
                   (div {},
-                    (textarea {value: @state.embed})
+                    (textarea {value: @state.embed, readOnly: true})
                   )
                 )
             )
