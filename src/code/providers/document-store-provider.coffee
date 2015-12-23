@@ -263,8 +263,13 @@ class DocumentStoreProvider extends ProviderInterface
         if data.id then metadata.providerData.id = data.id
 
         callback null, data
-      error: ->
-        callback "Unable to save "+metadata.name
+      error: (jqXHR)->
+        try
+          responseJson = JSON.parse jqXHR.responseText
+          if responseJson.message is 'error.duplicate'
+            callback "Unable to create #{metadata.name}.  File already exists."
+        catch
+          callback "Unable to save #{metadata.name}"
 
   remove: (metadata, callback) ->
     $.ajax
