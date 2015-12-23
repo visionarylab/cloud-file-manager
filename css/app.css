@@ -694,12 +694,14 @@
 }
 .share-dialog .sharing-tabs {
   clear: both;
-  margin-top: 30px;
+  margin: 30px 0 5px 0;
 }
-.share-dialog .sharing-tabs .sharing-tab {
+.share-dialog .sharing-tabs li {
+  list-style: none;
+  margin: 0;
+  display: inline;
   border: 1px solid #000;
   border-bottom: none;
-  float: left;
   padding: 5px;
   cursor: pointer;
 }
@@ -708,12 +710,15 @@
 }
 .share-dialog .sharing-tabs .sharing-tab-selected {
   background-color: #ddd;
+  border-bottom: 1px solid #ddd;
 }
 .share-dialog .sharing-tab-contents {
   clear: both;
   padding: 20px;
   height: 100px;
   background-color: #ddd;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
 }
 .share-dialog .sharing-tab-contents .copy-link {
   margin-left: 10px;
