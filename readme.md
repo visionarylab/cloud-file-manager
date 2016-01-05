@@ -13,7 +13,7 @@ The Cloud File Manager is a Javascript library that enables applications to save
     gulp default
     live-server
 
-and navigate to http://localhost:8080/demo/
+and navigate to http://localhost:8080/dist/examples/
 
 ## Deployment
 
