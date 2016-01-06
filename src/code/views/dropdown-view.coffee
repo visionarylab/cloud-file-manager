@@ -77,27 +77,29 @@ DropDown = React.createClass
     select = (item) =>
       ( => @select(item))
     (div {className: 'menu'},
-      (div {className: 'menu-anchor', onClick: => @select(null)},
-        (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
-          (g {},
-            (rect {y: 2, width: 16, height: 2})
-            (rect {y: 7, width: 16, height: 2})
-            (rect {y: 12, width: 16, height: 2})
-          )
-        )
-      )
       if @props.items?.length > 0
-        (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
-          (ul {},
-            (DropdownItem {key: index, item: item, select: @select, setSubMenu: @setSubMenu}) for item, index in @props.items
-          )
-          if @state.subMenu
-            (div {className: menuClass, style: @state.subMenu.style},
-              (ul {},
-                (DropdownItem {key: index, item: item, select: @select}) for item, index in @state.subMenu.items
+        (div {},
+          (div {className: 'menu-anchor', onClick: => @select(null)},
+            (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
+              (g {},
+                (rect {y: 2, width: 16, height: 2})
+                (rect {y: 7, width: 16, height: 2})
+                (rect {y: 12, width: 16, height: 2})
               )
             )
-        )
+          )
+          (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
+            (ul {},
+              (DropdownItem {key: index, item: item, select: @select, setSubMenu: @setSubMenu}) for item, index in @props.items
+            )
+            if @state.subMenu
+              (div {className: menuClass, style: @state.subMenu.style},
+                (ul {},
+                  (DropdownItem {key: index, item: item, select: @select}) for item, index in @state.subMenu.items
+                )
+              )
+          )
+      )
     )
 
 module.exports = DropDown
