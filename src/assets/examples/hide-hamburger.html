@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script src="../js/globals.js"></script>
+    <script src="../js/app.js"></script>
+    <link rel="stylesheet" href="../css/app.css">
+    <title>Examples: Menu Madness</title>
+  </head>
+  <body>
+    <div id="wrapper">
+    </div>
+    <script>
+      var options = {
+        app: "example-app",
+        mimeType: "text/plain",
+        appName: "CFM_Demo",
+        appVersion: "0.1",
+        appBuildNum: "1",
+        autoSaveInterval: 5,
+        providers: [
+          "localStorage"
+        ],
+        ui: {
+          menu: false,
+          menuBar: {
+            info: "This version hides the hamburger by setting menu to false.",
+            help: "http://lmgtfy.com/"
+          }
+        }
+      };
+
+      CloudFileManager.createFrame(options, "wrapper");
+    </script>
+  </body>
+</html>
