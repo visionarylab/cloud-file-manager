@@ -3,7 +3,7 @@ var argv = require('yargs').argv,
     production = !!argv.production,
     buildInfo = argv.buildInfo || 'development build (' + (new Date()) + ')',
     src = './src',
-    dest  = './dist';
+    dest  = argv.dest ? argv.dest : './dist';
 
 module.exports = {
   browserify: {
