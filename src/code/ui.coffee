@@ -10,6 +10,7 @@ class CloudFileManagerUIMenu
   @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'downloadDialog', 'renameDialog']
 
   constructor: (options, client) ->
+    @options = options
     @items = @parseMenuItems options.menu, client
 
   parseMenuItems: (menuItems, client) ->
@@ -65,7 +66,7 @@ class CloudFileManagerUIMenu
       else if isString item
         menuItem =
           key: item
-          name: options.menuNames?[item] or names[item] or "Unknown item: #{item}"
+          name: @options.menuNames?[item] or names[item] or "Unknown item: #{item}"
           enabled: setEnabled item
           items: getItems subMenus[item]
           action: setAction item
