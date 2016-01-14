@@ -140,10 +140,13 @@ App = React.createClass
       (ShareDialog {client: @props.client, close: @closeDialogs})
 
   render: ->
-    if @props.usingIframe
-      (div {className: 'app'},
+    if @props.appOrMenuElemId
+      # CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
+      (div {className: if @props.usingIframe then 'app' else 'view' },
         (MenuBar {client: @props.client, filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
-        (InnerApp {app: @props.app})
+        # only render the wrapped client app in app (iframe) mode
+        if @props.usingIframe
+          (InnerApp {app: @props.app})
         @renderDialogs()
       )
     else if @state.providerDialog or @state.downloadDialog
