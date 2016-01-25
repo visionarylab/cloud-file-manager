@@ -91,10 +91,10 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        provider.docStoreLoadedCallback()
+        provider.docStoreLoadedCallback?()
         provider._loginSuccessful(data)
       error: ->
-        provider.docStoreLoadedCallback()
+        provider.docStoreLoadedCallback?()
 
   _loginWindow: null
 
