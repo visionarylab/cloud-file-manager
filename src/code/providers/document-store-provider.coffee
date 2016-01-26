@@ -217,7 +217,7 @@ class DocumentStoreProvider extends ProviderInterface
 
     $.ajax
       dataType: 'json'
-      method: 'POST'
+      type: 'POST'
       url: url
       data: content.getContentAsJSON()
       context: @
@@ -252,7 +252,7 @@ class DocumentStoreProvider extends ProviderInterface
 
     $.ajax
       dataType: 'json'
-      method: 'POST'
+      type: 'POST'
       url: url
       data: JSON.stringify sendContent
       context: @
