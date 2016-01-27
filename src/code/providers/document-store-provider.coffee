@@ -13,6 +13,7 @@ renameDocumentUrl = "#{documentStore}/document/rename"
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 jiff = require 'jiff'
+pako = require 'pako'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
@@ -239,14 +240,19 @@ class DocumentStoreProvider extends ProviderInterface
     if metadata.providerData.id then params.recordid = metadata.providerData.id
 
     # See if we can patch
+    contentJson = JSON.stringify content
     canOverwrite = metadata.overwritable and @previouslySavedContent?
     if canOverwrite and diff = @_createDiff @previouslySavedContent.getContent(), content
-      sendContent = diff
+      diffJson = JSON.stringify diff
+    # only patch if the diff is smaller than saving the entire file
+    # e.g. when large numbers of cases are deleted the diff can be larger
+    if diff? and diffJson.length < contentJson.length
+      sendContent = diffJson
       url = patchDocumentUrl
     else
       if metadata.name then params.recordname = metadata.name
       url = saveDocumentUrl
-      sendContent = content
+      sendContent = contentJson
 
     url = @_addParams(url, params)
 
@@ -254,7 +260,10 @@ class DocumentStoreProvider extends ProviderInterface
       dataType: 'json'
       type: 'POST'
       url: url
-      data: JSON.stringify sendContent
+      data: pako.deflate(JSON.stringify sendContent)
+      processData: false
+      beforeSend: (xhr) ->
+        xhr.setRequestHeader('Content-Encoding', 'deflate')
       context: @
       xhrFields:
         withCredentials: true
