@@ -14,17 +14,26 @@ class CloudFileManager
     @client = new CloudFileManagerClient()
     @appOptions = {}
 
-  init: (@appOptions, usingIframe = false) ->
-    @appOptions.usingIframe = usingIframe
+  # usingIframe: if true, client app is wrapped in an iframe within the CFM-managed div
+  # appOrMenuElemId: if appOrMenuElemId is passed and usingIframe is true, then the CFM
+  #   presents its UI and the wrapped client app within the specified element. If
+  #   appOrMenuElemId is set and usingIframe is false, then the CFM presents its menubar
+  #   UI within the specified element, but there is no iframe or wrapped client app.
+  init: (@appOptions) ->
     @client.setAppOptions @appOptions
 
-  createFrame: (@appOptions, elemId, eventCallback = null) ->
-    @init @appOptions, true
+  # Convenience function for settinp up CFM with an iframe-wrapped client app
+  createFrame: (@appOptions, appElemId, eventCallback = null) ->
+    @appOptions.usingIframe = true
+    @appOptions.appOrMenuElemId = appElemId
+    @init @appOptions
     @client.listen eventCallback
-    @_renderApp document.getElementById(elemId)
+    @_renderApp document.getElementById(appElemId)
 
   clientConnect: (eventCallback) ->
-    if not @appOptions.usingIframe
+    if @appOptions.appOrMenuElemId?
+      @_renderApp document.getElementById(@appOptions.appOrMenuElemId)
+    else
       @_createHiddenApp()
     @client.listen eventCallback
     @client.connect()
