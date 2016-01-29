@@ -8,8 +8,8 @@ var argv = require('yargs').argv,
 module.exports = {
   browserify: {
     app: {
-      watch: [src + '/code/**/*.*', '!' + src + '/code/globals.coffee'],
-      src: src + '/code/app.coffee',
+      watch: ['./package.json', src + '/code/**/*.*', '!' + src + '/code/globals.coffee'],
+      src: ['./package.json', src + '/code/app.coffee'],
       dest: dest + '/js/'
     },
     globals: {
