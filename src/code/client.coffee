@@ -77,6 +77,7 @@ class CloudFileManagerClient
 
     # initialize the cloudContentFactory with all data we want in the envelope
     cloudContentFactory.setEnvelopeMetadata
+      cfmVersion: '__PACKAGE_VERSION__' # replaced by version number at build time
       appName: @appOptions.appName or ""
       appVersion: @appOptions.appVersion or ""
       appBuildNum: @appOptions.appBuildNum or ""
