@@ -31,7 +31,7 @@ class CloudFileManager
     @_renderApp document.getElementById(appElemId)
 
   clientConnect: (eventCallback) ->
-    if !!@appOptions.appOrMenuElemId
+    if @appOptions.appOrMenuElemId?
       @_renderApp document.getElementById(@appOptions.appOrMenuElemId)
     else
       @_createHiddenApp()
