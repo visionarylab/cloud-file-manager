@@ -1,5 +1,6 @@
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
+isArray = require '../utils/is-array'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
@@ -23,38 +24,22 @@ class ReadOnlyProvider extends ProviderInterface
   @Name: 'readOnly'
 
   load: (metadata, callback) ->
-    @_loadTree (err, tree) =>
+    @_loadTree (err, tree) ->
       return callback err if err
-      subTree = @_findSubTree metadata
-      if subTree
-        if subTree[metadata.name]
-          if subTree[metadata.name].metadata.type is CloudMetadata.File
-            callback null, subTree[metadata.name].content
-          else
-            callback "#{metadata.name} is a folder"
-        else
-          callback "#{metadata.name} not found in folder"
-      else
-        callback "#{metadata.name} folder not found"
+      if metadata and not isArray metadata and metadata.type is CloudMetadata.File
+        callback null, metadata.content
+        return
+      if metadata?.name?
+        callback "'#{metadata.name}' not found"
+        return
+      callback "Unable to load specified content"
 
   list: (metadata, callback) ->
     @_loadTree (err, tree) =>
       return callback err if err
-      list = []
-      subTree = @_findSubTree metadata
-      if subTree
-        list.push file.metadata for own filename, file of subTree
-      callback null, list
+      callback null, if metadata?.type is CloudMetadata.Folder then metadata.providerData.children else @tree
 
   canOpenSaved: -> false
-
-  _findSubTree: (metadata) ->
-    if metadata?.type is CloudMetadata.Folder
-      metadata.providerData.children
-    else if metadata?.parent
-      metadata.parent.providerData.children
-    else
-      @tree
 
   _loadTree: (callback) ->
     if @tree isnt null
@@ -82,22 +67,22 @@ class ReadOnlyProvider extends ProviderInterface
       callback null, {}
 
   _convertJSONToMetadataTree: (json, parent = null) ->
-    tree = {}
+    tree = []
+    # parse original format:
+    # { filename: "file contents", folderName: {... contents ...} }
     for own filename of json
       type = if isString json[filename] then CloudMetadata.File else CloudMetadata.Folder
       metadata = new CloudMetadata
         name: filename
         type: type
+        content: cloudContentFactory.createEnvelopedCloudContent json[filename]
         parent: parent
         provider: @
         providerData:
           children: null
       if type is CloudMetadata.Folder
         metadata.providerData.children = @_convertJSONToMetadataTree json[filename], metadata
-      content = cloudContentFactory.createEnvelopedCloudContent json[filename]
-      tree[filename] =
-        content: content
-        metadata: metadata
+      tree.push metadata
     tree
 
 module.exports = ReadOnlyProvider
