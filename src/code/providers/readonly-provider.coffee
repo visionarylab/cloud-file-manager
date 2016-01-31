@@ -68,21 +68,39 @@ class ReadOnlyProvider extends ProviderInterface
 
   _convertJSONToMetadataTree: (json, parent = null) ->
     tree = []
-    # parse original format:
-    # { filename: "file contents", folderName: {... contents ...} }
-    for own filename of json
-      type = if isString json[filename] then CloudMetadata.File else CloudMetadata.Folder
-      metadata = new CloudMetadata
-        name: filename
-        type: type
-        content: cloudContentFactory.createEnvelopedCloudContent json[filename]
-        parent: parent
-        provider: @
-        providerData:
-          children: null
-      if type is CloudMetadata.Folder
-        metadata.providerData.children = @_convertJSONToMetadataTree json[filename], metadata
-      tree.push metadata
+
+    if isArray json
+      # parse array format:
+      # [{ name: "...", content: "..."}, { name: "...", type: 'folder', children: [...] }]
+      for item in json
+        type = if item.type is "folder" then CloudMetadata.Folder else CloudMetadata.File
+        metadata = new CloudMetadata
+          name: item.name
+          type: type
+          content: if item.content? then cloudContentFactory.createEnvelopedCloudContent item.content else undefined
+          parent: parent
+          provider: @
+          providerData:
+            children: null
+        if type is CloudMetadata.Folder
+          metadata.providerData.children = @_convertJSONToMetadataTree item.children, metadata
+        tree.push metadata
+    else
+      # parse original format:
+      # { filename: "file contents", folderName: {... contents ...} }
+      for own filename of json
+        type = if isString json[filename] then CloudMetadata.File else CloudMetadata.Folder
+        metadata = new CloudMetadata
+          name: filename
+          type: type
+          content: cloudContentFactory.createEnvelopedCloudContent json[filename]
+          parent: parent
+          provider: @
+          providerData:
+            children: null
+        if type is CloudMetadata.Folder
+          metadata.providerData.children = @_convertJSONToMetadataTree json[filename], metadata
+        tree.push metadata
     tree
 
 module.exports = ReadOnlyProvider
