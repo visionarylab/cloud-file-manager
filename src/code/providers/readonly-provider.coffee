@@ -27,12 +27,21 @@ class ReadOnlyProvider extends ProviderInterface
     @_loadTree (err, tree) ->
       return callback err if err
       if metadata and not isArray metadata and metadata.type is CloudMetadata.File
-        callback null, metadata.content
-        return
+        if metadata.content?
+          callback null, metadata.content
+          return
+        else if metadata.url?
+          $.ajax
+            dataType: 'json'
+            url: metadata.url
+            success: (data) ->
+              callback null, cloudContentFactory.createEnvelopedCloudContent data
+            error: -> callback "Unable to load '#{metadata.name}'"
+          return
       if metadata?.name?
-        callback "'#{metadata.name}' not found"
-        return
-      callback "Unable to load specified content"
+        callback "Unable to load '#{metadata.name}'"
+      else
+        callback "Unable to load specified content"
 
   list: (metadata, callback) ->
     @_loadTree (err, tree) =>
@@ -77,7 +86,9 @@ class ReadOnlyProvider extends ProviderInterface
         metadata = new CloudMetadata
           name: item.name
           type: type
+          description: item.description
           content: if item.content? then cloudContentFactory.createEnvelopedCloudContent item.content else undefined
+          url: item.url or item.location
           parent: parent
           provider: @
           providerData:
@@ -89,17 +100,18 @@ class ReadOnlyProvider extends ProviderInterface
       # parse original format:
       # { filename: "file contents", folderName: {... contents ...} }
       for own filename of json
-        type = if isString json[filename] then CloudMetadata.File else CloudMetadata.Folder
+        itemContent = json[filename]
+        type = if isString itemContent then CloudMetadata.File else CloudMetadata.Folder
         metadata = new CloudMetadata
           name: filename
           type: type
-          content: cloudContentFactory.createEnvelopedCloudContent json[filename]
+          content: cloudContentFactory.createEnvelopedCloudContent itemContent
           parent: parent
           provider: @
           providerData:
             children: null
         if type is CloudMetadata.Folder
-          metadata.providerData.children = @_convertJSONToMetadataTree json[filename], metadata
+          metadata.providerData.children = @_convertJSONToMetadataTree itemContent, metadata
         tree.push metadata
     tree
 

@@ -21,7 +21,10 @@ FileListFile = React.createFactory React.createClass
     @lastClick = now
 
   render: ->
-    (div {key: @props.key, className: (if @props.selected then 'selected' else ''), onClick: @fileSelected},
+    (div {key: @props.key
+          , className: (if @props.selected then 'selected' else '')
+          , title: @props.metadata.description or undefined
+          , onClick: @fileSelected},
       (React.DOM.i {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else 'icon-noteTool'})
       @props.metadata.name
     )
