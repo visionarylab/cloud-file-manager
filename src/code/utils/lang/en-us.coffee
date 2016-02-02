@@ -38,6 +38,7 @@ module.exports =
   "~FILE_DIALOG.REMOVE": "Delete"
   "~FILE_DIALOG.REMOVE_CONFIRM": "Are you sure you want to delete %{filename}?"
   "~FILE_DIALOG.LOADING": "Loading..."
+  "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***"
 
   "~DOWNLOAD_DIALOG.DOWNLOAD": "Download"
   "~DOWNLOAD_DIALOG.CANCEL": "Cancel"

@@ -50,6 +50,50 @@
                 ]}
             ]
           },
+          /* Remote files in array format */
+          {
+            "displayName": "Read Only (remote 'src')",
+            "name": "readOnly",
+            "alphabetize": true,
+            "src": 'https://codap-resources.concord.org/examples/index.json'
+          },
+          /* Remote array format */
+          {
+            "displayName": "Read Only (remote folders)",
+            "name": "readOnly",
+            json: [
+              {
+                type: "label",
+                name: "--- Server Order ---"
+              },
+              {
+                type: "folder",
+                name: "Some Examples",
+                alphabetize: false,
+                url: 'https://codap-resources.concord.org/examples/index.json'
+              },
+              {
+                type: "label",
+                name: "--- Alphabetized Order ---"
+              },
+              {
+                type: "folder",
+                name: "More Examples",
+                alphabetize: true,
+                url: 'https://codap-resources.concord.org/examples/index.json'
+              },
+              {
+                type: "label",
+                name: "--- Folder below shows load failure ---"
+              },
+              {
+                type: "folder",
+                name: "Still More Examples",
+                alphabetize: true,
+                url: 'https://codap-resources.concord.org/examples/load-fail.json'
+              }
+            ]
+          },
           {
             "name": "googleDrive",
             "mimeType": "text/plain",

@@ -20,6 +20,7 @@ class ReadOnlyProvider extends ProviderInterface
         rename: false
         close: false
     @tree = null
+    @promises = []
 
   @Name: 'readOnly'
 
@@ -51,29 +52,51 @@ class ReadOnlyProvider extends ProviderInterface
   canOpenSaved: -> false
 
   _loadTree: (callback) ->
+    # wait for all promises to be resolved before proceeding
+    complete = (iTree) =>
+      Promise.all(@promises)
+        .then (->
+          if iTree?
+            callback null, iTree
+          else
+            # an empty folder is unusual but not necessarily an error
+            console.error? "No contents found for #{@displayName} provider"
+            callback null, {}
+        ),
+        # if a promise was rejected, then there was an error
+        (-> callback "No contents found for #{@displayName} provider")
+
     if @tree isnt null
-      callback null, @tree
+      complete @tree
     else if @options.json
       @tree = @_convertJSONToMetadataTree @options.json
-      callback null, @tree
+      complete @tree
     else if @options.jsonCallback
       @options.jsonCallback (err, json) =>
         if err
           callback err
         else
           @tree = @_convertJSONToMetadataTree @options.json
-          callback null, @tree
+          complete @tree
     else if @options.src
       $.ajax
         dataType: 'json'
         url: @options.src
-        success: (data) =>
-          @tree = @_convertJSONToMetadataTree data
-          callback null, @tree
-        error: -> callback "Unable to load json for #{@displayName} provider"
+        success: (iResponse) =>
+          @tree = @_convertJSONToMetadataTree iResponse
+          # alphabetize remotely loaded folder contents if requested
+          if @options.alphabetize
+            @tree.sort (iMeta1, iMeta2) ->
+              return -1 if iMeta1.name < iMeta2.name
+              return  1 if iMeta1.name > iMeta2.name
+              return  0
+          complete @tree
+        error: (jqXHR, textStatus, errorThrown) =>
+          errorMetadata = @_createErrorMetadata null
+          @tree = [ errorMetadata ]
+          complete @tree
     else
-      console.error? "No json or src option found for #{@displayName} provider"
-      callback null, {}
+      complete null
 
   _convertJSONToMetadataTree: (json, parent = null) ->
     tree = []
@@ -82,7 +105,7 @@ class ReadOnlyProvider extends ProviderInterface
       # parse array format:
       # [{ name: "...", content: "..."}, { name: "...", type: 'folder', children: [...] }]
       for item in json
-        type = if item.type is "folder" then CloudMetadata.Folder else CloudMetadata.File
+        type = CloudMetadata.mapTypeToCloudMetadataType item.type
         metadata = new CloudMetadata
           name: item.name
           type: type
@@ -94,7 +117,30 @@ class ReadOnlyProvider extends ProviderInterface
           providerData:
             children: null
         if type is CloudMetadata.Folder
-          metadata.providerData.children = @_convertJSONToMetadataTree item.children, metadata
+          newFolderPromise = (iItem, iMetadata) =>
+            return new Promise (resolve, reject) =>
+              if iItem.children?
+                iMetadata.providerData.children = @_convertJSONToMetadataTree iItem.children, iMetadata
+                resolve iMetadata
+              else if iItem.url?
+                $.ajax
+                  dataType: 'json'
+                  url: iItem.url,
+                  success: (iResponse) =>
+                    iMetadata.providerData.children = @_convertJSONToMetadataTree iResponse, iMetadata
+                    # alphabetize remotely loaded folder contents if requested
+                    if @options.alphabetize or iItem.alphabetize
+                      iMetadata.providerData.children.sort (iMeta1, iMeta2) ->
+                        return -1 if iMeta1.name < iMeta2.name
+                        return  1 if iMeta1.name > iMeta2.name
+                        return  0
+                    resolve iMetadata
+                  error: (jqXHR, textStatus, errorThrown) =>
+                    errorMetadata = @_createErrorMetadata iMetadata
+                    iMetadata.providerData.children = [ errorMetadata ]
+                    resolve iMetadata
+          @promises.push newFolderPromise item, metadata
+        
         tree.push metadata
     else
       # parse original format:
@@ -113,6 +159,23 @@ class ReadOnlyProvider extends ProviderInterface
         if type is CloudMetadata.Folder
           metadata.providerData.children = @_convertJSONToMetadataTree itemContent, metadata
         tree.push metadata
+    
     tree
+
+  # Remote folder contents are likely to be loaded as part of
+  # sample document hierarchies. The inability to load one subfolder
+  # of examples shouldn't necessarily be treated as a fatal error.
+  # Therefore, we put an item in the returned results which indicates
+  # the error and which is non-selectable, but resolve the promise
+  # so that the open can proceed without the missing folder contents.
+  _createErrorMetadata: (iParent) ->
+    new CloudMetadata
+      name: tr "~FILE_DIALOG.LOAD_FOLDER_ERROR"
+      type: CloudMetadata.Label
+      content: ""
+      parent: iParent
+      provider: @
+      providerData:
+        children: null
 
 module.exports = ReadOnlyProvider
