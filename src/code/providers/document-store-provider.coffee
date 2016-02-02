@@ -190,7 +190,7 @@ class DocumentStoreProvider extends ProviderInterface
         {withCredentials}
       success: (data) ->
         content = cloudContentFactory.createEnvelopedCloudContent data
-        if @options.patch then @previouslySavedContent = content.clone()
+        @previouslySavedContent = if @options.patch then content.clone() else null
         metadata.name ?= data.docName
         callback null, content
       error: ->
@@ -266,7 +266,7 @@ class DocumentStoreProvider extends ProviderInterface
       dataType: 'json'
       type: 'POST'
       url: url
-      data: pako.deflate(JSON.stringify sendContent)
+      data: pako.deflate sendContent
       contentType: mimeType
       processData: false
       beforeSend: (xhr) ->
@@ -275,7 +275,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        if @options.patch then @previouslySavedContent = cloudContent.clone()
+        @previouslySavedContent = if @options.patch then cloudContent.clone() else null
         if data.id then metadata.providerData.id = data.id
 
         callback null, data
