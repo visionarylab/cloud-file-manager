@@ -280,6 +280,8 @@ class DocumentStoreProvider extends ProviderInterface
           responseJson = JSON.parse jqXHR.responseText
           if responseJson.message is 'error.duplicate'
             callback "Unable to create #{metadata.name}.  File already exists."
+          else
+            callback "Unable to save #{metadata.name}: [#{responseJson.message}]"
         catch
           callback "Unable to save #{metadata.name}"
 
