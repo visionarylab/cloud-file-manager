@@ -38,9 +38,10 @@ class LocalStorageProvider extends ProviderInterface
 
   load: (metadata, callback) ->
     try
-      callback null, cloudContentFactory.createEnvelopedCloudContent window.localStorage.getItem @_getKey metadata.name
+      content = window.localStorage.getItem @_getKey metadata.name
+      callback null, cloudContentFactory.createEnvelopedCloudContent content
     catch e
-      callback "Unable to load: #{e.message}"
+      callback "Unable to load '#{metadata.name}': #{e.message}"
 
   list: (metadata, callback) ->
     list = []
