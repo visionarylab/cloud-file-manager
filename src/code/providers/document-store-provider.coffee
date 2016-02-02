@@ -240,6 +240,7 @@ class DocumentStoreProvider extends ProviderInterface
     if metadata.providerData.id then params.recordid = metadata.providerData.id
 
     # See if we can patch
+    mimeType = @options.mimeType or 'application/json'
     contentJson = JSON.stringify content
     canOverwrite = metadata.overwritable and @previouslySavedContent?
     if canOverwrite and diff = @_createDiff @previouslySavedContent.getContent(), content
@@ -249,6 +250,7 @@ class DocumentStoreProvider extends ProviderInterface
     if diff? and diffJson.length < contentJson.length
       sendContent = diffJson
       url = patchDocumentUrl
+      mimeType = 'application/json-patch+json'
     else
       if metadata.name then params.recordname = metadata.name
       url = saveDocumentUrl
@@ -261,6 +263,7 @@ class DocumentStoreProvider extends ProviderInterface
       type: 'POST'
       url: url
       data: pako.deflate(JSON.stringify sendContent)
+      contentType: mimeType
       processData: false
       beforeSend: (xhr) ->
         xhr.setRequestHeader('Content-Encoding', 'deflate')
