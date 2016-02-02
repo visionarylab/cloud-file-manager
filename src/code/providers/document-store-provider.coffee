@@ -248,6 +248,10 @@ class DocumentStoreProvider extends ProviderInterface
     # only patch if the diff is smaller than saving the entire file
     # e.g. when large numbers of cases are deleted the diff can be larger
     if diff? and diffJson.length < contentJson.length
+      if diff.length is 0
+        # no reason to patch if there are no diffs
+        callback null # no error indicates success
+        return
       sendContent = diffJson
       url = patchDocumentUrl
       mimeType = 'application/json-patch+json'
