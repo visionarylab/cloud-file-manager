@@ -207,9 +207,15 @@ class CloudFileManagerClient
         saving: metadata
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
       metadata.provider.save currentContent, metadata, (err) =>
-        return @_error(err) if err
+        if err
+          # disable autosave on save failure; clear "saving..." message
+          metadata.autoSaveDisabled = true
+          @_setState { metadata: metadata, saving: null }
+          return @_error(err)
         if @state.metadata isnt metadata
           @_closeCurrentFile()
+        # reenable autosave on save success
+        metadata.autoSaveDisabled = false
         @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
         callback? currentContent, metadata
     else
@@ -360,7 +366,7 @@ class CloudFileManagerClient
     if interval > 1000
       interval = Math.round(interval / 1000)
     if interval > 0
-      @_autoSaveInterval = setInterval (=> @save() if @state.dirty and @state.metadata?.provider?.can 'save'), (interval * 1000)
+      @_autoSaveInterval = setInterval (=> @save() if @state.dirty and not @state.metadata?.autoSaveDisabled and @state.metadata?.provider?.can 'save'), (interval * 1000)
 
   isAutoSaving: ->
     @_autoSaveInterval?

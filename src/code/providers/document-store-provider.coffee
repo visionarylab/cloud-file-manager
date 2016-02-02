@@ -13,6 +13,7 @@ renameDocumentUrl = "#{documentStore}/document/rename"
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 jiff = require 'jiff'
+pako = require 'pako'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
@@ -217,7 +218,7 @@ class DocumentStoreProvider extends ProviderInterface
 
     $.ajax
       dataType: 'json'
-      method: 'POST'
+      type: 'POST'
       url: url
       data: content.getContentAsJSON()
       context: @
@@ -239,22 +240,33 @@ class DocumentStoreProvider extends ProviderInterface
     if metadata.providerData.id then params.recordid = metadata.providerData.id
 
     # See if we can patch
+    mimeType = @options.mimeType or 'application/json'
+    contentJson = JSON.stringify content
     canOverwrite = metadata.overwritable and @previouslySavedContent?
     if canOverwrite and diff = @_createDiff @previouslySavedContent.getContent(), content
-      sendContent = diff
+      diffJson = JSON.stringify diff
+    # only patch if the diff is smaller than saving the entire file
+    # e.g. when large numbers of cases are deleted the diff can be larger
+    if diff? and diffJson.length < contentJson.length
+      sendContent = diffJson
       url = patchDocumentUrl
+      mimeType = 'application/json-patch+json'
     else
       if metadata.name then params.recordname = metadata.name
       url = saveDocumentUrl
-      sendContent = content
+      sendContent = contentJson
 
     url = @_addParams(url, params)
 
     $.ajax
       dataType: 'json'
-      method: 'POST'
+      type: 'POST'
       url: url
-      data: JSON.stringify sendContent
+      data: pako.deflate(JSON.stringify sendContent)
+      contentType: mimeType
+      processData: false
+      beforeSend: (xhr) ->
+        xhr.setRequestHeader('Content-Encoding', 'deflate')
       context: @
       xhrFields:
         withCredentials: true
@@ -268,6 +280,8 @@ class DocumentStoreProvider extends ProviderInterface
           responseJson = JSON.parse jqXHR.responseText
           if responseJson.message is 'error.duplicate'
             callback "Unable to create #{metadata.name}.  File already exists."
+          else
+            callback "Unable to save #{metadata.name}: [#{responseJson.message}]"
         catch
           callback "Unable to save #{metadata.name}"
 
