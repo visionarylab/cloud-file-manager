@@ -14,7 +14,9 @@
         mimeType: "text/plain",
         providers: [
           "localStorage",
+          /* Original map format example */
           {
+            "displayName": "Read Only (map)",
             "name": "readOnly",
             "json": {
               "First File Example": "This is the first readonly example",
@@ -29,6 +31,69 @@
               }
             }
           },
+          /* Original example in array format */
+          {
+            "displayName": "Read Only (array)",
+            "name": "readOnly",
+            "json": [
+              { name: "Third File Example", content: "This is the third readonly example" },
+              { name: "Fourth File Example", content: "This is the fourth readonly example" },
+              { name: "Third Folder Example", type: 'folder', 
+                children: [
+                  { name: "Third Folder First File Example", content: "This is the third folder first readonly example" },
+                  { name: "Third Folder Second File Example", content: "This is the third folder second readonly example" }
+                ]},
+              { name: "Fourth Folder Example", type: 'folder',
+                children: [
+                  { name: "Fourth Folder First File Example", content: "This is the fourth folder first readonly example" },
+                  { name: "Fourth Folder Second File Example", content: "This is the fourth folder second readonly example" }
+                ]}
+            ]
+          },
+          /* Remote files in array format */
+          {
+            "displayName": "Read Only (remote 'src')",
+            "name": "readOnly",
+            "alphabetize": true,
+            "src": 'https://codap-resources.concord.org/examples/index.json'
+          },
+          /* Remote array format */
+          {
+            "displayName": "Read Only (remote folders)",
+            "name": "readOnly",
+            json: [
+              {
+                type: "label",
+                name: "--- Server Order ---"
+              },
+              {
+                type: "folder",
+                name: "Some Examples",
+                alphabetize: false,
+                url: 'https://codap-resources.concord.org/examples/index.json'
+              },
+              {
+                type: "label",
+                name: "--- Alphabetized Order ---"
+              },
+              {
+                type: "folder",
+                name: "More Examples",
+                alphabetize: true,
+                url: 'https://codap-resources.concord.org/examples/index.json'
+              },
+              {
+                type: "label",
+                name: "--- Folder below shows load failure ---"
+              },
+              {
+                type: "folder",
+                name: "Still More Examples",
+                alphabetize: true,
+                url: 'https://codap-resources.concord.org/examples/load-fail.json'
+              }
+            ]
+          },
           {
             "name": "googleDrive",
             "mimeType": "text/plain",
@@ -42,7 +107,7 @@
             info: "This version has folders in the read only list"
           }
         }
-      }
+      };
       CloudFileManager.createFrame(options, "wrapper");
     </script>
   </body>

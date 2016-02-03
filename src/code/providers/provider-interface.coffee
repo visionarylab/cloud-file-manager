@@ -8,9 +8,14 @@ class CloudFile
 
 class CloudMetadata
   constructor: (options) ->
-    {@name, @type, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId, @sharedContentSecretKey} = options
+    {@name, @type, @description, @content, @url, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId, @sharedContentSecretKey} = options
   @Folder: 'folder'
   @File: 'file'
+  @Label: 'label'
+
+  @mapTypeToCloudMetadataType: (iType) ->
+    # for now mapping is 1-to-1 defaulting to 'file'
+    iType or @File
 
   path: ->
     _path = []
