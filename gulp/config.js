@@ -3,9 +3,19 @@ var argv = require('yargs').argv,
     production = !!argv.production,
     buildInfo = argv.buildInfo || 'development build (' + (new Date()) + ')',
     src = './src',
-    dest  = argv.dest ? argv.dest : './dist';
+    dest  = argv.dest ? argv.dest : './dist',
+    noMap = !!argv.noMap,
+    nojQuery = !!argv.nojQuery,
+    codap = !!argv.codap,
+    assetsSrc = codap ? src + '/assets/img/*.*' : src + '/assets/**/*.*',
+    assetsDst = codap ? dest + '/img/' : dest;
 
 module.exports = {
+  flags: {
+    noMap: noMap,
+    nojQuery: nojQuery,
+    codap: codap
+  },
   browserify: {
     app: {
       watch: ['./package.json', src + '/code/**/*.*', '!' + src + '/code/globals.coffee'],
@@ -28,9 +38,9 @@ module.exports = {
     dest: dest + '/css/'
   },
   assets: {
-    watch: src + '/assets/**/*.*',
-    src: src + '/assets/**/*.*',
-    dest: dest
+    watch: assetsSrc,
+    src: assetsSrc,
+    dest: assetsDst
   },
   deploy: {
     src: dest + '/**/*'

@@ -31,6 +31,7 @@
     "gulp-concat": "^2.5.2",
     "gulp-gh-pages": "^0.5.4",
     "gulp-if": "^1.2.5",
+    "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.3",
     "gulp-stylus": "^2.0.1",
     "package-json-versionify": "^1.0.1",
