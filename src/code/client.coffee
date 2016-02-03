@@ -191,6 +191,9 @@ class CloudFileManagerClient
             return @_error(err) if err
             @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
+  isSaveInProgress: ->
+    @state.saving?
+
   save: (callback = null) ->
     @_event 'getContent', {}, (stringContent) =>
       @saveContent stringContent, callback
@@ -208,7 +211,7 @@ class CloudFileManagerClient
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
       metadata.provider.save currentContent, metadata, (err) =>
         if err
-          # disable autosave on save failure; clear "saving..." message
+          # disable autosave on save failure; clear "Saving..." message
           metadata.autoSaveDisabled = true
           @_setState { metadata: metadata, saving: null }
           return @_error(err)
@@ -362,11 +365,14 @@ class CloudFileManagerClient
     if @_autoSaveInterval
       clearInterval @_autoSaveInterval
 
+    shouldAutoSave = =>
+      @state.dirty and not @state.metadata?.autoSaveDisabled and not @isSaveInProgress() and @state.metadata?.provider?.can 'save'
+
     # in case the caller uses milliseconds
     if interval > 1000
       interval = Math.round(interval / 1000)
     if interval > 0
-      @_autoSaveInterval = setInterval (=> @save() if @state.dirty and not @state.metadata?.autoSaveDisabled and @state.metadata?.provider?.can 'save'), (interval * 1000)
+      @_autoSaveInterval = setInterval (=> @save() if shouldAutoSave()), (interval * 1000)
 
   isAutoSaving: ->
     @_autoSaveInterval?
