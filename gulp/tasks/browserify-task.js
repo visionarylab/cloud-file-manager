@@ -50,7 +50,7 @@ gulp.task('browserify-globals', function(){
   return b.bundle()
     .on('error', errorHandler)
     .pipe(source('globals.js'))
-    .pipe(gulpif(nojQuery, replace(/(var)*[ ]*jQuery[ ]*=/g,
+    .pipe(gulpif(nojQuery, replace(/.*?jQuery\s*=.*\n*/g,
                                     function(iMatch) {
                                       return '//' + iMatch;
                                     })))
