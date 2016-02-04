@@ -214,13 +214,18 @@ class DocumentStoreProvider extends ProviderInterface
       shareEditKey: null            # strip these out of the shared data if they
       sharedDocumentId: null        # exist (they'll be re-added on success)
 
+    mimeType = @options.mimeType or 'application/json'
     url = @_addParams(saveDocumentUrl, params)
 
     $.ajax
       dataType: 'json'
       type: 'POST'
       url: url
-      data: content.getContentAsJSON()
+      contentType: mimeType
+      data: pako.deflate content.getContentAsJSON()
+      processData: false
+      beforeSend: (xhr) ->
+        xhr.setRequestHeader('Content-Encoding', 'deflate')
       context: @
       xhrFields:
         withCredentials: false
@@ -231,7 +236,8 @@ class DocumentStoreProvider extends ProviderInterface
           _permissions: 0
         callback null, data.id
       error: ->
-        callback "Unable to save "+metadata.name
+        docName = metadata?.name or 'document'
+        callback "Unable to save #{docName}"
 
   save: (cloudContent, metadata, callback) ->
     content = cloudContent.getContent()
