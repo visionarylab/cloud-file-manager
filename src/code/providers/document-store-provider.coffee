@@ -231,7 +231,8 @@ class DocumentStoreProvider extends ProviderInterface
           _permissions: 0
         callback null, data.id
       error: ->
-        callback "Unable to save "+metadata.name
+        docName = metadata?.name or 'document'
+        callback "Unable to save #{docName}"
 
   save: (cloudContent, metadata, callback) ->
     content = cloudContent.getContent()
