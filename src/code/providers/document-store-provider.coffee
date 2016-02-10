@@ -1,6 +1,6 @@
 {div, button, span} = React.DOM
 
-documentStore = "http://document-store.herokuapp.com"
+documentStore = "//document-store.concord.org/"
 authorizeUrl      = "#{documentStore}/user/authenticate"
 checkLoginUrl     = "#{documentStore}/user/info"
 listUrl           = "#{documentStore}/document/all"
@@ -183,15 +183,27 @@ class DocumentStoreProvider extends ProviderInterface
     withCredentials = unless metadata.sharedContentId then true else false
     $.ajax
       url: loadDocumentUrl
+      dataType: 'json'
       data:
         recordid: metadata.providerData?.id or metadata.sharedContentId
       context: @
       xhrFields:
         {withCredentials}
       success: (data) ->
+        # record previously saved content for patching purposes
+        @previouslySavedContent = if @options.patch then _.cloneDeep(data) else null
+        
         content = cloudContentFactory.createEnvelopedCloudContent data
-        @previouslySavedContent = if @options.patch then content.clone() else null
-        metadata.name ?= data.docName
+
+        # for documents loaded by id or other means (besides name),
+        # capture the name for use in the CFM interface.
+        # 'docName' at the top level for CFM-wrapped documents
+        # 'name' at the top level for unwrapped documents (e.g. CODAP)
+        # 'name' at the top level of 'content' for wrapped CODAP documents
+        metadata.name ?= data.docName or data.name or data.content?.name
+        if metadata?.name
+          content.addMetadata docName: metadata.name
+        
         callback null, content
       error: ->
         message = if metadata.sharedContentId
@@ -200,21 +212,21 @@ class DocumentStoreProvider extends ProviderInterface
           "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
         callback message
 
-  share: (content, metadata, callback) ->
-    runKey = content.get("shareEditKey") or Math.random().toString(16).substring(2)
+  getSharingMetadata: (content) ->
+    { _permissions: 1 }
+
+  share: (masterContent, sharedContent, metadata, callback) ->
+    # generate runKey if it doesn't already exist as 'shareEditKey'
+    runKey = masterContent.get("shareEditKey") or Math.random().toString(16).substring(2)
 
     params =
       runKey: runKey
 
-    if content.get("sharedDocumentId")
-      params.recordid = content.get("sharedDocumentId")
+    # pass sharedDocumentId as 'recordid' query param
+    if masterContent.get("sharedDocumentId")
+      params.recordid = masterContent.get("sharedDocumentId")
 
-    content.addMetadata
-      _permissions: 1
-      shareEditKey: null            # strip these out of the shared data if they
-      sharedDocumentId: null        # exist (they'll be re-added on success)
-
-    mimeType = @options.mimeType or 'application/json'
+    mimeType = 'application/json' # Document Store requires JSON currently
     url = @_addParams(saveDocumentUrl, params)
 
     $.ajax
@@ -222,7 +234,7 @@ class DocumentStoreProvider extends ProviderInterface
       type: 'POST'
       url: url
       contentType: mimeType
-      data: pako.deflate content.getContentAsJSON()
+      data: pako.deflate sharedContent.getContentAsJSON()
       processData: false
       beforeSend: (xhr) ->
         xhr.setRequestHeader('Content-Encoding', 'deflate')
@@ -230,10 +242,10 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: false
       success: (data) ->
-        content.addMetadata
+        # on successful share/save, capture the sharedDocumentId and shareEditKey
+        masterContent.addMetadata
           sharedDocumentId: data.id
           shareEditKey: runKey
-          _permissions: 0
         callback null, data.id
       error: ->
         docName = metadata?.name or 'document'
@@ -246,10 +258,10 @@ class DocumentStoreProvider extends ProviderInterface
     if metadata.providerData.id then params.recordid = metadata.providerData.id
 
     # See if we can patch
-    mimeType = @options.mimeType or 'application/json'
+    mimeType = 'application/json' # Document Store requires JSON currently
     contentJson = JSON.stringify content
     canOverwrite = metadata.overwritable and @previouslySavedContent?
-    if canOverwrite and diff = @_createDiff @previouslySavedContent.getContent(), content
+    if canOverwrite and diff = @_createDiff @previouslySavedContent, content
       diffJson = JSON.stringify diff
     # only patch if the diff is smaller than saving the entire file
     # e.g. when large numbers of cases are deleted the diff can be larger
@@ -281,7 +293,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        @previouslySavedContent = if @options.patch then cloudContent.clone() else null
+        @previouslySavedContent = if @options.patch then _.cloneDeep(content) else null
         if data.id then metadata.providerData.id = data.id
 
         callback null, data
@@ -344,8 +356,10 @@ class DocumentStoreProvider extends ProviderInterface
 
   _createDiff: (obj1, obj2) ->
     try
-      opts =
+      opts = {
         hash: @options.patchObjectHash if typeof @options.patchObjectHash is "function"
+        invertible: false # smaller patches are worth more than invertibility
+      }
       # clean objects before diffing
       cleanedObj1 = JSON.parse JSON.stringify obj1
       cleanedObj2 = JSON.parse JSON.stringify obj2

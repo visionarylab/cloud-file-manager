@@ -115,6 +115,7 @@
             case 'newedFile':
             case 'openedFile':
               setContent(event.data.content);
+              if(event.callback) event.callback();
               focus();
               break;
         }
