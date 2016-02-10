@@ -241,7 +241,7 @@ class GoogleDriveProvider extends ProviderInterface
 
     request = gapi.client.request
       path: path
-      type: method
+      method: method
       params: {uploadType: 'multipart'}
       headers: {'Content-Type': 'multipart/related; boundary="' + boundary + '"'}
       body: body
