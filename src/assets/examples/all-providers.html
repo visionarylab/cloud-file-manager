@@ -41,11 +41,11 @@
             help: "http://lmgtfy.com/"
           }
         }
-      }
+      };
       CloudFileManager.createFrame(options, "wrapper", function (event) {
         if (event.type == 'connected') {
           var client = event.data.client;
-          client.insertMenuItemAfter('openFileDialog', {"name": "Import data...", action: client.importDataDialog.bind(client)})
+          client.insertMenuItemAfter('openFileDialog', {"name": "Import data...", action: client.importDataDialog.bind(client)});
         }
       });
     </script>

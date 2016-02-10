@@ -18,6 +18,8 @@
     <script type="text/javascript">
       var cfmClient, cfmContent;
 
+      // Disable "Expected an assignment or function call and instead saw an expression" warning
+      /*jshint -W030 */
       function newFile() {
         cfmClient && cfmClient.newFileDialog();
       }
@@ -99,7 +101,7 @@
           }
         ]
       };
-      CloudFileManager.init(clientOptions)
+      CloudFileManager.init(clientOptions);
       CloudFileManager.clientConnect(function (event) {
         console.log(event);
         switch (event.type) {
@@ -119,7 +121,7 @@
         }
       });
 
-      document.getElementById("text").focus()
+      document.getElementById("text").focus();
     </script>
   </body>
 </html>

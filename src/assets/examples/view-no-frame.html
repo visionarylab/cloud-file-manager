@@ -19,8 +19,8 @@
       /* global CloudFileManager */
       var cfmClient, cfmContent;
 
-      /* exported newFile, openFile, saveFile, saveFileAs, getContent, setContent,
-                  connected, changed, focus */
+      // Disable "Expected an assignment or function call and instead saw an expression" warning
+      /*jshint -W030 */
       function newFile() {
         cfmClient && cfmClient.newFileDialog();
       }
