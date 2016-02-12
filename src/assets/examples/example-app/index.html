@@ -39,6 +39,7 @@
       }
 
       function setContent(cfmContent) {
+        if(typeof cfmContent !== "string") cfmContent = JSON.stringify(cfmContent);
         document.getElementById("text").value = cfmContent;
       }
 
