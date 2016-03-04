@@ -15,6 +15,8 @@
     <script type="text/javascript">
       var cfmClient;
 
+      // Disable "Expected an assignment or function call and instead saw an expression" warning
+      /*jshint -W030 */
       function newFile() {
         cfmClient && cfmClient.newFileDialog();
       }
@@ -37,6 +39,7 @@
       }
 
       function setContent(cfmContent) {
+        if(typeof cfmContent !== "string") cfmContent = JSON.stringify(cfmContent);
         document.getElementById("text").value = cfmContent;
       }
 
@@ -104,6 +107,7 @@
             case 'newedFile':
             case 'openedFile':
               setContent(event.data.content);
+              if(event.callback) event.callback();
               focus();
               break;
 
@@ -115,7 +119,7 @@
         });
       }
 
-      document.getElementById("text").focus()
+      document.getElementById("text").focus();
     </script>
   </body>
 </html>

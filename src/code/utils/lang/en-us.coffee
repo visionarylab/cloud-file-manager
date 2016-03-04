@@ -52,12 +52,12 @@ module.exports =
   "~SHARE_DIALOG.COPY_SUCCESS": "The share url has been copied to the clipboard."
   "~SHARE_DIALOG.COPY_ERROR": "Sorry, the share url was not able to be copied to the clipboard."
 
-  "~CONFIRM.OPEN_FILE": "You have unsaved changes.  Are you sure you want open a new file?"
-  "~CONFIRM.NEW_FILE": "You have unsaved changes.  Are you sure you want a new file?"
-  "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want revert the file to its most recently opened state?"
-  "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want revert the file to currently shared view?"
+  "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?"
+  "~CONFIRM.NEW_FILE": "You have unsaved changes. Are you sure you want to create a new document?"
+  "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want to revert the document to its most recently opened state?"
+  "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want to revert the document to its most recently shared state?"
 
-  "~LOCAL_FILE_DIALOG.DROP_FILE_HERE": "Drop file here or click here to select file."
+  "~LOCAL_FILE_DIALOG.DROP_FILE_HERE": "Drop file here or click here to select a file."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED": "Sorry, you can choose only one file to open."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED": "Sorry, you can't drop more than one file."
 

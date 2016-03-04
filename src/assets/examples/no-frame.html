@@ -18,6 +18,8 @@
     <script type="text/javascript">
       var cfmClient, cfmContent;
 
+      // Disable "Expected an assignment or function call and instead saw an expression" warning
+      /*jshint -W030 */
       function newFile() {
         cfmClient && cfmClient.newFileDialog();
       }
@@ -36,18 +38,18 @@
       }
 
       function getContent() {
-        cfmContent.setText(document.getElementById("text").value);
+        cfmContent = document.getElementById("text").value;
         return cfmContent;
       }
 
       function setContent(_cfmContent) {
         cfmContent = _cfmContent;
-        document.getElementById("text").value = cfmContent.getText();
+        document.getElementById("text").value = cfmContent;
       }
 
       function connected(client) {
         cfmClient = client;
-        cfmContent = client.createTextContent(document.getElementById("text").value);
+        cfmContent = document.getElementById("text").value;
       }
 
       function changed() {
@@ -99,7 +101,7 @@
           }
         ]
       };
-      CloudFileManager.init(clientOptions)
+      CloudFileManager.init(clientOptions);
       CloudFileManager.clientConnect(function (event) {
         console.log(event);
         switch (event.type) {
@@ -114,12 +116,13 @@
             case 'newedFile':
             case 'openedFile':
               setContent(event.data.content);
+              if(event.callback) event.callback();
               focus();
               break;
         }
       });
 
-      document.getElementById("text").focus()
+      document.getElementById("text").focus();
     </script>
   </body>
 </html>

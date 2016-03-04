@@ -42,11 +42,13 @@ module.exports = React.createClass
     linkTabSelected: true
 
   getSharedDocumentId: ->
+    # extract sharedDocumentId from CloudContent
     @props.client.state.currentContent?.get "sharedDocumentId"
 
   getShareLink: ->
     sharedDocumentId = @getSharedDocumentId()
     if sharedDocumentId
+      # share link combines document URL with sharedDocumentId
       "#{@props.client.getCurrentUrl()}#shared=#{sharedDocumentId}"
     else
       null

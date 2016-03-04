@@ -43,12 +43,12 @@
       };
 
       function createMenuItem(text, disabled) {
-        disabled = disabled || false
+        disabled = disabled || false;
         return {
           name: text,
-          action: function () { alert("text")},
+          action: function () { alert("text"); },
           enabled: !disabled
-        }
+        };
       }
       CloudFileManager.createFrame(options, "wrapper", function (event) {
         if (event.type == 'connected') {
@@ -57,7 +57,7 @@
             .prependMenuItem(createMenuItem("#2 added via prependMenuItem()"))
             .replaceMenuItem('openFileDialog', createMenuItem("#3 added via replaceMenuItem('openFileDialog')"))
             .insertMenuItemBefore(6, createMenuItem("#4 added via insertMenuItemBefore(6)"))
-            .insertMenuItemAfter('downloadDialog', createMenuItem("#5 added via insertMenuItemAfter('downloadDialog')"))
+            .insertMenuItemAfter('downloadDialog', createMenuItem("#5 added via insertMenuItemAfter('downloadDialog')"));
         }
       });
     </script>

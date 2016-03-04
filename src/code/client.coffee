@@ -28,6 +28,10 @@ class CloudFileManagerClient
     @providers = {}
 
   setAppOptions: (@appOptions = {})->
+
+    @appOptions.wrapFileContent ?= true
+    CloudContent.wrapFileContent = @appOptions.wrapFileContent
+
     # flter for available providers
     allProviders = {}
     for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider, LocalFileProvider]
@@ -139,8 +143,9 @@ class CloudFileManagerClient
     if metadata?.provider?.can 'load'
       metadata.provider.load metadata, (err, content) =>
         return @_error(err) if err
+        # should wait to close current file until client signals open is complete
         @_closeCurrentFile()
-        @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+        @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
         callback? content, metadata
     else
       @openFileDialog callback
@@ -170,7 +175,7 @@ class CloudFileManagerClient
       metadata = new CloudMetadata
         name: data.name
         type: CloudMetadata.File
-      @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
+      @_fileOpened content, metadata, {openedContent: content.clone()}
       callback? content, metadata
 
   importLocalFile: (file, callback=null) ->
@@ -180,7 +185,7 @@ class CloudFileManagerClient
   openSharedContent: (id) ->
     @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
       return @_error(err) if err
-      @_fileChanged 'openedFile', content, metadata, {overwritable: false, openedContent: content.clone()}
+      @_fileOpened content, metadata, {overwritable: false, openedContent: content.clone()}
 
   openProviderFile: (providerName, providerParams) ->
     provider = @providers[providerName]
@@ -189,13 +194,13 @@ class CloudFileManagerClient
         if authorized
           provider.openSaved providerParams, (err, content, metadata) =>
             return @_error(err) if err
-            @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+            @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   isSaveInProgress: ->
     @state.saving?
 
   save: (callback = null) ->
-    @_event 'getContent', {}, (stringContent) =>
+    @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
       @saveContent stringContent, callback
 
   saveContent: (stringContent, callback = null) ->
@@ -269,11 +274,14 @@ class CloudFileManagerClient
       metadata = new CloudMetadata
         name: copied.name
         type: CloudMetadata.File
-      @_fileChanged 'openedFile', content, metadata, {dirty: true, openedContent: content.clone()}
+      @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
       window.location.hash = ""
       window.localStorage.removeItem key
     catch e
       callback "Unable to load copied file"
+
+  _sharedMetadata: ->
+    @state.currentContent?.getSharedMetadata() or {}
 
   shareGetLink: ->
     @_ui.shareDialog @
@@ -282,25 +290,39 @@ class CloudFileManagerClient
     @share()
 
   toggleShare: (callback) ->
-    if @state.currentContent?.get "sharedDocumentId"
-      @state.currentContent?.remove "_permissions"
-      @state.currentContent?.remove "shareEditKey"
-      @state.currentContent?.remove "sharedDocumentId"
-      @_fileChanged 'unsharedFile', @state.currentContent, @state.metadata, {sharing: false}
-      callback? false
+    if @isShared()
+      @unshare callback
     else
       @share callback
 
+  isShared: ->
+    @state.currentContent?.get "sharedDocumentId"
+
   share: (callback) ->
     if @state.shareProvider
-      @_event 'getContent', {}, (stringContent) =>
+      sharingMetadata = @state.shareProvider.getSharingMetadata()
+      @_event 'getContent', { shared: sharingMetadata }, (stringContent) =>
         @_setState
           sharing: true
-        currentContent = @_createOrUpdateCurrentContent stringContent
-        @state.shareProvider.share currentContent, @state.metadata, (err, sharedContentId) =>
+        sharedContent = cloudContentFactory.createEnvelopedCloudContent stringContent
+        sharedContent.addMetadata sharingMetadata
+        @state.shareProvider.share @state.currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
           return @_error(err) if err
-          @_fileChanged 'sharedFile', currentContent, @state.metadata
+          @_fileChanged 'sharedFile', @state.currentContent, @state.metadata
           callback? sharedContentId
+
+  unshare: (callback) ->
+    # clear sharing metadata when user unshares the document
+    @state.currentContent?.remove "_permissions"
+    @state.currentContent?.remove "shareEditKey"
+    @state.currentContent?.remove "sharedDocumentId"
+    @_fileChanged 'unsharedFile', @state.currentContent, @state.metadata, {sharing: false}
+    callback? false
+
+  reshare: (sharedMetadata, callback) ->
+    @state.currentContent?.addMetadata sharedMetadata
+    @_fileChanged 'sharedFile', @state.currentContent, @state.metadata, {sharing: true}
+    callback? false
 
   revertToShared: (callback = null) ->
     id = @state.currentContent?.get("sharedDocumentId")
@@ -308,7 +330,9 @@ class CloudFileManagerClient
       @state.shareProvider.loadSharedContent id, (err, content, metadata) =>
         return @_error(err) if err
         @state.currentContent.copyMetadataTo content
-        @_fileChanged 'openedFile', content, metadata, {openedContent: content.clone()}
+        if not metadata.name and docName = content.get('docName')
+          metadata.name = docName
+        @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
         callback? null
 
   revertToSharedDialog: (callback = null) ->
@@ -316,7 +340,8 @@ class CloudFileManagerClient
       @revertToShared callback
 
   downloadDialog: (callback = null) ->
-    @_event 'getContent', {}, (content) =>
+    # should share metadata be included in downloaded local files?
+    @_event 'getContent', { shared: @_sharedMetadata() }, (content) =>
       envelopedContent = cloudContentFactory.createEnvelopedCloudContent content
       @state.currentContent?.copyMetadataTo envelopedContent
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
@@ -347,7 +372,7 @@ class CloudFileManagerClient
 
   revertToLastOpened: (callback = null) ->
     if @state.openedContent? and @state.metadata
-      @_fileChanged 'openedFile', @state.openedContent, @state.metadata, {openedContent: @state.openedContent.clone()}
+      @_fileOpened @state.openedContent, @state.metadata, {openedContent: @state.openedContent.clone()}
 
   revertToLastOpenedDialog: (callback = null) ->
     if @state.openedContent? and @state.metadata
@@ -382,13 +407,14 @@ class CloudFileManagerClient
 
   getCurrentUrl: (queryString = null) ->
     suffix = if queryString? then "?#{queryString}" else ""
+    # Check browser support for document.location.origin (& window.location.origin)
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
 
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null
       @saveFile stringContent, metadata, callback
     else
-      @_event 'getContent', {}, (stringContent) =>
+      @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
         @saveFile stringContent, metadata, callback
 
   _error: (message) ->
@@ -397,19 +423,32 @@ class CloudFileManagerClient
 
   _fileChanged: (type, content, metadata, additionalState={}, hashParams=null) ->
     metadata?.overwritable ?= true
+    @_updateState content, metadata, additionalState, hashParams
+    @_event type, { content: content?.getClientContent(), shared: @_sharedMetadata() }
+
+  _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
+    @_event 'openedFile', { content: content?.getClientContent() }, (iError, iSharedMetadata) =>
+      if(iError)
+        _error iError
+      else
+        metadata?.overwritable ?= true
+        if not @appOptions.wrapFileContent
+          content.addMetadata iSharedMetadata
+        @_updateState content, metadata, additionalState, hashParams
+ 
+  _updateState: (content, metadata, additionalState={}, hashParams=null) ->
     state =
       currentContent: content
       metadata: metadata
       saving: null
       saved: false
-      dirty: false
+      dirty: content?.requiresConversion()
     for own key, value of additionalState
       state[key] = value
     @_setWindowTitle metadata?.name
     if hashParams isnt null
       window.location.hash = hashParams
     @_setState state
-    @_event type, {content: content?.getText()}
 
   _event: (type, data = {}, eventCallback = null) ->
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state

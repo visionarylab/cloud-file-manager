@@ -37,7 +37,7 @@ class CloudContentFactory
 
   # returns new CloudContent containing enveloped data
   createEnvelopedCloudContent: (content) ->
-    new CloudContent @envelopContent content
+    new CloudContent (@envelopContent content), (@_identifyContentFormat content)
 
   # envelops content with metadata, returns an object.
   # If content was already an object (Object or JSON) with metadata,
@@ -50,6 +50,23 @@ class CloudContentFactory
       envelopedCloudContent[key] ?= @envelopeMetadata[key]
     return envelopedCloudContent
 
+  _identifyContentFormat: (content) ->
+    return if not content?
+    result = { isCfmWrapped: false, isPreCfmFormat: false }
+    if isString content
+      try content = JSON.parse content
+    # Currently, we assume 'metadata' is top-level property in
+    # non-CFM-wrapped documents. Could put in a client callback
+    # that would identify whether the document required
+    # conversion to eliminate this assumption from the CFM.
+    if content.metadata
+      return result
+    if content.cfmVersion? or content.content?
+      result.isCfmWrapped = true
+    else
+      result.isPreCfmFormat = true
+    result
+
   # envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded: (content) ->
     if isString content
@@ -60,12 +77,25 @@ class CloudContentFactory
       return {content}
 
 class CloudContent
-  constructor: (@_ = {}) ->
+  # wrapping defaults to true but can be overridden by client via appOptions
+  @wrapFileContent: true
 
-  getContent: -> @_
-  getContentAsJSON:  -> JSON.stringify @_
+  constructor: (@_ = {}, @_contentFormat) ->
 
-  clone: -> new CloudContent _.cloneDeep @_
+  # getContent and getContentAsJSON return the file content as stored on disk
+  getContent: ->
+    if CloudContent.wrapFileContent then @_ else @_.content
+  getContentAsJSON: ->
+    JSON.stringify if CloudContent.wrapFileContent then @_ else @_.content
+
+  # returns the client-visible content (excluding wrapper for wrapped clients)
+  getClientContent: ->
+    @_.content
+
+  requiresConversion: ->
+    (CloudContent.wrapFileContent isnt @_contentFormat?.isCfmWrapped) or @_contentFormat?.isPreCfmFormat
+
+  clone: -> new CloudContent (_.cloneDeep @_), (_.cloneDeep @_contentFormat)
 
   setText: (text) -> @_.content = text
   getText: -> if @_.content is null then '' else if isString(@_.content) then @_.content else JSON.stringify @_.content
@@ -73,6 +103,14 @@ class CloudContent
   addMetadata: (metadata) -> @_[key] = metadata[key] for key of metadata
   get: (prop) -> @_[prop]
   remove: (prop) -> delete @_[prop]
+
+  getSharedMetadata: ->
+    # only include necessary fields
+    shared = {}
+    shared._permissions = @_._permissions if @_._permissions?
+    shared.shareEditKey = @_.shareEditKey if @_.shareEditKey?
+    shared.sharedDocumentId = @_.sharedDocumentId if @_.sharedDocumentId?
+    shared
 
   copyMetadataTo: (to) ->
     metadata = {}
