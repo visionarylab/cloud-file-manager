@@ -306,9 +306,10 @@ class CloudFileManagerClient
           sharing: true
         sharedContent = cloudContentFactory.createEnvelopedCloudContent stringContent
         sharedContent.addMetadata sharingMetadata
-        @state.shareProvider.share @state.currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
+        currentContent = @_createOrUpdateCurrentContent stringContent, @state.metadata
+        @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
           return @_error(err) if err
-          @_fileChanged 'sharedFile', @state.currentContent, @state.metadata
+          @_fileChanged 'sharedFile', currentContent, @state.metadata
           callback? sharedContentId
 
   unshare: (callback) ->
@@ -435,7 +436,7 @@ class CloudFileManagerClient
         if not @appOptions.wrapFileContent
           content.addMetadata iSharedMetadata
         @_updateState content, metadata, additionalState, hashParams
- 
+
   _updateState: (content, metadata, additionalState={}, hashParams=null) ->
     state =
       currentContent: content

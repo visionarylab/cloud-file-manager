@@ -192,7 +192,7 @@ class DocumentStoreProvider extends ProviderInterface
       success: (data) ->
         # record previously saved content for patching purposes
         @previouslySavedContent = if @options.patch then _.cloneDeep(data) else null
-        
+
         content = cloudContentFactory.createEnvelopedCloudContent data
 
         # for documents loaded by id or other means (besides name),
@@ -203,7 +203,7 @@ class DocumentStoreProvider extends ProviderInterface
         metadata.name ?= data.docName or data.name or data.content?.name
         if metadata?.name
           content.addMetadata docName: metadata.name
-        
+
         callback null, content
       error: ->
         message = if metadata.sharedContentId

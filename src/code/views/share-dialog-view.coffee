@@ -62,10 +62,10 @@ module.exports = React.createClass
   # adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy: (e) ->
     e.preventDefault()
-    copied = true
+    copied = false
     try
       mark = document.createElement 'mark'
-      mark.innerHTML = @props.url
+      mark.innerHTML = @state.link
       document.body.appendChild mark
 
       selection = document.getSelection()
@@ -78,7 +78,8 @@ module.exports = React.createClass
       copied = document.execCommand 'copy'
     catch
       try
-        window.clipboardData.setData 'text', @props.url
+        window.clipboardData.setData 'text', @state.link
+        copied = true
       catch
         copied = false
     finally
