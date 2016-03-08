@@ -31,5 +31,5 @@ module.exports = React.createClass
   render: ->
     (div {className: 'modal'},
       (div {className: 'modal-background', style: @state.dimensions})
-      (div {className: 'modal-content'}, @props.children)
+      (div {className: 'modal-content', style: @state.dimensions}, @props.children)
     )
