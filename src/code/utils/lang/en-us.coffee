@@ -42,6 +42,7 @@ module.exports =
 
   "~DOWNLOAD_DIALOG.DOWNLOAD": "Download"
   "~DOWNLOAD_DIALOG.CANCEL": "Cancel"
+  "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "Include sharing information in downloaded file"
 
   "~RENAME_DIALOG.RENAME": "Rename"
   "~RENAME_DIALOG.CANCEL": "Cancel"

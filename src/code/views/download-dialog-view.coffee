@@ -10,6 +10,7 @@ module.exports = React.createClass
 
   getInitialState: ->
     filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}.json"
+    includeShareInfo = false
     state =
       filename: filename
       trimmedFilename: @trim filename
@@ -17,6 +18,7 @@ module.exports = React.createClass
   componentDidMount: ->
     @filename = React.findDOMNode @refs.filename
     @filename.focus()
+    @includeShareInfo = React.findDOMNode @refs.includeShareInfo
 
   updateFilename: ->
     filename = @filename.value
@@ -24,12 +26,21 @@ module.exports = React.createClass
       filename: filename
       trimmedFilename: @trim filename
 
+  updateIncludeShareInfo: ->
+    @setState includeShareInfo: @includeShareInfo.checked
+
   trim: (s) ->
     s.replace /^\s+|\s+$/, ''
 
   download: (e) ->
     if @state.trimmedFilename.length > 0
-      e.target.setAttribute 'href', "data:application/json,#{encodeURIComponent(@props.content.getContentAsJSON())}"
+      json = @props.content.getContent()
+      if json and not @state.includeShareInfo
+        delete json.sharedDocumentId
+        delete json.shareEditKey
+        # CODAP moves the keys into its own namespace
+        delete json.metadata.shared if json.metadata?.shared?
+      e.target.setAttribute 'href', "data:application/json,#{encodeURIComponent(JSON.stringify json)}"
       @props.close()
     else
       e.preventDefault()
@@ -38,7 +49,11 @@ module.exports = React.createClass
   render: ->
     (ModalDialog {title: (tr '~DIALOG.DOWNLOAD'), close: @props.close},
       (div {className: 'download-dialog'},
-        (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
+        (input {type: 'text', ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
+        if @props.shared
+          (div {className: 'download-share'},
+            (input {type: 'checkbox', ref: 'includeShareInfo', value: @state.includeShareInfo, onChange: @updateIncludeShareInfo}, tr '~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')
+          )
         (div {className: 'buttons'},
           (a {href: '#', className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), download: @state.trimmedFilename, onClick: @download}, tr '~DOWNLOAD_DIALOG.DOWNLOAD')
           (button {onClick: @props.close}, tr '~DOWNLOAD_DIALOG.CANCEL')
