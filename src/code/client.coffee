@@ -155,6 +155,16 @@ class CloudFileManagerClient
       @_ui.openFileDialog (metadata) =>
         @openFile metadata, callback
 
+  closeFile: (callback = null) ->
+    @_closeCurrentFile()
+    @_resetState()
+    @_event 'closedFile', {content: ""}
+    callback?()
+
+  closeFileDialog: (callback = null) ->
+    if (not @state.dirty) or (confirm tr '~CONFIRM.CLOSE_FILE')
+      @closeFile callback
+
   importData: (data, callback = null) ->
     @_event 'importedData', data
     callback? data
@@ -435,7 +445,7 @@ class CloudFileManagerClient
         if not @appOptions.wrapFileContent
           content.addMetadata iSharedMetadata
         @_updateState content, metadata, additionalState, hashParams
- 
+
   _updateState: (content, metadata, additionalState={}, hashParams=null) ->
     state =
       currentContent: content
