@@ -284,7 +284,7 @@ class GoogleDriveProvider extends ProviderInterface
       if err.type is 'TOKEN_REFRESH_REQUIRED'
         @authorize GoogleDriveProvider.IMMEDIATE
       else
-        alert err.message
+        @client.alert err.message
 
     if metadata.providerData?.id
       request = gapi.client.drive.files.get

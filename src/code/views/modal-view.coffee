@@ -10,26 +10,38 @@ module.exports = React.createClass
 
   # shadow the entire viewport behind the dialog
   getDimensions: ->
-    return { width: $(window).width() + 'px', height: $(window).height() + 'px'}
+    width: $(window).width() + 'px'
+    height: $(window).height() + 'px'
 
   getInitialState: ->
-    return { dimensions: @getDimensions() }
+    dimensions = @getDimensions()
+    initialState =
+      backgroundStyle: @getBackgroundStyle dimensions
+      contentStyle: @getContentStyle dimensions
 
-  # update dimensions in state on resize
-  updateDimensions: ->
-    @setState { dimensions: @getDimensions() }
+  getBackgroundStyle: (dimensions) ->
+    if @props.zIndex
+      { zIndex: @props.zIndex, width: dimensions.width, height: dimensions.height }
+    else
+      dimensions
+
+  getContentStyle: (dimensions) ->
+    if @props.zIndex
+      { zIndex: @props.zIndex + 1, width: dimensions.width, height: dimensions.height }
+    else
+      dimensions
 
   # use bind/unbind for clients using older versions of jQuery
   componentDidMount: ->
     $(window).bind 'keyup', @watchForEscape
-    $(window).bind 'resize', @updateDimensions
+    $(window).bind 'resize', @updateStyles
 
   componentWillUnmount: ->
     $(window).unbind 'keyup', @watchForEscape
-    $(window).unbind 'resize', @updateDimensions
+    $(window).unbind 'resize', @updateStyles
 
   render: ->
     (div {className: 'modal'},
-      (div {className: 'modal-background', style: @state.dimensions})
-      (div {className: 'modal-content', style: @state.dimensions}, @props.children)
+      (div {className: 'modal-background', style: @state.backgroundStyle})
+      (div {className: 'modal-content', style: @state.contentStyle}, @props.children)
     )

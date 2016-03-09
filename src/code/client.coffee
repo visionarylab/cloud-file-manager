@@ -51,7 +51,7 @@ class CloudFileManagerClient
       # merge in other options as needed
       providerOptions.mimeType ?= @appOptions.mimeType
       if not providerName
-        @_error "Invalid provider spec - must either be string or object with name property"
+        @alert "Invalid provider spec - must either be string or object with name property"
       else
         if allProviders[providerName]
           Provider = allProviders[providerName]
@@ -59,7 +59,7 @@ class CloudFileManagerClient
           @providers[providerName] = provider
           availableProviders.push provider
         else
-          @_error "Unknown provider: #{providerName}"
+          @alert "Unknown provider: #{providerName}"
     @_setState availableProviders: availableProviders
 
     # add singleton shareProvider, if it exists
@@ -142,7 +142,7 @@ class CloudFileManagerClient
   openFile: (metadata, callback = null) ->
     if metadata?.provider?.can 'load'
       metadata.provider.load metadata, (err, content) =>
-        return @_error(err) if err
+        return @alert(err) if err
         # should wait to close current file until client signals open is complete
         @_closeCurrentFile()
         @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
@@ -184,7 +184,7 @@ class CloudFileManagerClient
 
   openSharedContent: (id) ->
     @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
-      return @_error(err) if err
+      return @alert(err) if err
       @_fileOpened content, metadata, {overwritable: false, openedContent: content.clone()}
 
   openProviderFile: (providerName, providerParams) ->
@@ -193,7 +193,7 @@ class CloudFileManagerClient
       provider.authorized (authorized) =>
         if authorized
           provider.openSaved providerParams, (err, content, metadata) =>
-            return @_error(err) if err
+            return @alert(err) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   isSaveInProgress: ->
@@ -219,7 +219,7 @@ class CloudFileManagerClient
           # disable autosave on save failure; clear "Saving..." message
           metadata.autoSaveDisabled = true
           @_setState { metadata: metadata, saving: null }
-          return @_error(err)
+          return @alert(err)
         if @state.metadata isnt metadata
           @_closeCurrentFile()
         # reenable autosave on save success
@@ -308,7 +308,7 @@ class CloudFileManagerClient
         sharedContent.addMetadata sharingMetadata
         currentContent = @_createOrUpdateCurrentContent stringContent, @state.metadata
         @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
-          return @_error(err) if err
+          return @alert(err) if err
           @_fileChanged 'sharedFile', currentContent, @state.metadata
           callback? sharedContentId
 
@@ -329,7 +329,7 @@ class CloudFileManagerClient
     id = @state.currentContent?.get("sharedDocumentId")
     if id and @state.shareProvider?
       @state.shareProvider.loadSharedContent id, (err, content, metadata) =>
-        return @_error(err) if err
+        return @alert(err) if err
         @state.currentContent.copyMetadataTo content
         if not metadata.name and docName = content.get('docName')
           metadata.name = docName
@@ -356,7 +356,7 @@ class CloudFileManagerClient
     if newName isnt @state.metadata?.name
       if @state.metadata?.provider?.can 'rename'
         @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
-          return @_error(err) if err
+          return @alert(err) if err
           _rename metadata
       else
         if metadata
@@ -411,16 +411,15 @@ class CloudFileManagerClient
     # Check browser support for document.location.origin (& window.location.origin)
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
 
+  alert: (message, title=null) ->
+    @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE")
+
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null
       @saveFile stringContent, metadata, callback
     else
       @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
         @saveFile stringContent, metadata, callback
-
-  _error: (message) ->
-    # for now an alert
-    alert message
 
   _fileChanged: (type, content, metadata, additionalState={}, hashParams=null) ->
     metadata?.overwritable ?= true
@@ -429,8 +428,8 @@ class CloudFileManagerClient
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
     @_event 'openedFile', { content: content?.getClientContent() }, (iError, iSharedMetadata) =>
-      if(iError)
-        _error iError
+      if iError
+        @alert iError
       else
         metadata?.overwritable ?= true
         if not @appOptions.wrapFileContent

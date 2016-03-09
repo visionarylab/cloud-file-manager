@@ -12,7 +12,7 @@ module.exports = React.createClass
   changed: (e) ->
     files = e.target.files
     if files.length > 1
-      alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"
+      @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"
     else if files.length is 1
       @openFile files[0]
 
@@ -42,7 +42,7 @@ module.exports = React.createClass
     e.preventDefault()
     droppedFiles = if e.dataTransfer then e.dataTransfer.files else e.target.files
     if droppedFiles.length > 1
-      alert "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"
+      @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"
     else if droppedFiles.length is 1
       @openFile droppedFiles[0]
 

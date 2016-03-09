@@ -46,7 +46,7 @@ FileList = React.createFactory React.createClass
 
   load: (folder) ->
     @props.provider.list folder, (err, list) =>
-      return alert(err) if err
+      return @props.client.alert(err) if err
       @setState
         loading: false
       @props.listLoaded list
@@ -113,7 +113,7 @@ FileDialogTab = React.createClass
       @state.metadata = @findMetadata filename, @state.list
       if not @state.metadata
         if @isOpen
-          alert "#{@state.filename} not found"
+          @props.client.alert "#{@state.filename} not found"
         else
           @state.metadata = new CloudMetadata
             name: filename
@@ -160,7 +160,7 @@ FileDialogTab = React.createClass
 
     (div {className: 'dialogTab'},
       (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter})
-      (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, fileConfirmed: @confirm, list: @state.list, listLoaded: @listLoaded})
+      (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, fileConfirmed: @confirm, list: @state.list, listLoaded: @listLoaded, client: @props.client})
       (div {className: 'buttons'},
         (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
         if @props.provider.can 'remove'

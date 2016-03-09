@@ -15,7 +15,7 @@ class CloudFileManagerUIMenu
 
   parseMenuItems: (menuItems, client) ->
     setAction = (action) ->
-      client[action]?.bind(client) or (-> alert "No #{action} action is available in the client")
+      client[action]?.bind(client) or (-> client.alert "No #{action} action is available in the client")
 
     setEnabled = (action) ->
       switch action
@@ -156,6 +156,12 @@ class CloudFileManagerUI
 
   blockingModal: (modalProps) ->
     @listenerCallback new CloudFileManagerUIEvent 'showBlockingModal', modalProps
+
+  alertDialog: (message, title, callback) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showAlertDialog',
+      title: title
+      message: message
+      callback: callback
 
   _showProviderDialog: (action, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
