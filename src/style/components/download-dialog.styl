@@ -2,12 +2,18 @@
   padding 20px
   width 400px
 
-  input
+  input[type="text"]
     margin 10px 0
     width 100%
     font-size 20px
     padding 5px
 
+  .download-share
+    color #000
+    input[type="checkbox"]
+      width initial !important /* to override CODAP */
+      margin-right 5px
+      
   .buttons
     float right
     margin 10px 0
@@ -18,6 +24,6 @@
       text-decoration none
     a.disabled
       background-color #777
-      
+
     button
       modal-button()
