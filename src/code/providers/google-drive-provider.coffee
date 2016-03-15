@@ -42,7 +42,7 @@ class GoogleDriveProvider extends ProviderInterface
         save: true
         load: true
         list: true
-        remove: true
+        remove: false
         rename: true
         close: true
 
