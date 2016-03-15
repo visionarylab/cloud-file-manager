@@ -131,6 +131,7 @@ FileDialogTab = React.createClass
       @props.client.confirm tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: @state.metadata.name}), =>
         @props.provider.remove @state.metadata, (err) =>
           if not err
+            @props.client.alert tr("~FILE_DIALOG.REMOVED_MESSAGE", {filename: @state.metadata.name}), tr("~FILE_DIALOG.REMOVED_TITLE")
             list = @state.list.slice 0
             index = list.indexOf @state.metadata
             list.splice index, 1

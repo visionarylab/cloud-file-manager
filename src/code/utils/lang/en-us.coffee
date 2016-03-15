@@ -38,6 +38,8 @@ module.exports =
   "~FILE_DIALOG.CANCEL": "Cancel"
   "~FILE_DIALOG.REMOVE": "Delete"
   "~FILE_DIALOG.REMOVE_CONFIRM": "Are you sure you want to delete %{filename}?"
+  "~FILE_DIALOG.REMOVED_TITLE": "Deleted File"
+  "~FILE_DIALOG.REMOVED_MESSAGE": "%{filename} was deleted"
   "~FILE_DIALOG.LOADING": "Loading..."
   "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***"
 
@@ -60,7 +62,7 @@ module.exports =
   "~CONFIRM.CLOSE_FILE": "You have unsaved changes. Are you sure you want to close the document?"
   "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want to revert the document to its most recently opened state?"
   "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want to revert the document to its most recently shared state?"
-  
+
   "~CONFIRM_DIALOG.TITLE": "Are you sure?"
   "~CONFIRM_DIALOG.YES": "Yes"
   "~CONFIRM_DIALOG.NO": "No"
