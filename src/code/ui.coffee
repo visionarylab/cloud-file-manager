@@ -44,6 +44,7 @@ class CloudFileManagerUIMenu
     names =
       newFileDialog: tr "~MENU.NEW"
       openFileDialog: tr "~MENU.OPEN"
+      closeFileDialog: tr "~MENU.CLOSE"
       revertToLastOpenedDialog: tr "~MENU.REVERT_TO_LAST_OPENED"
       revertToSharedDialog: tr "~MENU.REVERT_TO_SHARED_VIEW"
       save: tr "~MENU.SAVE"
