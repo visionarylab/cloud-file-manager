@@ -83,10 +83,12 @@ FileDialogTab = React.createClass
 
   filenameChanged: (e) ->
     filename = e.target.value
-    metadata = @findMetadata filename, @state.list
-    @setState
-      filename: filename
-      metadata: metadata
+    if @isOpen()
+      @setState
+        filename: filename
+        metadata: @findMetadata filename, @state.list
+    else
+      @setState filename: filename
 
   listLoaded: (list) ->
     @setState list: list
@@ -109,23 +111,34 @@ FileDialogTab = React.createClass
       @setState @getStateForFolder null
 
   confirm: ->
-    if not @state.metadata
-      filename = $.trim @state.filename
-      @state.metadata = @findMetadata filename, @state.list
-      if not @state.metadata
-        if @isOpen()
-          @props.client.alert "#{@state.filename} not found"
-        else
-          @state.metadata = new CloudMetadata
-            name: filename
-            type: CloudMetadata.File
-            parent: @state.folder or null
-            provider: @props.provider
-    if @state.metadata
+    confirmed = (metadata) =>
       # ensure the metadata provider is the currently-showing tab
+      @state.metadata = metadata
       @state.metadata.provider = @props.provider
       @props.dialog.callback? @state.metadata
       @props.close()
+
+    # existing file selected
+    metadata = @state.metadata
+    return confirmed metadata if metadata
+
+    # find or create the file metadata based on the filename
+    filename = $.trim @state.filename
+    metadata = @findMetadata filename, @state.list
+    if metadata
+      if @isOpen()
+        confirmed metadata
+      else
+        @props.client.confirm "There is already a file named #{filename}", -> confirmed metadata
+    else
+      if @isOpen()
+        @props.client.alert "#{filename} not found"
+      else
+        confirmed new CloudMetadata
+          name: filename
+          type: CloudMetadata.File
+          parent: @state.folder or null
+          provider: @props.provider
 
   remove: ->
     if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder
