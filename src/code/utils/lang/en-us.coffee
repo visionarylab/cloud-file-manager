@@ -72,6 +72,13 @@ module.exports =
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED": "Sorry, you can't drop more than one file."
 
   "~IMPORT.LOCAL_FILE": "Local File"
+  "~IMPORT.URL": "URL"
+
+  "~IMPORT_URL.MULTIPLE_URLS_DROPPED": "Sorry, you can choose only one url to open."
+  "~IMPORT_URL.PLEASE_ENTER_URL": "Please enter a url to import."
+
+  "~URL_TAB.DROP_URL_HERE": "Drop URL here or enter URL below"
+  "~URL_TAB.IMPORT": "Import"
 
   "~CLIENT_ERROR.TITLE": "Error"
 

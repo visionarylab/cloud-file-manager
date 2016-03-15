@@ -14,9 +14,9 @@ module.exports = React.createClass
     if files.length > 1
       @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"
     else if files.length is 1
-      @openFile files[0]
+      @openFile files[0], 'select'
 
-  openFile: (file) ->
+  openFile: (file, via) ->
     metadata = new CloudMetadata
       name: file.name.split('.')[0]
       type: CloudMetadata.File
@@ -24,7 +24,7 @@ module.exports = React.createClass
       provider: @props.provider
       providerData:
         file: file
-    @props.dialog.callback? metadata
+    @props.dialog.callback? metadata, via
     @props.close()
 
   cancel: ->
@@ -44,7 +44,7 @@ module.exports = React.createClass
     if droppedFiles.length > 1
       @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"
     else if droppedFiles.length is 1
-      @openFile droppedFiles[0]
+      @openFile droppedFiles[0], 'drop'
 
   render: ->
     dropClass = "dropArea#{if @state.hover then ' dropHover' else ''}"
