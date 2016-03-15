@@ -60,6 +60,10 @@ module.exports =
   "~CONFIRM.CLOSE_FILE": "You have unsaved changes. Are you sure you want to close the document?"
   "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want to revert the document to its most recently opened state?"
   "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want to revert the document to its most recently shared state?"
+  
+  "~CONFIRM_DIALOG.TITLE": "Are you sure?"
+  "~CONFIRM_DIALOG.YES": "Yes"
+  "~CONFIRM_DIALOG.NO": "No"
 
   "~LOCAL_FILE_DIALOG.DROP_FILE_HERE": "Drop file here or click here to select a file."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED": "Sorry, you can choose only one file to open."

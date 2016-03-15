@@ -134,8 +134,8 @@ class CloudFileManagerClient
       if @_autoSaveInterval and @state.metadata
         @save()
         @newFile()
-      else if confirm tr '~CONFIRM.NEW_FILE'
-        @newFile()
+      else
+        @confirm tr('~CONFIRM.NEW_FILE'), => @newFile()
     else
       @newFile()
 
@@ -151,9 +151,13 @@ class CloudFileManagerClient
       @openFileDialog callback
 
   openFileDialog: (callback = null) ->
-    if (not @state.dirty) or (confirm tr '~CONFIRM.OPEN_FILE')
+    showDialog = =>
       @_ui.openFileDialog (metadata) =>
         @openFile metadata, callback
+    if not @state.dirty
+      showDialog()
+    else
+      @confirm tr('~CONFIRM.OPEN_FILE'), showDialog
 
   closeFile: (callback = null) ->
     @_closeCurrentFile()
@@ -162,8 +166,10 @@ class CloudFileManagerClient
     callback?()
 
   closeFileDialog: (callback = null) ->
-    if (not @state.dirty) or (confirm tr '~CONFIRM.CLOSE_FILE')
+    if not @state.dirty
       @closeFile callback
+    else
+      @confirm tr('~CONFIRM.CLOSE_FILE'), => @closeFile callback
 
   importData: (data, callback = null) ->
     @_event 'importedData', data
@@ -347,8 +353,8 @@ class CloudFileManagerClient
         callback? null
 
   revertToSharedDialog: (callback = null) ->
-    if @state.currentContent?.get("sharedDocumentId") and @state.shareProvider? and confirm tr "~CONFIRM.REVERT_TO_SHARED_VIEW"
-      @revertToShared callback
+    if @state.currentContent?.get("sharedDocumentId") and @state.shareProvider?
+      @confirm tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), => @revertToShared callback
 
   downloadDialog: (callback = null) ->
     # should share metadata be included in downloaded local files?
@@ -387,8 +393,7 @@ class CloudFileManagerClient
 
   revertToLastOpenedDialog: (callback = null) ->
     if @state.openedContent? and @state.metadata
-      if confirm tr '~CONFIRM.REVERT_TO_LAST_OPENED'
-        @revertToLastOpened callback
+      @confirm tr('~CONFIRM.REVERT_TO_LAST_OPENED'), => @revertToLastOpened callback
     else
       callback? 'No initial opened version was found for the currently active file'
 
@@ -420,6 +425,9 @@ class CloudFileManagerClient
     suffix = if queryString? then "?#{queryString}" else ""
     # Check browser support for document.location.origin (& window.location.origin)
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
+
+  confirm: (message, callback) ->
+    @_ui.confirmDialog message, callback
 
   alert: (message, title=null) ->
     @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE")

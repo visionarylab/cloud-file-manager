@@ -127,16 +127,17 @@ FileDialogTab = React.createClass
       @props.close()
 
   remove: ->
-    if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder and confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: @state.metadata.name}))
-      @props.provider.remove @state.metadata, (err) =>
-        if not err
-          list = @state.list.slice 0
-          index = list.indexOf @state.metadata
-          list.splice index, 1
-          @setState
-            list: list
-            metadata: null
-            filename: ''
+    if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder
+      @props.client.confirm tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: @state.metadata.name}), =>
+        @props.provider.remove @state.metadata, (err) =>
+          if not err
+            list = @state.list.slice 0
+            index = list.indexOf @state.metadata
+            list.splice index, 1
+            @setState
+              list: list
+              metadata: null
+              filename: ''
 
   cancel: ->
     @props.close()
