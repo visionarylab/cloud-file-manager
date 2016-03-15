@@ -23,8 +23,9 @@ FileListFile = React.createFactory React.createClass
   render: ->
     selectableClass = if @props.metadata.type isnt CloudMetadata.Label then 'selectable' else ''
     selectedClass = if @props.selected then 'selected' else ''
+    subFolderClass = if @props.isSubFolder then 'subfolder' else ''
     (div {key: @props.key
-          , className: "#{selectableClass} #{selectedClass}"
+          , className: "#{selectableClass} #{selectedClass} #{subFolderClass}"
           , title: @props.metadata.description or undefined
           , onClick: if @props.metadata.type isnt CloudMetadata.Label then @fileSelected else undefined },
       (React.DOM.i {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else if @props.metadata.type is CloudMetadata.File then 'icon-noteTool'})
@@ -56,10 +57,11 @@ FileList = React.createFactory React.createClass
 
   render: ->
     list = []
-    if @props.folder isnt null
-      list.push (div {key: 'parent', className: 'selectable', onClick: @parentSelected}, (React.DOM.i {className: 'icon-paletteArrow-collapse'}), 'Parent Folder')
+    isSubFolder = @props.folder isnt null
+    if isSubFolder
+      list.push (div {key: 'parent', className: 'selectable', onClick: @parentSelected}, (React.DOM.i {className: 'icon-paletteArrow-collapse'}), @props.folder.name)
     for metadata, i in @props.list
-      list.push (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed})
+      list.push (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed, isSubFolder: isSubFolder})
 
     (div {className: 'filelist'},
       if @state.loading
