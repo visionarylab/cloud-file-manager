@@ -9,7 +9,7 @@ module.exports = React.createClass
     @props.close?()
 
   render: ->
-    (Modal {close: @props.close},
+    (Modal {close: @props.close, zIndex: @props.zIndex},
       (div {className: 'modal-dialog'},
         (div {className: 'modal-dialog-wrapper'},
           (div {className: 'modal-dialog-title'},

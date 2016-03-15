@@ -52,6 +52,7 @@ module.exports =
   "~SHARE_DIALOG.CLOSE": "Close"
   "~SHARE_DIALOG.COPY_SUCCESS": "The share url has been copied to the clipboard."
   "~SHARE_DIALOG.COPY_ERROR": "Sorry, the share url was not able to be copied to the clipboard."
+  "~SHARE_DIALOG.COPY_TITLE": "Copy Result"
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes. Are you sure you want to create a new document?"
@@ -63,3 +64,8 @@ module.exports =
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED": "Sorry, you can't drop more than one file."
 
   "~IMPORT.LOCAL_FILE": "Local File"
+
+  "~CLIENT_ERROR.TITLE": "Error"
+
+  "~ALERT_DIALOG.TITLE": "Alert"
+  "~ALERT_DIALOG.CLOSE": "Close"

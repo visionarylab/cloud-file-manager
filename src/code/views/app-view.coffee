@@ -4,6 +4,7 @@ DownloadDialog = React.createFactory require './download-dialog-view'
 RenameDialog = React.createFactory require './rename-dialog-view'
 ShareDialog = React.createFactory require './share-dialog-view'
 BlockingModal = React.createFactory require './blocking-modal-view'
+AlertDialog = React.createFactory require './alert-dialog-view'
 ImportTabbedDialog = React.createFactory require './import-tabbed-dialog-view'
 
 tr = require '../utils/translate'
@@ -39,6 +40,7 @@ App = React.createClass
     downloadDialog: null
     renameDialog: null
     shareDialog: null
+    alertDialog: null
     dirty: false
 
   componentWillMount: ->
@@ -74,6 +76,8 @@ App = React.createClass
           @setState shareDialog: event.data
         when 'showBlockingModal'
           @setState blockingModalProps: event.data
+        when 'showAlertDialog'
+          @setState alertDialog: event.data
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
@@ -125,19 +129,28 @@ App = React.createClass
       shareDialog: null
       importDialog: null
 
+  closeAlert: ->
+    @setState alertDialog: null
+
   renderDialogs: ->
-    if @state.blockingModalProps
-      (BlockingModal @state.blockingModalProps)
-    else if @state.providerDialog
-      (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
-    else if @state.downloadDialog
-      (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs, shared: @props.client.isShared()})
-    else if @state.renameDialog
-      (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
-    else if @state.importDialog
-      (ImportTabbedDialog {client: @props.client, dialog: @state.importDialog, close: @closeDialogs})
-    else if @state.shareDialog
-      (ShareDialog {client: @props.client, close: @closeDialogs})
+    (div {},
+      if @state.blockingModalProps
+        (BlockingModal @state.blockingModalProps)
+      else if @state.providerDialog
+        (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
+      else if @state.downloadDialog
+        (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})
+      else if @state.renameDialog
+        (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
+      else if @state.importDialog
+        (ImportTabbedDialog {client: @props.client, dialog: @state.importDialog, close: @closeDialogs})
+      else if @state.shareDialog
+        (ShareDialog {client: @props.client, close: @closeDialogs})
+
+      # alert dialog can be overlayed on other dialogs
+      if @state.alertDialog
+        (AlertDialog {title: @state.alertDialog.title, message: @state.alertDialog.message, close: @closeAlert})
+    )
 
   render: ->
     if @props.appOrMenuElemId

@@ -90,7 +90,7 @@ module.exports = React.createClass
           selection.removeAllRanges()
       if mark
         document.body.removeChild mark
-      alert tr (if copied then "~SHARE_DIALOG.COPY_SUCCESS" else "~SHARE_DIALOG.COPY_ERROR")
+      @props.client.alert tr(if copied then "~SHARE_DIALOG.COPY_SUCCESS" else "~SHARE_DIALOG.COPY_ERROR"), (tr "~SHARE_DIALOG.COPY_TITLE")
 
   updateShare: ->
     @props.client.shareUpdate()
