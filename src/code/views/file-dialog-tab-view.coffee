@@ -78,8 +78,8 @@ FileDialogTab = React.createClass
   getInitialState: ->
     @getStateForFolder @props.client.state.metadata?.parent or null
 
-  componentWillMount: ->
-    @isOpen = @props.dialog.action is 'openFile'
+  isOpen: ->
+    @props.dialog.action is 'openFile'
 
   filenameChanged: (e) ->
     filename = e.target.value
@@ -89,14 +89,13 @@ FileDialogTab = React.createClass
       metadata: metadata
 
   listLoaded: (list) ->
-    @setState
-      list: list
-      metadata: @findMetadata $.trim(@state.filename), list
+    @setState list: list
 
   getStateForFolder: (folder) ->
+    metadata = if @isOpen() then @state?.metadata or null else @props.client.state.metadata
     folder: folder
-    metadata: @props.client.state.metadata
-    filename: @props.client.state.metadata?.name or ''
+    metadata: metadata
+    filename: metadata?.name or ''
     list: []
 
   fileSelected: (metadata) ->
@@ -114,7 +113,7 @@ FileDialogTab = React.createClass
       filename = $.trim @state.filename
       @state.metadata = @findMetadata filename, @state.list
       if not @state.metadata
-        if @isOpen
+        if @isOpen()
           @props.client.alert "#{@state.filename} not found"
         else
           @state.metadata = new CloudMetadata
@@ -156,7 +155,7 @@ FileDialogTab = React.createClass
       @confirm()
 
   confirmDisabled: ->
-    (@state.filename.length is 0) or (@isOpen and not @state.metadata)
+    (@state.filename.length is 0) or (@isOpen() and not @state.metadata)
 
   renderWhenAuthorized: ->
     confirmDisabled = @confirmDisabled()
@@ -166,7 +165,7 @@ FileDialogTab = React.createClass
       (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter})
       (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, fileConfirmed: @confirm, list: @state.list, listLoaded: @listLoaded, client: @props.client})
       (div {className: 'buttons'},
-        (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
+        (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen() then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
         if @props.provider.can 'remove'
           (button {onClick: @remove, disabled: removeDisabled, className: if removeDisabled then 'disabled' else ''}, (tr "~FILE_DIALOG.REMOVE"))
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
