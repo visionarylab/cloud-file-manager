@@ -7,7 +7,7 @@ module.exports =
   "~MENU.IMPORT_DATA": "Import data..."
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
-  "~MENU.CREATE_COPY": "Create A Copy ..."
+  "~MENU.CREATE_COPY": "Create A Copy"
   "~MENU.SHARE": "Share..."
   "~MENU.SHARE_GET_LINK": "Get link to shared view"
   "~MENU.SHARE_UPDATE": "Update shared view"
