@@ -140,7 +140,7 @@ class ReadOnlyProvider extends ProviderInterface
                     iMetadata.providerData.children = [ errorMetadata ]
                     resolve iMetadata
           @promises.push newFolderPromise item, metadata
-        
+
         tree.push metadata
     else
       # parse original format:
@@ -159,7 +159,7 @@ class ReadOnlyProvider extends ProviderInterface
         if type is CloudMetadata.Folder
           metadata.providerData.children = @_convertJSONToMetadataTree itemContent, metadata
         tree.push metadata
-    
+
     tree
 
   # Remote folder contents are likely to be loaded as part of

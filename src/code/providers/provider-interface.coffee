@@ -9,9 +9,13 @@ class CloudFile
 class CloudMetadata
   constructor: (options) ->
     {@name, @type, @description, @content, @url, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId, @sharedContentSecretKey} = options
+    @_updateFilename()
+
   @Folder: 'folder'
   @File: 'file'
   @Label: 'label'
+
+  @Extension: null
 
   @mapTypeToCloudMetadataType: (iType) ->
     # for now mapping is 1-to-1 defaulting to 'file'
@@ -24,6 +28,23 @@ class CloudMetadata
       _path.unshift parent
       parent = parent.parent
     _path
+
+  rename: (newName) ->
+    @name = newName
+    @_updateFilename()
+
+  withExtension: (name) ->
+    if name.substr(-CloudMetadata.Extension.length) isnt CloudMetadata.Extension
+      name + CloudMetadata.Extension
+    else
+      name
+
+  _updateFilename: ->
+    @filename = @name
+    if @name?.substr? and CloudMetadata.Extension and @type is CloudMetadata.File
+      extLen = CloudMetadata.Extension.length
+      @name = @name.substr(0, @name.length - extLen) if @name.substr(-extLen) is CloudMetadata.Extension
+      @filename = @withExtension @name
 
 # singleton that can create CloudContent wrapped with global options
 class CloudContentFactory
@@ -144,6 +165,13 @@ class ProviderInterface
 
   filterTabComponent: (capability, defaultComponent) ->
     defaultComponent
+
+  matchesExtension: (name) ->
+    if CloudMetadata.Extension
+      name.substr(-CloudMetadata.Extension.length) is CloudMetadata.Extension
+    else
+      # may seem weird but it means that without an extension specified all files match
+      true
 
   dialog: (callback) ->
     @_notImplemented 'dialog'

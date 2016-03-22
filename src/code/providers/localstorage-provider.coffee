@@ -30,7 +30,7 @@ class LocalStorageProvider extends ProviderInterface
 
   save: (content, metadata, callback) ->
     try
-      fileKey = @_getKey(metadata.name)
+      fileKey = @_getKey(metadata.filename)
       window.localStorage.setItem fileKey, content.getContentAsJSON()
       callback? null
     catch e
@@ -38,7 +38,7 @@ class LocalStorageProvider extends ProviderInterface
 
   load: (metadata, callback) ->
     try
-      content = window.localStorage.getItem @_getKey metadata.name
+      content = window.localStorage.getItem @_getKey metadata.filename
       callback null, cloudContentFactory.createEnvelopedCloudContent content
     catch e
       callback "Unable to load '#{metadata.name}': #{e.message}"
@@ -50,26 +50,27 @@ class LocalStorageProvider extends ProviderInterface
       if key.substr(0, prefix.length) is prefix
         [filename, remainder...] = key.substr(prefix.length).split('/')
         name = key.substr(prefix.length)
-        list.push new CloudMetadata
-          name: name
-          type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
-          parent: metadata
-          provider: @
+        if @matchesExtension name
+          list.push new CloudMetadata
+            name: name
+            type: if remainder.length > 0 then CloudMetadata.Folder else CloudMetadata.File
+            parent: metadata
+            provider: @
     callback null, list
 
   remove: (metadata, callback) ->
     try
-      window.localStorage.removeItem @_getKey(metadata.name)
+      window.localStorage.removeItem @_getKey(metadata.filename)
       callback? null
     catch
       callback? 'Unable to delete'
 
   rename: (metadata, newName, callback) ->
     try
-      content = window.localStorage.getItem @_getKey metadata.name
-      window.localStorage.setItem @_getKey(newName), content
-      window.localStorage.removeItem @_getKey(metadata.name)
-      metadata.name = newName
+      content = window.localStorage.getItem @_getKey metadata.filename
+      window.localStorage.setItem @_getKey(metadata.withExtension newName), content
+      window.localStorage.removeItem @_getKey(metadata.filename)
+      metadata.rename newName
       callback null, metadata
     catch
       callback? 'Unable to rename'

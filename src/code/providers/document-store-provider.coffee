@@ -162,11 +162,12 @@ class DocumentStoreProvider extends ProviderInterface
       success: (data) ->
         list = []
         for own key, file of data
-          list.push new CloudMetadata
-            name: file.name
-            providerData: {id: file.id}
-            type: CloudMetadata.File
-            provider: @
+          if @matchesExtension file.name
+            list.push new CloudMetadata
+              name: file.name
+              providerData: {id: file.id}
+              type: CloudMetadata.File
+              provider: @
         callback null, list
       error: ->
         callback null, []
@@ -200,9 +201,9 @@ class DocumentStoreProvider extends ProviderInterface
         # 'docName' at the top level for CFM-wrapped documents
         # 'name' at the top level for unwrapped documents (e.g. CODAP)
         # 'name' at the top level of 'content' for wrapped CODAP documents
-        metadata.name ?= data.docName or data.name or data.content?.name
-        if metadata?.name
-          content.addMetadata docName: metadata.name
+        metadata.rename metadata.name or data.docName or data.name or data.content?.name
+        if metadata.name
+          content.addMetadata docName: metadata.filename
 
         callback null, content
       error: ->
@@ -248,7 +249,7 @@ class DocumentStoreProvider extends ProviderInterface
           shareEditKey: runKey
         callback null, data.id
       error: ->
-        docName = metadata?.name or 'document'
+        docName = metadata?.filename or 'document'
         callback "Unable to save #{docName}"
 
   save: (cloudContent, metadata, callback) ->
@@ -274,7 +275,7 @@ class DocumentStoreProvider extends ProviderInterface
       url = patchDocumentUrl
       mimeType = 'application/json-patch+json'
     else
-      if metadata.name then params.recordname = metadata.name
+      if metadata.filename then params.recordname = metadata.filename
       url = saveDocumentUrl
       sendContent = contentJson
 
@@ -311,29 +312,29 @@ class DocumentStoreProvider extends ProviderInterface
     $.ajax
       url: removeDocumentUrl
       data:
-        recordname: metadata.name
+        recordname: metadata.filename
       context: @
       xhrFields:
         withCredentials: true
       success: (data) ->
         callback null, data
       error: ->
-        callback "Unable to load "+metadata.name
+        callback "Unable to load #{metadata.name}"
 
   rename: (metadata, newName, callback) ->
     $.ajax
       url: renameDocumentUrl
       data:
         recordid: metadata.providerData.id
-        newRecordname: newName
+        newRecordname: metadata.withExtension newName
       context: @
       xhrFields:
         withCredentials: true
       success: (data) ->
-        metadata.name = newName
+        metadata.rename newName
         callback null, metadata
       error: ->
-        callback "Unable to rename "+metadata.name
+        callback "Unable to rename #{metadata.name}"
 
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata

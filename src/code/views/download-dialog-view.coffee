@@ -1,6 +1,7 @@
 {div, input, a, button} = React.DOM
 
 ModalDialog = React.createFactory require './modal-dialog-view'
+CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
 tr = require '../utils/translate'
 
@@ -9,7 +10,7 @@ module.exports = React.createClass
   displayName: 'DownloadDialogView'
 
   getInitialState: ->
-    filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}.json"
+    filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{CloudMetadata.Extension or '.json'}"
     includeShareInfo = false
     state =
       filename: filename

@@ -44,6 +44,9 @@ class CloudFileManagerClient
       for own providerName of allProviders
         appOptions.providers.push providerName
 
+    # preset the extension if Available
+    CloudMetadata.Extension = @appOptions.extension
+
     # check the providers
     availableProviders = []
     for provider in @appOptions.providers
