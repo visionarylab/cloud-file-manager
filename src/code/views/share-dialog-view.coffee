@@ -43,7 +43,10 @@ module.exports = React.createClass
 
   getSharedDocumentId: ->
     # extract sharedDocumentId from CloudContent
-    @props.client.state.currentContent?.get "sharedDocumentId"
+    if @props.client.isShared()
+      @props.client.state.currentContent?.get "sharedDocumentId"
+    else
+      null
 
   getShareLink: ->
     sharedDocumentId = @getSharedDocumentId()

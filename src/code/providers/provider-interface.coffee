@@ -102,6 +102,7 @@ class CloudContent
 
   addMetadata: (metadata) -> @_[key] = metadata[key] for key of metadata
   get: (prop) -> @_[prop]
+  set: (prop, value) -> @_[prop] = value
   remove: (prop) -> delete @_[prop]
 
   getSharedMetadata: ->

@@ -38,6 +38,7 @@ module.exports = React.createClass
       if json and not @state.includeShareInfo
         delete json.sharedDocumentId
         delete json.shareEditKey
+        delete json.isUnshared
         # CODAP moves the keys into its own namespace
         delete json.metadata.shared if json.metadata?.shared?
       e.target.setAttribute 'href', "data:application/json,#{encodeURIComponent(JSON.stringify json)}"

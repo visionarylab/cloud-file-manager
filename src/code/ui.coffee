@@ -21,17 +21,17 @@ class CloudFileManagerUIMenu
       switch action
         when 'revertSubMenu'
           # revert sub-menu state depends on presence of shareEditKey
-          -> (client.state.openedContent? and client.state.metadata?) or client.state.currentContent?.get("shareEditKey")?
+          -> (client.state.openedContent? and client.state.metadata?) or client.canEditShared()
         when 'revertToLastOpenedDialog'
           -> client.state.openedContent? and client.state.metadata?
         when 'shareGetLink', 'shareSubMenu'
           -> client.state.shareProvider?
         when 'revertToSharedDialog'
           # revert to shared menu item state depends on sharedDocumentId
-          -> client.state.currentContent?.get("sharedDocumentId")
+          -> client.isShared()
         when 'shareUpdate'
           # shareUpdate menu item state depends on presence of shareEditKey
-          -> client.state.currentContent?.get("shareEditKey")?
+          -> client.canEditShared()
         else
           true
 

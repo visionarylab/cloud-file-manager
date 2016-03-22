@@ -312,34 +312,37 @@ class CloudFileManagerClient
       @share callback
 
   isShared: ->
-    @state.currentContent?.get "sharedDocumentId"
+    @state.currentContent?.get("sharedDocumentId") and not @state.currentContent?.get("isUnshared")
 
-  share: (callback) ->
+  canEditShared: ->
+    @state.currentContent?.get("shareEditKey") and not @state.currentContent?.get("isUnshared")
+
+  setShareState: (shared, callback) ->
     if @state.shareProvider
-      sharingMetadata = @state.shareProvider.getSharingMetadata()
+      sharingMetadata = @state.shareProvider.getSharingMetadata shared
       @_event 'getContent', { shared: sharingMetadata }, (stringContent) =>
         @_setState
-          sharing: true
+          sharing: shared
         sharedContent = cloudContentFactory.createEnvelopedCloudContent stringContent
         sharedContent.addMetadata sharingMetadata
         currentContent = @_createOrUpdateCurrentContent stringContent, @state.metadata
+        if shared
+          currentContent.remove 'isUnshared'
+        else
+          currentContent.set 'isUnshared', true
         @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
           return @alert(err) if err
-          @_fileChanged 'sharedFile', currentContent, @state.metadata
-          callback? sharedContentId
+          callback? null, sharedContentId, currentContent
+
+  share: (callback) ->
+    @setShareState true, (err, sharedContentId, currentContent) =>
+      @_fileChanged 'sharedFile', currentContent, @state.metadata
+      callback? null, sharedContentId
 
   unshare: (callback) ->
-    # clear sharing metadata when user unshares the document
-    @state.currentContent?.remove "_permissions"
-    @state.currentContent?.remove "shareEditKey"
-    @state.currentContent?.remove "sharedDocumentId"
-    @_fileChanged 'unsharedFile', @state.currentContent, @state.metadata, {sharing: false}
-    callback? false
-
-  reshare: (sharedMetadata, callback) ->
-    @state.currentContent?.addMetadata sharedMetadata
-    @_fileChanged 'sharedFile', @state.currentContent, @state.metadata, {sharing: true}
-    callback? false
+    @setShareState false, (err, sharedContentId, currentContent) =>
+      @_fileChanged 'unsharedFile', currentContent, @state.metadata
+      callback? null
 
   revertToShared: (callback = null) ->
     id = @state.currentContent?.get("sharedDocumentId")

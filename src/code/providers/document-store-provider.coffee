@@ -212,8 +212,8 @@ class DocumentStoreProvider extends ProviderInterface
           "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
         callback message
 
-  getSharingMetadata: (content) ->
-    { _permissions: 1 }
+  getSharingMetadata: (shared) ->
+    { _permissions: if shared then 1 else 0 }
 
   share: (masterContent, sharedContent, metadata, callback) ->
     # generate runKey if it doesn't already exist as 'shareEditKey'
