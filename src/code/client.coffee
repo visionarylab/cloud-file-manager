@@ -419,7 +419,10 @@ class CloudFileManagerClient
     @_autoSaveInterval?
 
   showBlockingModal: (modalProps) ->
-    @_ui.blockingModal modalProps
+    @_ui.showBlockingModal modalProps
+
+  hideBlockingModal: ->
+    @_ui.hideBlockingModal()
 
   getCurrentUrl: (queryString = null) ->
     suffix = if queryString? then "?#{queryString}" else ""

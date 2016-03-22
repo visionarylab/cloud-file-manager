@@ -78,6 +78,8 @@ App = React.createClass
           @setState shareDialog: event.data
         when 'showBlockingModal'
           @setState blockingModalProps: event.data
+        when 'hideBlockingModal'
+          @setState blockingModalProps: null
         when 'showAlertDialog'
           @setState alertDialog: event.data
         when 'showConfirmDialog'

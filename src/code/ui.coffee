@@ -155,8 +155,11 @@ class CloudFileManagerUI
     @listenerCallback new CloudFileManagerUIEvent 'showShareDialog',
       client: client
 
-  blockingModal: (modalProps) ->
+  showBlockingModal: (modalProps) ->
     @listenerCallback new CloudFileManagerUIEvent 'showBlockingModal', modalProps
+
+  hideBlockingModal: ->
+    @listenerCallback new CloudFileManagerUIEvent 'hideBlockingModal'
 
   alertDialog: (message, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showAlertDialog',
