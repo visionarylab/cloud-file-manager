@@ -53,8 +53,8 @@ module.exports =
   "~SHARE_DIALOG.COPY": "Copy"
   "~SHARE_DIALOG.VIEW": "View"
   "~SHARE_DIALOG.CLOSE": "Close"
-  "~SHARE_DIALOG.COPY_SUCCESS": "The share url has been copied to the clipboard."
-  "~SHARE_DIALOG.COPY_ERROR": "Sorry, the share url was not able to be copied to the clipboard."
+  "~SHARE_DIALOG.COPY_SUCCESS": "The info has been copied to the clipboard."
+  "~SHARE_DIALOG.COPY_ERROR": "Sorry, the info was not able to be copied to the clipboard."
   "~SHARE_DIALOG.COPY_TITLE": "Copy Result"
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?"
