@@ -1,6 +1,6 @@
 {div, button, span} = React.DOM
 
-documentStore = "//document-store.concord.org/"
+documentStore = "//document-store.concord.org"
 authorizeUrl      = "#{documentStore}/user/authenticate"
 checkLoginUrl     = "#{documentStore}/user/info"
 listUrl           = "#{documentStore}/document/all"
