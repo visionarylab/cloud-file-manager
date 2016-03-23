@@ -47,7 +47,9 @@ class ReadOnlyProvider extends ProviderInterface
   list: (metadata, callback) ->
     @_loadTree (err, tree) =>
       return callback err if err
-      callback null, if metadata?.type is CloudMetadata.Folder then metadata.providerData.children else @tree
+      items = if metadata?.type is CloudMetadata.Folder then metadata.providerData.children else @tree
+      # clone the metadata items so that any changes made to the filename or content in the edit is not cached
+      callback null, _.map items, (item) -> _.clone item
 
   canOpenSaved: -> false
 
@@ -140,7 +142,7 @@ class ReadOnlyProvider extends ProviderInterface
                     iMetadata.providerData.children = [ errorMetadata ]
                     resolve iMetadata
           @promises.push newFolderPromise item, metadata
-        
+
         tree.push metadata
     else
       # parse original format:
@@ -159,7 +161,7 @@ class ReadOnlyProvider extends ProviderInterface
         if type is CloudMetadata.Folder
           metadata.providerData.children = @_convertJSONToMetadataTree itemContent, metadata
         tree.push metadata
-    
+
     tree
 
   # Remote folder contents are likely to be loaded as part of

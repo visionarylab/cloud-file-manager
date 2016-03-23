@@ -39,11 +39,19 @@ module.exports = React.createClass
   getInitialState: ->
     link: @getShareLink()
     embed: @getEmbed()
-    linkTabSelected: true
+    lara: @getLara
+      codapServerUrl: "https://codap.concord.org/releases/latest/"
+      launchButtonText: "Launch"
+    codapServerUrl: "https://codap.concord.org/releases/latest/"
+    launchButtonText: "Launch"
+    tabSelected: 'link'
 
   getSharedDocumentId: ->
     # extract sharedDocumentId from CloudContent
-    @props.client.state.currentContent?.get "sharedDocumentId"
+    if @props.client.isShared()
+      @props.client.state.currentContent?.get "sharedDocumentId"
+    else
+      null
 
   getShareLink: ->
     sharedDocumentId = @getSharedDocumentId()
@@ -59,13 +67,23 @@ module.exports = React.createClass
     else
       null
 
+  getLara: (options = null) ->
+    sharedDocumentId = @getSharedDocumentId()
+    if sharedDocumentId
+      server = encodeURIComponent (if options?.hasOwnProperty('codapServerUrl') then options.codapServerUrl else @state.codapServerUrl)
+      buttonText = encodeURIComponent (if options?.hasOwnProperty('launchButtonText') then options.launchButtonText else @state.launchButtonText)
+      "https://document-store.concord.org/document/launch?recordid=#{sharedDocumentId}&server=#{server}&buttonText=#{buttonText}"
+    else
+      null
+
   # adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy: (e) ->
     e.preventDefault()
     copied = false
+    toCopy = @state[@state.tabSelected]
     try
       mark = document.createElement 'mark'
-      mark.innerHTML = @state.link
+      mark.innerText = toCopy
       document.body.appendChild mark
 
       selection = document.getSelection()
@@ -78,7 +96,7 @@ module.exports = React.createClass
       copied = document.execCommand 'copy'
     catch
       try
-        window.clipboardData.setData 'text', @state.link
+        window.clipboardData.setData 'text', toCopy
         copied = true
       catch
         copied = false
@@ -101,12 +119,28 @@ module.exports = React.createClass
       @setState
         link: @getShareLink()
         embed: @getEmbed()
+        lara: @getLara()
 
   selectLinkTab: ->
-    @setState linkTabSelected: true
+    @setState tabSelected: 'link'
 
   selectEmbedTab: ->
-    @setState linkTabSelected: false
+    @setState tabSelected: 'embed'
+
+  selectLaraTab: ->
+    @setState tabSelected: 'lara'
+
+  changedCodapServerUrl: ->
+    codapServerUrl = React.findDOMNode(@refs.codapServerUrl).value
+    @setState
+      codapServerUrl: codapServerUrl
+      lara: @getLara codapServerUrl: codapServerUrl
+
+  changedLaunchButtonText: ->
+    launchButtonText = React.findDOMNode(@refs.launchButtonText).value
+    @setState
+      launchButtonText: launchButtonText
+      lara: @getLara launchButtonText: launchButtonText
 
   render: ->
     sharing = @state.link isnt null
@@ -141,31 +175,59 @@ module.exports = React.createClass
         if sharing
           (div {},
             (ul {className: 'sharing-tabs'},
-              (li {className: "sharing-tab#{if @state.linkTabSelected then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, 'Link')
-              (li {className: "sharing-tab sharing-tab-embed#{if not @state.linkTabSelected then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, 'Embed')
+              (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, 'Link')
+              (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, 'Embed')
+              if @props.enableLaraSharing
+                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, 'LARA')
             )
             (div {className: 'sharing-tab-contents'},
-              if @state.linkTabSelected
-                (div {},
-                  "Paste this into an email or text message ",
-                  if document.execCommand or window.clipboardData
-                    (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+              switch @state.tabSelected
+                when 'embed'
                   (div {},
-                    (input {value: @state.link, readOnly: true})
+                    "Embed code for including in webpages or other web-based content",
+                    if document.execCommand or window.clipboardData
+                      (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+                    (div {},
+                      (textarea {value: @state.embed, readOnly: true})
+                    )
                   )
-                  (div {className: 'social-icons'},
-                    (SocialIcon {icon: 'facebook', url: "https://www.facebook.com/sharer/sharer.php?u=#{encodeURIComponent @state.link}"})
-                    (SocialIcon {icon: 'twitter', url: "https://twitter.com/home?status=#{encodeURIComponent @state.link}"})
-                    # not working with url parameter: (SocialIcon {icon: 'google', url: "https://plus.google.com/share?url=#{encodeURIComponent @state.link}"})
-                  )
-                )
-              else
-                (div {},
-                  "Embed code for including in webpages or other web-based content",
+                when 'lara'
                   (div {},
-                    (textarea {value: @state.embed, readOnly: true})
+                    "Use this link when creating an activity in LARA",
+                    if document.execCommand or window.clipboardData
+                      (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+                    (div {},
+                      (input {value: @state.lara, readOnly: true})
+                    )
+                    (div {className: 'lara-settings'},
+                      (div {className: 'codap-server-url'},
+                        "CODAP Server URL:"
+                        (div {},
+                          (input {value: @state.codapServerUrl, ref: 'codapServerUrl', onChange: @changedCodapServerUrl})
+                        )
+                      )
+                      (div {className: 'launch-button-text'},
+                        "Launch Button Text:"
+                        (div {},
+                          (input {value: @state.launchButtonText, ref: 'launchButtonText', onChange: @changedLaunchButtonText})
+                        )
+                      )
+                    )
                   )
-                )
+                else
+                  (div {},
+                    "Paste this into an email or text message ",
+                    if document.execCommand or window.clipboardData
+                      (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+                    (div {},
+                      (input {value: @state.link, readOnly: true})
+                    )
+                    (div {className: 'social-icons'},
+                      (SocialIcon {icon: 'facebook', url: "https://www.facebook.com/sharer/sharer.php?u=#{encodeURIComponent @state.link}"})
+                      (SocialIcon {icon: 'twitter', url: "https://twitter.com/home?status=#{encodeURIComponent @state.link}"})
+                      # not working with url parameter: (SocialIcon {icon: 'google', url: "https://plus.google.com/share?url=#{encodeURIComponent @state.link}"})
+                    )
+                  )
             )
           )
 

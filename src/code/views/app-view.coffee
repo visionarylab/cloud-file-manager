@@ -5,6 +5,7 @@ RenameDialog = React.createFactory require './rename-dialog-view'
 ShareDialog = React.createFactory require './share-dialog-view'
 BlockingModal = React.createFactory require './blocking-modal-view'
 AlertDialog = React.createFactory require './alert-dialog-view'
+ConfirmDialog = React.createFactory require './confirm-dialog-view'
 ImportTabbedDialog = React.createFactory require './import-tabbed-dialog-view'
 
 tr = require '../utils/translate'
@@ -41,6 +42,7 @@ App = React.createClass
     renameDialog: null
     shareDialog: null
     alertDialog: null
+    confirmDialog: null
     dirty: false
 
   componentWillMount: ->
@@ -76,8 +78,12 @@ App = React.createClass
           @setState shareDialog: event.data
         when 'showBlockingModal'
           @setState blockingModalProps: event.data
+        when 'hideBlockingModal'
+          @setState blockingModalProps: null
         when 'showAlertDialog'
           @setState alertDialog: event.data
+        when 'showConfirmDialog'
+          @setState confirmDialog: event.data
         when 'appendMenuItem'
           @state.menuItems.push event.data
           @setState menuItems: @state.menuItems
@@ -132,6 +138,9 @@ App = React.createClass
   closeAlert: ->
     @setState alertDialog: null
 
+  closeConfirm: ->
+    @setState confirmDialog: null
+
   renderDialogs: ->
     (div {},
       if @state.blockingModalProps
@@ -145,11 +154,13 @@ App = React.createClass
       else if @state.importDialog
         (ImportTabbedDialog {client: @props.client, dialog: @state.importDialog, close: @closeDialogs})
       else if @state.shareDialog
-        (ShareDialog {client: @props.client, close: @closeDialogs})
+        (ShareDialog {client: @props.client, enableLaraSharing: @props.enableLaraSharing, close: @closeDialogs})
 
-      # alert dialog can be overlayed on other dialogs
+      # alert and confirm dialogs can be overlayed on other dialogs
       if @state.alertDialog
         (AlertDialog {title: @state.alertDialog.title, message: @state.alertDialog.message, close: @closeAlert})
+      if @state.confirmDialog
+        (ConfirmDialog {message: @state.confirmDialog.message, callback: @state.confirmDialog.callback, close: @closeConfirm})
     )
 
   render: ->

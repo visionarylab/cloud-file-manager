@@ -1,6 +1,7 @@
 {div, input, a, button} = React.DOM
 
 ModalDialog = React.createFactory require './modal-dialog-view'
+CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
 tr = require '../utils/translate'
 
@@ -9,7 +10,7 @@ module.exports = React.createClass
   displayName: 'DownloadDialogView'
 
   getInitialState: ->
-    filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}.json"
+    filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{CloudMetadata.Extension or '.json'}"
     includeShareInfo = false
     state =
       filename: filename
@@ -38,6 +39,7 @@ module.exports = React.createClass
       if json and not @state.includeShareInfo
         delete json.sharedDocumentId
         delete json.shareEditKey
+        delete json.isUnshared
         # CODAP moves the keys into its own namespace
         delete json.metadata.shared if json.metadata?.shared?
       e.target.setAttribute 'href', "data:application/json,#{encodeURIComponent(JSON.stringify json)}"

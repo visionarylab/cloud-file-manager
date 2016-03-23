@@ -44,6 +44,9 @@ class CloudFileManagerClient
       for own providerName of allProviders
         appOptions.providers.push providerName
 
+    # preset the extension if Available
+    CloudMetadata.Extension = @appOptions.extension
+
     # check the providers
     availableProviders = []
     for provider in @appOptions.providers
@@ -134,8 +137,8 @@ class CloudFileManagerClient
       if @_autoSaveInterval and @state.metadata
         @save()
         @newFile()
-      else if confirm tr '~CONFIRM.NEW_FILE'
-        @newFile()
+      else
+        @confirm tr('~CONFIRM.NEW_FILE'), => @newFile()
     else
       @newFile()
 
@@ -151,9 +154,13 @@ class CloudFileManagerClient
       @openFileDialog callback
 
   openFileDialog: (callback = null) ->
-    if (not @state.dirty) or (confirm tr '~CONFIRM.OPEN_FILE')
+    showDialog = =>
       @_ui.openFileDialog (metadata) =>
         @openFile metadata, callback
+    if not @state.dirty
+      showDialog()
+    else
+      @confirm tr('~CONFIRM.OPEN_FILE'), showDialog
 
   closeFile: (callback = null) ->
     @_closeCurrentFile()
@@ -162,8 +169,10 @@ class CloudFileManagerClient
     callback?()
 
   closeFileDialog: (callback = null) ->
-    if (not @state.dirty) or (confirm tr '~CONFIRM.CLOSE_FILE')
+    if not @state.dirty
       @closeFile callback
+    else
+      @confirm tr('~CONFIRM.CLOSE_FILE'), => @closeFile callback
 
   importData: (data, callback = null) ->
     @_event 'importedData', data
@@ -297,7 +306,7 @@ class CloudFileManagerClient
     @_ui.shareDialog @
 
   shareUpdate: ->
-    @share()
+    @share => @alert (tr "~SHARE_UPDATE.MESSAGE"), (tr "~SHARE_UPDATE.TITLE")
 
   toggleShare: (callback) ->
     if @isShared()
@@ -306,34 +315,37 @@ class CloudFileManagerClient
       @share callback
 
   isShared: ->
-    @state.currentContent?.get "sharedDocumentId"
+    @state.currentContent?.get("sharedDocumentId") and not @state.currentContent?.get("isUnshared")
 
-  share: (callback) ->
+  canEditShared: ->
+    @state.currentContent?.get("shareEditKey") and not @state.currentContent?.get("isUnshared")
+
+  setShareState: (shared, callback) ->
     if @state.shareProvider
-      sharingMetadata = @state.shareProvider.getSharingMetadata()
+      sharingMetadata = @state.shareProvider.getSharingMetadata shared
       @_event 'getContent', { shared: sharingMetadata }, (stringContent) =>
         @_setState
-          sharing: true
+          sharing: shared
         sharedContent = cloudContentFactory.createEnvelopedCloudContent stringContent
         sharedContent.addMetadata sharingMetadata
         currentContent = @_createOrUpdateCurrentContent stringContent, @state.metadata
+        if shared
+          currentContent.remove 'isUnshared'
+        else
+          currentContent.set 'isUnshared', true
         @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
           return @alert(err) if err
-          @_fileChanged 'sharedFile', currentContent, @state.metadata
-          callback? sharedContentId
+          callback? null, sharedContentId, currentContent
+
+  share: (callback) ->
+    @setShareState true, (err, sharedContentId, currentContent) =>
+      @_fileChanged 'sharedFile', currentContent, @state.metadata
+      callback? null, sharedContentId
 
   unshare: (callback) ->
-    # clear sharing metadata when user unshares the document
-    @state.currentContent?.remove "_permissions"
-    @state.currentContent?.remove "shareEditKey"
-    @state.currentContent?.remove "sharedDocumentId"
-    @_fileChanged 'unsharedFile', @state.currentContent, @state.metadata, {sharing: false}
-    callback? false
-
-  reshare: (sharedMetadata, callback) ->
-    @state.currentContent?.addMetadata sharedMetadata
-    @_fileChanged 'sharedFile', @state.currentContent, @state.metadata, {sharing: true}
-    callback? false
+    @setShareState false, (err, sharedContentId, currentContent) =>
+      @_fileChanged 'unsharedFile', currentContent, @state.metadata
+      callback? null
 
   revertToShared: (callback = null) ->
     id = @state.currentContent?.get("sharedDocumentId")
@@ -347,8 +359,8 @@ class CloudFileManagerClient
         callback? null
 
   revertToSharedDialog: (callback = null) ->
-    if @state.currentContent?.get("sharedDocumentId") and @state.shareProvider? and confirm tr "~CONFIRM.REVERT_TO_SHARED_VIEW"
-      @revertToShared callback
+    if @state.currentContent?.get("sharedDocumentId") and @state.shareProvider?
+      @confirm tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), => @revertToShared callback
 
   downloadDialog: (callback = null) ->
     # should share metadata be included in downloaded local files?
@@ -387,8 +399,7 @@ class CloudFileManagerClient
 
   revertToLastOpenedDialog: (callback = null) ->
     if @state.openedContent? and @state.metadata
-      if confirm tr '~CONFIRM.REVERT_TO_LAST_OPENED'
-        @revertToLastOpened callback
+      @confirm tr('~CONFIRM.REVERT_TO_LAST_OPENED'), => @revertToLastOpened callback
     else
       callback? 'No initial opened version was found for the currently active file'
 
@@ -414,12 +425,18 @@ class CloudFileManagerClient
     @_autoSaveInterval?
 
   showBlockingModal: (modalProps) ->
-    @_ui.blockingModal modalProps
+    @_ui.showBlockingModal modalProps
+
+  hideBlockingModal: ->
+    @_ui.hideBlockingModal()
 
   getCurrentUrl: (queryString = null) ->
     suffix = if queryString? then "?#{queryString}" else ""
     # Check browser support for document.location.origin (& window.location.origin)
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
+
+  confirm: (message, callback) ->
+    @_ui.confirmDialog message, callback
 
   alert: (message, title=null) ->
     @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE")
@@ -452,7 +469,7 @@ class CloudFileManagerClient
       metadata: metadata
       saving: null
       saved: false
-      dirty: content?.requiresConversion()
+      dirty: not additionalState.saved and content?.requiresConversion()
     for own key, value of additionalState
       state[key] = value
     @_setWindowTitle metadata?.name

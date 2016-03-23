@@ -42,7 +42,7 @@ class GoogleDriveProvider extends ProviderInterface
         save: true
         load: true
         list: true
-        remove: true
+        remove: false
         rename: true
         close: true
 
@@ -124,14 +124,16 @@ class GoogleDriveProvider extends ProviderInterface
         return callback('Unable to list files') if not result
         list = []
         for item in result?.items
-          list.push new CloudMetadata
-            name: item.title
-            type: if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
-            parent: metadata
-            overwritable: item.editable
-            provider: @
-            providerData:
-              id: item.id
+          type = if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
+          if type is CloudMetadata.Folder or @matchesExtension item.title
+            list.push new CloudMetadata
+              name: item.title
+              type: type
+              parent: metadata
+              overwritable: item.editable
+              provider: @
+              providerData:
+                id: item.id
         list.sort (a, b) ->
           lowerA = a.name.toLowerCase()
           lowerB = b.name.toLowerCase()
@@ -152,12 +154,12 @@ class GoogleDriveProvider extends ProviderInterface
       request = gapi.client.drive.files.patch
         fileId: metadata.providerData.id
         resource:
-          title: newName
+          title: metadata.withExtension newName
       request.execute (result) ->
         if result?.error
           callback? result.error
         else
-          metadata.name = newName
+          metadata.rename newName
           callback null, metadata
 
   close: (metadata, callback) ->
@@ -206,7 +208,7 @@ class GoogleDriveProvider extends ProviderInterface
       fileId: metadata.providerData.id
     request.execute (file) =>
       if file?.downloadUrl
-        metadata.name = file.title
+        metadata.rename file.title
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
         xhr = new XMLHttpRequest()
@@ -224,7 +226,7 @@ class GoogleDriveProvider extends ProviderInterface
   _saveFile: (content, metadata, callback) ->
     boundary = '-------314159265358979323846'
     header = JSON.stringify
-      title: metadata.name
+      title: metadata.filename
       mimeType: @mimeType
       parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
 
@@ -291,13 +293,13 @@ class GoogleDriveProvider extends ProviderInterface
         fileId: metadata.providerData.id
     else
       request = gapi.client.drive.files.insert
-        title: metadata.name
+        title: metadata.filename
         mimeType: @mimeType
         parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
 
     request.execute (file) =>
       if file?.id
-        metadata.name = file.title
+        metadata.rename file.title
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
         gapi.drive.realtime.load file.id, fileLoaded, init, error

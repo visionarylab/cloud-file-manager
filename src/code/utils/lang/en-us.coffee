@@ -7,7 +7,7 @@ module.exports =
   "~MENU.IMPORT_DATA": "Import data..."
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
-  "~MENU.CREATE_COPY": "Create A Copy ..."
+  "~MENU.CREATE_COPY": "Create a copy"
   "~MENU.SHARE": "Share..."
   "~MENU.SHARE_GET_LINK": "Get link to shared view"
   "~MENU.SHARE_UPDATE": "Update shared view"
@@ -38,6 +38,8 @@ module.exports =
   "~FILE_DIALOG.CANCEL": "Cancel"
   "~FILE_DIALOG.REMOVE": "Delete"
   "~FILE_DIALOG.REMOVE_CONFIRM": "Are you sure you want to delete %{filename}?"
+  "~FILE_DIALOG.REMOVED_TITLE": "Deleted File"
+  "~FILE_DIALOG.REMOVED_MESSAGE": "%{filename} was deleted"
   "~FILE_DIALOG.LOADING": "Loading..."
   "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***"
 
@@ -51,9 +53,12 @@ module.exports =
   "~SHARE_DIALOG.COPY": "Copy"
   "~SHARE_DIALOG.VIEW": "View"
   "~SHARE_DIALOG.CLOSE": "Close"
-  "~SHARE_DIALOG.COPY_SUCCESS": "The share url has been copied to the clipboard."
-  "~SHARE_DIALOG.COPY_ERROR": "Sorry, the share url was not able to be copied to the clipboard."
+  "~SHARE_DIALOG.COPY_SUCCESS": "The info has been copied to the clipboard."
+  "~SHARE_DIALOG.COPY_ERROR": "Sorry, the info was not able to be copied to the clipboard."
   "~SHARE_DIALOG.COPY_TITLE": "Copy Result"
+
+  "~SHARE_UPDATE.TITLE": "Shared View Updated"
+  "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully."
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes. Are you sure you want to create a new document?"
@@ -61,11 +66,22 @@ module.exports =
   "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want to revert the document to its most recently opened state?"
   "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want to revert the document to its most recently shared state?"
 
+  "~CONFIRM_DIALOG.TITLE": "Are you sure?"
+  "~CONFIRM_DIALOG.YES": "Yes"
+  "~CONFIRM_DIALOG.NO": "No"
+
   "~LOCAL_FILE_DIALOG.DROP_FILE_HERE": "Drop file here or click here to select a file."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED": "Sorry, you can choose only one file to open."
   "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED": "Sorry, you can't drop more than one file."
 
   "~IMPORT.LOCAL_FILE": "Local File"
+  "~IMPORT.URL": "URL"
+
+  "~IMPORT_URL.MULTIPLE_URLS_DROPPED": "Sorry, you can choose only one url to open."
+  "~IMPORT_URL.PLEASE_ENTER_URL": "Please enter a url to import."
+
+  "~URL_TAB.DROP_URL_HERE": "Drop URL here or enter URL below"
+  "~URL_TAB.IMPORT": "Import"
 
   "~CLIENT_ERROR.TITLE": "Error"
 
