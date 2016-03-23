@@ -85,12 +85,9 @@ FileDialogTab = React.createClass
 
   filenameChanged: (e) ->
     filename = e.target.value
-    if @isOpen()
-      @setState
-        filename: filename
-        metadata: @findMetadata filename, @state.list
-    else
-      @setState filename: filename
+    @setState
+      filename: filename
+      metadata: @findMetadata filename, @state.list
 
   listLoaded: (list) ->
     @setState list: list
@@ -119,27 +116,22 @@ FileDialogTab = React.createClass
       @props.dialog.callback? @state.metadata
       @props.close()
 
-    # existing file selected
-    metadata = @state.metadata
-    return confirmed metadata if metadata
-
-    # find or create the file metadata based on the filename
     filename = $.trim @state.filename
-    metadata = @findMetadata filename, @state.list
+    metadata = @state.metadata or @findMetadata filename, @state.list
+
     if metadata
       if @isOpen()
         confirmed metadata
       else
-        @props.client.confirm "There is already a file named #{filename}", -> confirmed metadata
+        @props.client.confirm "Are you sure you want to overwrite #{metadata.name}?", -> confirmed metadata
+    else if @isOpen()
+      @props.client.alert "#{filename} not found"
     else
-      if @isOpen()
-        @props.client.alert "#{filename} not found"
-      else
-        confirmed new CloudMetadata
-          name: filename
-          type: CloudMetadata.File
-          parent: @state.folder or null
-          provider: @props.provider
+      confirmed new CloudMetadata
+        name: filename
+        type: CloudMetadata.File
+        parent: @state.folder or null
+        provider: @props.provider
 
   remove: ->
     if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder
