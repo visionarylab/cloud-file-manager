@@ -151,9 +151,10 @@ class CloudFileManagerUI
       filename: filename
       callback: callback
 
-  shareDialog: (client) ->
+  shareDialog: (client, enableLaraSharing=false) ->
     @listenerCallback new CloudFileManagerUIEvent 'showShareDialog',
       client: client
+      enableLaraSharing: enableLaraSharing
 
   showBlockingModal: (modalProps) ->
     @listenerCallback new CloudFileManagerUIEvent 'showBlockingModal', modalProps

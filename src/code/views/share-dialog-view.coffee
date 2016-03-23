@@ -70,7 +70,7 @@ module.exports = React.createClass
     if sharedDocumentId
       server = encodeURIComponent (if options?.hasOwnProperty('codapServerUrl') then options.codapServerUrl else @state.codapServerUrl)
       buttonText = encodeURIComponent (if options?.hasOwnProperty('launchButtonText') then options.launchButtonText else @state.launchButtonText)
-      "https://document-store.herokuapp.com/document/launch?recordid=#{sharedDocumentId}&server=#{server}&buttonText=#{buttonText}"
+      "https://document-store.concord.org/document/launch?recordid=#{sharedDocumentId}&server=#{server}&buttonText=#{buttonText}"
     else
       null
 
@@ -175,7 +175,8 @@ module.exports = React.createClass
             (ul {className: 'sharing-tabs'},
               (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, 'Link')
               (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, 'Embed')
-              (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, 'LARA')
+              if @props.enableLaraSharing
+                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, 'LARA')
             )
             (div {className: 'sharing-tab-contents'},
               switch @state.tabSelected
