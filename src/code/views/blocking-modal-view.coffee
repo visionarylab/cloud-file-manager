@@ -8,9 +8,13 @@ module.exports = React.createClass
   close: ->
     @props.close?()
 
+  # used by CODAP to dismiss the startup dialog if a file is dropped on it
+  drop: (e) ->
+    @props.onDrop? e
+
   render: ->
     (Modal {close: @props.close},
-      (div {className: 'modal-dialog'},
+      (div {className: 'modal-dialog', onDrop: @drop},
         (div {className: 'modal-dialog-wrapper'},
           (div {className: 'modal-dialog-title'},
             @props.title or 'Untitled Dialog'
