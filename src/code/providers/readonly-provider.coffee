@@ -47,7 +47,9 @@ class ReadOnlyProvider extends ProviderInterface
   list: (metadata, callback) ->
     @_loadTree (err, tree) =>
       return callback err if err
-      callback null, if metadata?.type is CloudMetadata.Folder then metadata.providerData.children else @tree
+      items = if metadata?.type is CloudMetadata.Folder then metadata.providerData.children else @tree
+      # clone the metadata items so that any changes made to the filename or content in the edit is not cached
+      callback null, _.map items, (item) -> _.clone item
 
   canOpenSaved: -> false
 
