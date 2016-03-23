@@ -39,7 +39,9 @@ module.exports = React.createClass
   getInitialState: ->
     link: @getShareLink()
     embed: @getEmbed()
-    lara: @getLara()
+    lara: @getLara
+      codapServerUrl: "https://codap.concord.org/releases/latest/"
+      launchButtonText: "Launch"
     codapServerUrl: "https://codap.concord.org/releases/latest/"
     launchButtonText: "Launch"
     tabSelected: 'link'
