@@ -76,7 +76,9 @@ FileDialogTab = React.createClass
   mixins: [AuthorizeMixin]
 
   getInitialState: ->
-    @getStateForFolder @props.client.state.metadata?.parent or null
+    initialState = @getStateForFolder @props.client.state.metadata?.parent or null
+    initialState.filename = initialState.metadata?.name or ''
+    initialState
 
   isOpen: ->
     @props.dialog.action is 'openFile'
@@ -97,7 +99,6 @@ FileDialogTab = React.createClass
     metadata = if @isOpen() then @state?.metadata or null else @props.client.state.metadata
     folder: folder
     metadata: metadata
-    filename: metadata?.name or ''
     list: []
 
   fileSelected: (metadata) ->
