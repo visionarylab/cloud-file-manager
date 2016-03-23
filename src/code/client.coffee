@@ -469,7 +469,7 @@ class CloudFileManagerClient
       metadata: metadata
       saving: null
       saved: false
-      dirty: content?.requiresConversion()
+      dirty: not additionalState.saved and content?.requiresConversion()
     for own key, value of additionalState
       state[key] = value
     @_setWindowTitle metadata?.name
