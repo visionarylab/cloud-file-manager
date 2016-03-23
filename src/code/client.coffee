@@ -306,8 +306,8 @@ class CloudFileManagerClient
     @_ui.shareDialog @
 
   shareUpdate: ->
-    @share()
-
+    @share => @alert (tr "~SHARE_UPDATE.MESSAGE"), (tr "~SHARE_UPDATE.TITLE")
+    
   toggleShare: (callback) ->
     if @isShared()
       @unshare callback

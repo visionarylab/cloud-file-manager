@@ -57,6 +57,9 @@ module.exports =
   "~SHARE_DIALOG.COPY_ERROR": "Sorry, the info was not able to be copied to the clipboard."
   "~SHARE_DIALOG.COPY_TITLE": "Copy Result"
 
+  "~SHARE_UPDATE.TITLE": "Shared View Updated"
+  "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully."
+
   "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes. Are you sure you want to create a new document?"
   "~CONFIRM.CLOSE_FILE": "You have unsaved changes. Are you sure you want to close the document?"
