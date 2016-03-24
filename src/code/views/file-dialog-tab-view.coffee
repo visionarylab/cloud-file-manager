@@ -122,8 +122,10 @@ FileDialogTab = React.createClass
     if metadata
       if @isOpen()
         confirmed metadata
-      else
+      else if @findMetadata filename, @state.list
         @props.client.confirm "Are you sure you want to overwrite #{metadata.name}?", -> confirmed metadata
+      else
+        confirmed metadata
     else if @isOpen()
       @props.client.alert "#{filename} not found"
     else
