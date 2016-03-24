@@ -80,22 +80,22 @@ class DocumentStoreProvider extends ProviderInterface
     if @_docStoreLoaded
       @docStoreLoadedCallback()
 
-  _loginSuccessful: (@user) ->
-    @_loginWindow?.close()
-    @authCallback true
-
   _checkLogin: ->
-    provider = @
+    loggedIn = (user) =>
+      @user = user
+      @_docStoreLoaded = true
+      @docStoreLoadedCallback?()
+      if user
+        @_loginWindow?.close()
+      @authCallback user isnt null
+
     $.ajax
       dataType: 'json'
       url: checkLoginUrl
       xhrFields:
         withCredentials: true
-      success: (data) ->
-        provider.docStoreLoadedCallback?()
-        provider._loginSuccessful(data)
-      error: ->
-        provider.docStoreLoadedCallback?()
+      success: (data) -> loggedIn data
+      error: -> loggedIn null
 
   _loginWindow: null
 
@@ -171,6 +171,10 @@ class DocumentStoreProvider extends ProviderInterface
         callback null, list
       error: ->
         callback null, []
+      statusCode:
+        403: =>
+          @user = null
+          @authCallback false
 
   loadSharedContent: (id, callback) ->
     sharedMetadata = new CloudMetadata
