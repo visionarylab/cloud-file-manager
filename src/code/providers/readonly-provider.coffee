@@ -49,7 +49,7 @@ class ReadOnlyProvider extends ProviderInterface
       return callback err if err
       items = if metadata?.type is CloudMetadata.Folder then metadata.providerData.children else @tree
       # clone the metadata items so that any changes made to the filename or content in the edit is not cached
-      callback null, _.map items, (item) -> _.clone item
+      callback null, _.map items, (metadataItem) -> new CloudMetadata metadataItem
 
   canOpenSaved: -> false
 
