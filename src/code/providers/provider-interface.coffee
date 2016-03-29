@@ -34,14 +34,14 @@ class CloudMetadata
     @_updateFilename()
 
   withExtension: (name) ->
-    if name.substr(-CloudMetadata.Extension.length) isnt CloudMetadata.Extension
+    if CloudMetadata.Extension? and name.substr(-CloudMetadata.Extension.length) isnt CloudMetadata.Extension
       name + CloudMetadata.Extension
     else
       name
 
   _updateFilename: ->
     @filename = @name
-    if @name?.substr? and CloudMetadata.Extension and @type is CloudMetadata.File
+    if @name?.substr? and CloudMetadata.Extension? and @type is CloudMetadata.File
       extLen = CloudMetadata.Extension.length
       @name = @name.substr(0, @name.length - extLen) if @name.substr(-extLen) is CloudMetadata.Extension
       @filename = @withExtension @name
@@ -167,7 +167,7 @@ class ProviderInterface
     defaultComponent
 
   matchesExtension: (name) ->
-    if CloudMetadata.Extension
+    if CloudMetadata.Extension?
       name.substr(-CloudMetadata.Extension.length) is CloudMetadata.Extension
     else
       # may seem weird but it means that without an extension specified all files match
