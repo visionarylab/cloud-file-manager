@@ -117,13 +117,14 @@ FileDialogTab = React.createClass
       @props.close()
 
     filename = $.trim @state.filename
-    metadata = @state.metadata or @findMetadata filename, @state.list
+    existingMetadata = @findMetadata filename, @state.list
+    metadata = @state.metadata or existingMetadata
 
     if metadata
       if @isOpen()
         confirmed metadata
-      else if @findMetadata filename, @state.list
-        @props.client.confirm "Are you sure you want to overwrite #{metadata.name}?", -> confirmed metadata
+      else if existingMetadata
+        @props.client.confirm "Are you sure you want to overwrite #{existingMetadata.name}?", -> confirmed existingMetadata
       else
         confirmed metadata
     else if @isOpen()

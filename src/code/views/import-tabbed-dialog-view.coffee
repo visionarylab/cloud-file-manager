@@ -19,6 +19,7 @@ module.exports = React.createClass
             file:
               name: metadata.providerData.file.name,
               content: loaded.target.result
+              object: metadata.providerData.file
             via: via
           @props.dialog.callback? data
         reader.readAsText metadata.providerData.file
