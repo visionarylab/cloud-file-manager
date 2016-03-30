@@ -166,6 +166,7 @@ class CloudFileManagerClient
     @_closeCurrentFile()
     @_resetState()
     @_event 'closedFile', {content: ""}
+    window.location.hash = ""
     callback?()
 
   closeFileDialog: (callback = null) ->
