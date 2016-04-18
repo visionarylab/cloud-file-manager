@@ -165,8 +165,8 @@ class CloudFileManagerClient
   closeFile: (callback = null) ->
     @_closeCurrentFile()
     @_resetState()
-    @_event 'closedFile', {content: ""}
     window.location.hash = ""
+    @_event 'closedFile', {content: ""}
     callback?()
 
   closeFileDialog: (callback = null) ->
@@ -207,6 +207,15 @@ class CloudFileManagerClient
       return @alert(err) if err
       @_fileOpened content, metadata, {overwritable: false, openedContent: content.clone()}
 
+  # must be called as a result of user action (e.g. click) to avoid popup blockers
+  parseUrlAuthorizeAndOpen: ->
+    if @appOptions.hashParams?.fileParams?
+      [providerName, providerParams] = @appOptions.hashParams.fileParams.split ':'
+      provider = @providers[providerName]
+      if provider
+        provider.authorize =>
+          @openProviderFile providerName providerParams
+
   openProviderFile: (providerName, providerParams) ->
     provider = @providers[providerName]
     if provider
@@ -219,13 +228,23 @@ class CloudFileManagerClient
   isSaveInProgress: ->
     @state.saving?
 
+  confirmAuthorizeAndSave: (stringContent, callback) ->
+    # trigger authorize() from confirmation dialog to avoid popup blockers
+    @confirm tr("~CONFIRM.AUTHORIZE_SAVE"), =>
+      @state.metadata.provider.authorize =>
+        @saveFile stringContent, @state.metadata, callback
+
   save: (callback = null) ->
     @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
       @saveContent stringContent, callback
 
   saveContent: (stringContent, callback = null) ->
-    if @state.metadata
-      @saveFile stringContent, @state.metadata, callback
+    if @state.metadata?.provider?
+      @state.metadata.provider.authorized (isAuthorized) =>
+        if isAuthorized
+          @saveFile stringContent, @state.metadata, callback
+        else
+          @confirmAuthorizeAndSave stringContent, callback
     else
       @saveFileDialog stringContent, callback
 
@@ -234,12 +253,15 @@ class CloudFileManagerClient
       @_setState
         saving: metadata
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
-      metadata.provider.save currentContent, metadata, (err) =>
+      metadata.provider.save currentContent, metadata, (err, statusCode) =>
         if err
           # disable autosave on save failure; clear "Saving..." message
           metadata.autoSaveDisabled = true
           @_setState { metadata: metadata, saving: null }
-          return @alert(err)
+          if statusCode is 403
+            return @confirmAuthorizeAndSave stringContent, callback
+          else
+            return @alert(err)
         if @state.metadata isnt metadata
           @_closeCurrentFile()
         # reenable autosave on save success
@@ -294,8 +316,8 @@ class CloudFileManagerClient
       metadata = new CloudMetadata
         name: copied.name
         type: CloudMetadata.File
-      @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
       window.location.hash = ""
+      @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
       window.localStorage.removeItem key
     catch e
       callback "Unable to load copied file"
