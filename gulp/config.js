@@ -3,10 +3,10 @@ var argv = require('yargs').argv,
     production = !!argv.production,
     buildInfo = argv.buildInfo || 'development build (' + (new Date()) + ')',
     src = './src',
-    dest  = argv.dest ? argv.dest : './dist',
-    noMap = !!argv.noMap,
-    nojQuery = !!argv.nojQuery,
-    codap = !!argv.codap,
+    dest  = argv.dest ? argv.dest : './dist', // configure destination folder
+    noMap = !!argv.noMap,       // don't generate .map files
+    nojQuery = !!argv.nojQuery, // don't include jQuery
+    codap = !!argv.codap,       // include CODAP-specific modifications
     assetsSrc = codap ? src + '/assets/img/*.*' : src + '/assets/**/*.*',
     assetsDst = codap ? dest + '/img/' : dest;
 
