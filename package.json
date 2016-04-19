@@ -15,7 +15,8 @@
     "jquery-ui": "^1.10.5",
     "lodash": "^3.3.0",
     "pako": "^1.0.1",
-    "react": "^0.13.3",
+    "react": "^15.0.1",
+    "react-dom": "^15.0.1",
     "svg-social-icons": "^1.1.0"
   },
   "devDependencies": {

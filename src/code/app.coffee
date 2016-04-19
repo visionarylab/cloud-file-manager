@@ -60,6 +60,6 @@ class CloudFileManager
 
   _renderApp: (anchor) ->
     @appOptions.client = @client
-    React.render (AppView @appOptions), anchor
+    ReactDOM.render (AppView @appOptions), anchor
 
 module.exports = new CloudFileManager()

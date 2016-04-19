@@ -17,9 +17,9 @@ module.exports = React.createClass
       trimmedFilename: @trim filename
 
   componentDidMount: ->
-    @filename = React.findDOMNode @refs.filename
+    @filename = ReactDOM.findDOMNode @refs.filename
     @filename.focus()
-    @includeShareInfo = React.findDOMNode @refs.includeShareInfo
+    @includeShareInfo = ReactDOM.findDOMNode @refs.includeShareInfo
 
   updateFilename: ->
     filename = @filename.value

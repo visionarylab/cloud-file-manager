@@ -15,7 +15,7 @@ module.exports = React.createClass
       trimmedFilename: @trim filename
 
   componentDidMount: ->
-    @filename = React.findDOMNode @refs.filename
+    @filename = ReactDOM.findDOMNode @refs.filename
     @filename.focus()
 
   updateFilename: ->

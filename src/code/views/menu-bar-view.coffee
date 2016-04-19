@@ -40,7 +40,7 @@ module.exports = React.createClass
     @rename()
 
   filename: ->
-    React.findDOMNode(@refs.filename)
+    ReactDOM.findDOMNode(@refs.filename)
 
   focusFilename: ->
     el = @filename()
