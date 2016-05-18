@@ -73,8 +73,8 @@ class DocumentStoreProvider extends ProviderInterface
     else
       @user isnt null
 
-  authorize: ->
-    @_showLoginWindow()
+  authorize: (completionCallback) ->
+    @_showLoginWindow(completionCallback)
 
   _onDocStoreLoaded: (@docStoreLoadedCallback) ->
     if @_docStoreLoaded
@@ -87,7 +87,7 @@ class DocumentStoreProvider extends ProviderInterface
       @docStoreLoadedCallback?()
       if user
         @_loginWindow?.close()
-      @authCallback user isnt null
+      @authCallback (user isnt null) if @authCallback
 
     $.ajax
       dataType: 'json'
@@ -99,7 +99,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   _loginWindow: null
 
-  _showLoginWindow: ->
+  _showLoginWindow: (completionCallback) ->
     if @_loginWindow and not @_loginWindow.closed
       @_loginWindow.focus()
     else
@@ -131,17 +131,20 @@ class DocumentStoreProvider extends ProviderInterface
 
       @_loginWindow = window.open(authorizeUrl, 'auth', windowFeatures.join())
 
-      pollAction = =>
-        try
-          href = @_loginWindow.location.href
-          if (href is window.location.href)
-            clearInterval poll
-            @_loginWindow.close()
-            @_checkLogin()
-        catch e
-          # console.log e
+      if @_loginWindow
+        pollAction = =>
+          try
+            if (@_loginWindow.location.host is window.location.host)
+              clearInterval poll
+              @_loginWindow.close()
+              @_checkLogin()
+              completionCallback() if completionCallback
+          catch e
+            # console.log e
 
-      poll = setInterval pollAction, 200
+        poll = setInterval pollAction, 200
+
+    @_loginWindow
 
   renderAuthorizationDialog: ->
     (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
@@ -210,7 +213,12 @@ class DocumentStoreProvider extends ProviderInterface
           content.addMetadata docName: metadata.filename
 
         callback null, content
+      statusCode:
+        403: =>
+          @user = null
+          callback "Unable to load '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
       error: ->
+        return if jqXHR.status is 403 # let statusCode handler deal with it
         message = if metadata.sharedContentId
           "Unable to load document '#{metadata.sharedContentId}'. Perhaps the file was not shared?"
         else
@@ -252,7 +260,12 @@ class DocumentStoreProvider extends ProviderInterface
           sharedDocumentId: data.id
           shareEditKey: runKey
         callback null, data.id
+      statusCode:
+        403: =>
+          @user = null
+          callback "Unable to share '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
       error: ->
+        return if jqXHR.status is 403 # let statusCode handler deal with it
         docName = metadata?.filename or 'document'
         callback "Unable to save #{docName}"
 
@@ -302,8 +315,13 @@ class DocumentStoreProvider extends ProviderInterface
         if data.id then metadata.providerData.id = data.id
 
         callback null, data
-      error: (jqXHR)->
+      statusCode:
+        403: =>
+          @user = null
+          callback "Unable to save '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
+      error: (jqXHR) ->
         try
+          return if jqXHR.status is 403 # let statusCode handler deal with it
           responseJson = JSON.parse jqXHR.responseText
           if responseJson.message is 'error.duplicate'
             callback "Unable to create #{metadata.name}.  File already exists."
@@ -322,8 +340,13 @@ class DocumentStoreProvider extends ProviderInterface
         withCredentials: true
       success: (data) ->
         callback null, data
+      statusCode:
+        403: =>
+          @user = null
+          callback "Unable to remove '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
       error: ->
-        callback "Unable to load #{metadata.name}"
+        return if jqXHR.status is 403 # let statusCode handler deal with it
+        callback "Unable to remove #{metadata.name}"
 
   rename: (metadata, newName, callback) ->
     $.ajax
@@ -337,7 +360,12 @@ class DocumentStoreProvider extends ProviderInterface
       success: (data) ->
         metadata.rename newName
         callback null, metadata
+      statusCode:
+        403: =>
+          @user = null
+          callback "Unable to rename '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
       error: ->
+        return if jqXHR.status is 403 # let statusCode handler deal with it
         callback "Unable to rename #{metadata.name}"
 
   openSaved: (openSavedParams, callback) ->

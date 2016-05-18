@@ -9,7 +9,7 @@ DropdownItem = React.createFactory React.createClass
 
   mouseEnter: ->
     if @props.item.items
-      menuItem = $ React.findDOMNode @refs.item
+      menuItem = $ ReactDOM.findDOMNode @refs.item
       menu = menuItem.parent().parent()
 
       @props.setSubMenu

@@ -20,6 +20,12 @@ class CloudFileManager
   #   appOrMenuElemId is set and usingIframe is false, then the CFM presents its menubar
   #   UI within the specified element, but there is no iframe or wrapped client app.
   init: (@appOptions) ->
+    @appOptions.hashParams = {
+      sharedContentId: getHashParam "shared"
+      fileParams: getHashParam "file"
+      copyParams: getHashParam "copy"
+    }
+
     @client.setAppOptions @appOptions
 
   # Convenience function for settinp up CFM with an iframe-wrapped client app
@@ -38,16 +44,14 @@ class CloudFileManager
     @client.listen eventCallback
     @client.connect()
 
-    sharedContentId = getHashParam "shared"
-    fileParams = getHashParam "file"
-    copyParams = getHashParam "copy"
-    if sharedContentId
-      @client.openSharedContent sharedContentId
-    else if fileParams
-      [providerName, providerParams] = fileParams.split ':'
+    hashParams = @appOptions.hashParams
+    if hashParams.sharedContentId
+      @client.openSharedContent hashParams.sharedContentId
+    else if hashParams.fileParams
+      [providerName, providerParams] = hashParams.fileParams.split ':'
       @client.openProviderFile providerName, providerParams
-    else if copyParams
-      @client.openCopiedFile copyParams
+    else if hashParams.copyParams
+      @client.openCopiedFile hashParams.copyParams
 
   _createHiddenApp: ->
     anchor = document.createElement("div")
@@ -56,6 +60,6 @@ class CloudFileManager
 
   _renderApp: (anchor) ->
     @appOptions.client = @client
-    React.render (AppView @appOptions), anchor
+    ReactDOM.render (AppView @appOptions), anchor
 
 module.exports = new CloudFileManager()

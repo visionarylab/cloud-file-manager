@@ -13,7 +13,7 @@ module.exports = React.createClass
     @props.close()
 
   import: ->
-    url = $.trim React.findDOMNode(@refs.url).value
+    url = $.trim ReactDOM.findDOMNode(@refs.url).value
     if url.length is 0
       @props.client.alert tr "~IMPORT_URL.PLEASE_ENTER_URL"
     else

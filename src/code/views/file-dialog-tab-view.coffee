@@ -24,8 +24,7 @@ FileListFile = React.createFactory React.createClass
     selectableClass = if @props.metadata.type isnt CloudMetadata.Label then 'selectable' else ''
     selectedClass = if @props.selected then 'selected' else ''
     subFolderClass = if @props.isSubFolder then 'subfolder' else ''
-    (div {key: @props.key
-          , className: "#{selectableClass} #{selectedClass} #{subFolderClass}"
+    (div {className: "#{selectableClass} #{selectedClass} #{subFolderClass}"
           , title: @props.metadata.description or undefined
           , onClick: if @props.metadata.type isnt CloudMetadata.Label then @fileSelected else undefined },
       (React.DOM.i {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else if @props.metadata.type is CloudMetadata.File then 'icon-noteTool'})

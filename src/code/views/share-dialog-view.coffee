@@ -131,13 +131,13 @@ module.exports = React.createClass
     @setState tabSelected: 'lara'
 
   changedCodapServerUrl: ->
-    codapServerUrl = React.findDOMNode(@refs.codapServerUrl).value
+    codapServerUrl = ReactDOM.findDOMNode(@refs.codapServerUrl).value
     @setState
       codapServerUrl: codapServerUrl
       lara: @getLara codapServerUrl: codapServerUrl
 
   changedLaunchButtonText: ->
-    launchButtonText = React.findDOMNode(@refs.launchButtonText).value
+    launchButtonText = ReactDOM.findDOMNode(@refs.launchButtonText).value
     @setState
       launchButtonText: launchButtonText
       lara: @getLara launchButtonText: launchButtonText
