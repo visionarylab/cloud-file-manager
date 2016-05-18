@@ -198,9 +198,6 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         {withCredentials}
       success: (data) ->
-        # record previously saved content for patching purposes
-        @previouslySavedContent = if @options.patch then _.cloneDeep(data) else null
-
         content = cloudContentFactory.createEnvelopedCloudContent data
 
         # for documents loaded by id or other means (besides name),
