@@ -406,6 +406,7 @@ class CloudFileManagerClient
       else
         if metadata
           metadata.name = newName
+          metadata.filename = newName
         else
           metadata = new CloudMetadata
             name: newName
