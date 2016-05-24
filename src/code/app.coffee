@@ -4,6 +4,7 @@ CloudFileManagerUIMenu = (require './ui').CloudFileManagerUIMenu
 CloudFileManagerClient = (require './client').CloudFileManagerClient
 
 getHashParam = require './utils/get-hash-param'
+getQueryParam = require './utils/get-query-param'
 
 class CloudFileManager
 
@@ -24,6 +25,7 @@ class CloudFileManager
       sharedContentId: getHashParam "shared"
       fileParams: getHashParam "file"
       copyParams: getHashParam "copy"
+      runKey: getQueryParam "runKey"
     }
 
     @client.setAppOptions @appOptions

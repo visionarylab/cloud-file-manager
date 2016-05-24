@@ -198,9 +198,6 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         {withCredentials}
       success: (data) ->
-        # record previously saved content for patching purposes
-        @previouslySavedContent = if @options.patch then _.cloneDeep(data) else null
-
         content = cloudContentFactory.createEnvelopedCloudContent data
 
         # for documents loaded by id or other means (besides name),
@@ -276,6 +273,7 @@ class DocumentStoreProvider extends ProviderInterface
     if metadata.providerData.id then params.recordid = metadata.providerData.id
 
     # See if we can patch
+    willPatch = false
     mimeType = 'application/json' # Document Store requires JSON currently
     contentJson = JSON.stringify content
     canOverwrite = metadata.overwritable and @previouslySavedContent?
@@ -291,10 +289,26 @@ class DocumentStoreProvider extends ProviderInterface
       sendContent = diffJson
       url = patchDocumentUrl
       mimeType = 'application/json-patch+json'
+      willPatch = true
     else
       if metadata.filename then params.recordname = metadata.filename
       url = saveDocumentUrl
       sendContent = contentJson
+
+    if not willPatch
+      # If we are saving for the first time as a student in a LARA activity, then we do not have
+      # authorization on the current document. However, we should have a runKey query parameter.
+      # When we save with this runKey, the document will save our changes to a copy of the document,
+      # owned by us.
+      #
+      # When we successfully save, we will get the id of the new document in the response, and use
+      # this id for future saving. We can then save via patches, and don't need the runKey.
+      #
+      # `willPatch` will always be false for an individual user's first save of a session. There
+      # does not seem to be a way to see if we've launched a document that we own, so we just
+      # assume we don't own it.
+      if @client.appOptions.hashParams.runKey
+        params.runKey = @client.appOptions.hashParams.runKey
 
     url = @_addParams(url, params)
 
