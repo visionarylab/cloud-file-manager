@@ -164,10 +164,11 @@ App = React.createClass
     )
 
   render: ->
+    menuItems = unless @props.hideMenuBar then @state.menuItems else []
     if @props.appOrMenuElemId
       # CSS class depends on whether we're in app (iframe) or view (menubar-only) mode
       (div {className: if @props.usingIframe then 'app' else 'view' },
-        (MenuBar {client: @props.client, filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: @state.menuItems, options: @state.menuOptions})
+        (MenuBar {client: @props.client, filename: @state.filename, provider: @state.provider, fileStatus: @state.fileStatus, items: menuItems, options: @state.menuOptions})
         # only render the wrapped client app in app (iframe) mode
         if @props.usingIframe
           (InnerApp {app: @props.app})
