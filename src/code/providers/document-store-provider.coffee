@@ -194,6 +194,7 @@ class DocumentStoreProvider extends ProviderInterface
       dataType: 'json'
       data:
         recordid: metadata.providerData?.id or metadata.sharedContentId
+        runKey: if @client.appOptions.hashParams.runKey then @client.appOptions.hashParams.runKey else undefined
       context: @
       xhrFields:
         {withCredentials}
