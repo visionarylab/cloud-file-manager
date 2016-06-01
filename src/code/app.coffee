@@ -26,6 +26,7 @@ class CloudFileManager
       fileParams: getHashParam "file"
       copyParams: getHashParam "copy"
       runKey: getQueryParam "runKey"
+      runAsGuest: (getQueryParam "runAsGuest") is "true"
     }
 
     @client.setAppOptions @appOptions

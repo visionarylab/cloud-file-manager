@@ -64,6 +64,10 @@ class DocumentStoreProvider extends ProviderInterface
 
   previouslySavedContent: null
 
+  # if 'runAsGuest' is specified, we don't need to authenticate at all
+  isAuthorizationRequired: ->
+    not (@client.appOptions.hashParams.runKey and @client.appOptions.hashParams.runAsGuest)
+
   authorized: (@authCallback) ->
     if @authCallback
       if @user
@@ -215,7 +219,7 @@ class DocumentStoreProvider extends ProviderInterface
         403: =>
           @user = null
           callback "Unable to load '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
-      error: ->
+      error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         message = if metadata.sharedContentId
           "Unable to load document '#{metadata.sharedContentId}'. Perhaps the file was not shared?"
@@ -262,7 +266,7 @@ class DocumentStoreProvider extends ProviderInterface
         403: =>
           @user = null
           callback "Unable to share '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
-      error: ->
+      error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         docName = metadata?.filename or 'document'
         callback "Unable to save #{docName}"
@@ -359,7 +363,7 @@ class DocumentStoreProvider extends ProviderInterface
         403: =>
           @user = null
           callback "Unable to remove '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
-      error: ->
+      error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         callback "Unable to remove #{metadata.name}"
 
@@ -379,7 +383,7 @@ class DocumentStoreProvider extends ProviderInterface
         403: =>
           @user = null
           callback "Unable to rename '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
-      error: ->
+      error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         callback "Unable to rename #{metadata.name}"
 
