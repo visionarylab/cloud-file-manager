@@ -240,9 +240,11 @@ class CloudFileManagerClient
       @saveContent stringContent, callback
 
   saveContent: (stringContent, callback = null) ->
-    if @state.metadata?.provider?
-      @state.metadata.provider.authorized (isAuthorized) =>
-        if isAuthorized
+    provider = @state.metadata?.provider
+    if provider?
+      provider.authorized (isAuthorized) =>
+        # we can save the document without authorization in some cases
+        if isAuthorized or not provider.isAuthorizationRequired()
           @saveFile stringContent, @state.metadata, callback
         else
           @confirmAuthorizeAndSave stringContent, callback
@@ -439,7 +441,6 @@ class CloudFileManagerClient
 
     shouldAutoSave = =>
       @state.dirty and
-        not @appOptions.hashParams?.runAsGuest and
         not @state.metadata?.autoSaveDisabled and
         not @isSaveInProgress() and
         @state.metadata?.provider?.can 'save'

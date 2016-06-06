@@ -276,6 +276,9 @@ class DocumentStoreProvider extends ProviderInterface
 
     params = {}
     if metadata.providerData.id then params.recordid = metadata.providerData.id
+    # pass the runKey if one is provided
+    if @client.appOptions.hashParams.runKey
+      params.runKey = @client.appOptions.hashParams.runKey
 
     # See if we can patch
     willPatch = false
