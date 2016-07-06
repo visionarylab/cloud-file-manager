@@ -220,7 +220,8 @@ class CloudFileManagerClient
     provider = @providers[providerName]
     if provider
       provider.authorized (authorized) =>
-        if authorized
+        # we can open the document without authorization in some cases
+        if authorized or not provider.isAuthorizationRequired()
           provider.openSaved providerParams, (err, content, metadata) =>
             return @alert(err) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
@@ -239,9 +240,11 @@ class CloudFileManagerClient
       @saveContent stringContent, callback
 
   saveContent: (stringContent, callback = null) ->
-    if @state.metadata?.provider?
-      @state.metadata.provider.authorized (isAuthorized) =>
-        if isAuthorized
+    provider = @state.metadata?.provider
+    if provider?
+      provider.authorized (isAuthorized) =>
+        # we can save the document without authorization in some cases
+        if isAuthorized or not provider.isAuthorizationRequired()
           @saveFile stringContent, @state.metadata, callback
         else
           @confirmAuthorizeAndSave stringContent, callback
@@ -437,7 +440,10 @@ class CloudFileManagerClient
       clearInterval @_autoSaveInterval
 
     shouldAutoSave = =>
-      @state.dirty and not @state.metadata?.autoSaveDisabled and not @isSaveInProgress() and @state.metadata?.provider?.can 'save'
+      @state.dirty and
+        not @state.metadata?.autoSaveDisabled and
+        not @isSaveInProgress() and
+        @state.metadata?.provider?.can 'save'
 
     # in case the caller uses milliseconds
     if interval > 1000
