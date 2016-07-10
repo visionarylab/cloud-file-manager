@@ -35,8 +35,10 @@ module.exports = React.createClass
 
   download: (e) ->
     makeBlobURL = (msg) ->
+      wURL = window.URL or window.webkitURL
       blob = new Blob([msg], {type: 'text/plain'})
-      window.URL.createObjectURL(blob)
+      if (wURL)
+        wURL.createObjectURL(blob)
 
     if @state.trimmedFilename.length > 0
       json = @props.content.getContent()
