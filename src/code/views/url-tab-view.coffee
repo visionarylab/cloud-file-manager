@@ -33,7 +33,7 @@ module.exports = React.createClass
   drop: (e) ->
     e.preventDefault()
     if e.dataTransfer
-      droppedUrls = (e.dataTransfer.getData('url') or dataTransfer.getData('text/uri-list') or '').split '\n'
+      droppedUrls = (e.dataTransfer.getData('url') or e.dataTransfer.getData('text/uri-list') or '').split '\n'
       if droppedUrls.length > 1
         @props.client.alert tr "~IMPORT_URL.MULTIPLE_URLS_DROPPED"
       else if droppedUrls.length is 1

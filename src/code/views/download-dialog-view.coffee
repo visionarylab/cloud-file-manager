@@ -34,6 +34,12 @@ module.exports = React.createClass
     s.replace /^\s+|\s+$/, ''
 
   download: (e) ->
+    makeBlobURL = (msg) ->
+      wURL = window.URL or window.webkitURL
+      blob = new Blob([msg], {type: 'text/plain'})
+      if (wURL)
+        wURL.createObjectURL(blob)
+
     if @state.trimmedFilename.length > 0
       json = @props.content.getContent()
       if json and not @state.includeShareInfo
@@ -42,7 +48,7 @@ module.exports = React.createClass
         delete json.isUnshared
         # CODAP moves the keys into its own namespace
         delete json.metadata.shared if json.metadata?.shared?
-      e.target.setAttribute 'href', "data:application/json,#{encodeURIComponent(JSON.stringify json)}"
+      e.target.setAttribute 'href', makeBlobURL(JSON.stringify(json))
       @props.close()
     else
       e.preventDefault()

@@ -433,7 +433,7 @@ class CloudFileManagerClient
   dirty: (isDirty = true)->
     @_setState
       dirty: isDirty
-      saved: false if isDirty
+      saved: @state.saved and not isDirty
 
   autoSave: (interval) ->
     if @_autoSaveInterval
