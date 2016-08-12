@@ -55,6 +55,8 @@ class CloudFileManager
       @client.openProviderFile providerName, providerParams
     else if hashParams.copyParams
       @client.openCopiedFile hashParams.copyParams
+    else
+      @client.ready()
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

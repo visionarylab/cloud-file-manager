@@ -102,6 +102,9 @@ class CloudFileManagerClient
   connect: ->
     @_event 'connected', {client: @}
 
+  ready: ->
+    @_event 'ready'
+
   listen: (listener) ->
     if listener
       @_listeners.push listener
