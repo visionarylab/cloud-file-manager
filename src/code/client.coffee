@@ -495,6 +495,7 @@ class CloudFileManagerClient
         if not @appOptions.wrapFileContent
           content.addMetadata iSharedMetadata
         @_updateState content, metadata, additionalState, hashParams
+        @ready()
 
   _updateState: (content, metadata, additionalState={}, hashParams=null) ->
     state =
