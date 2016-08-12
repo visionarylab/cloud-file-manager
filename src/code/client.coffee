@@ -102,6 +102,9 @@ class CloudFileManagerClient
   connect: ->
     @_event 'connected', {client: @}
 
+  ready: ->
+    @_event 'ready'
+
   listen: (listener) ->
     if listener
       @_listeners.push listener
@@ -492,6 +495,7 @@ class CloudFileManagerClient
         if not @appOptions.wrapFileContent
           content.addMetadata iSharedMetadata
         @_updateState content, metadata, additionalState, hashParams
+        @ready()
 
   _updateState: (content, metadata, additionalState={}, hashParams=null) ->
     state =
