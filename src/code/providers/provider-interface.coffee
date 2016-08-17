@@ -144,7 +144,7 @@ class CloudContent
 class ProviderInterface
 
   constructor: (options) ->
-    {@name, @displayName, @capabilities} = options
+    {@name, @displayName, @urlDisplayName, @capabilities} = options
 
   @Available: -> true
 

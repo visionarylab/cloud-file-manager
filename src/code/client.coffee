@@ -60,6 +60,8 @@ class CloudFileManagerClient
           Provider = allProviders[providerName]
           provider = new Provider providerOptions, @
           @providers[providerName] = provider
+          if provider.urlDisplayName        # also add to here in providers list so we can look it up when parsing url hash
+            @providers[provider.urlDisplayName] = provider
           availableProviders.push provider
         else
           @alert "Unknown provider: #{providerName}"
@@ -549,7 +551,7 @@ class CloudFileManagerClient
       document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
   _getHashParams: (metadata) ->
-    if metadata?.provider?.canOpenSaved() then "#file=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}" else ""
+    if metadata?.provider?.canOpenSaved() then "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}" else ""
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

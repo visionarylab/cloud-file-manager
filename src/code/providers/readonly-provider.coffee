@@ -12,6 +12,7 @@ class ReadOnlyProvider extends ProviderInterface
     super
       name: ReadOnlyProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.READ_ONLY')
+      urlDisplayName: @options.urlDisplayName
       capabilities:
         save: false
         load: true

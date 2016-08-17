@@ -49,6 +49,7 @@ class DocumentStoreProvider extends ProviderInterface
     super
       name: DocumentStoreProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
+      urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
         load: true

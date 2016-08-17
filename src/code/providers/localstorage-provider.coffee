@@ -10,6 +10,7 @@ class LocalStorageProvider extends ProviderInterface
     super
       name: LocalStorageProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.LOCAL_STORAGE')
+      urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
         load: true
