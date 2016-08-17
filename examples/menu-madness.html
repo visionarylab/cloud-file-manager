@@ -42,22 +42,22 @@
         }
       };
 
-      function createMenuItem(text, disabled) {
-        disabled = disabled || false
+      function createMenuItem(client, text, disabled) {
+        disabled = disabled || false;
         return {
           name: text,
-          action: function () { alert("text")},
+          action: function () { client.alert(text, "Menu Item Selected"); },
           enabled: !disabled
-        }
+        };
       }
       CloudFileManager.createFrame(options, "wrapper", function (event) {
         if (event.type == 'connected') {
           event.data.client
-            .appendMenuItem(createMenuItem("#1 added via appendMenuItem()"))
-            .prependMenuItem(createMenuItem("#2 added via prependMenuItem()"))
-            .replaceMenuItem('openFileDialog', createMenuItem("#3 added via replaceMenuItem('openFileDialog')"))
-            .insertMenuItemBefore(6, createMenuItem("#4 added via insertMenuItemBefore(6)"))
-            .insertMenuItemAfter('downloadDialog', createMenuItem("#5 added via insertMenuItemAfter('downloadDialog')"))
+            .appendMenuItem(createMenuItem(event.data.client, "#1 added via appendMenuItem()"))
+            .prependMenuItem(createMenuItem(event.data.client, "#2 added via prependMenuItem()"))
+            .replaceMenuItem('openFileDialog', createMenuItem(event.data.client, "#3 added via replaceMenuItem('openFileDialog')"))
+            .insertMenuItemBefore(6, createMenuItem(event.data.client, "#4 added via insertMenuItemBefore(6)"))
+            .insertMenuItemAfter('downloadDialog', createMenuItem(event.data.client, "#5 added via insertMenuItemAfter('downloadDialog')"));
         }
       });
     </script>

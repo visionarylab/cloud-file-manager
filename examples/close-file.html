@@ -3,7 +3,7 @@
     <script src="../js/globals.js"></script>
     <script src="../js/app.js"></script>
     <link rel="stylesheet" href="../css/app.css">
-    <title>Examples: All Providers</title>
+    <title>Examples: Close File</title>
   </head>
   <body>
     <div id="wrapper">
@@ -17,10 +17,8 @@
         appBuildNum: "1",
         providers: [
           "localStorage",
-          "localFile",
           {
             "name": "readOnly",
-            "urlDisplayName": "examples",
             "json": {
               "first-example": "This is the first readonly example",
               "second-example": "This is the second readonly example"
@@ -38,15 +36,24 @@
         ui: {
           menu: CloudFileManager.DefaultMenu,
           menuBar: {
-            info: "Version 1.0.0",
+            info: "This version modifies the menu to add the close file option",
             help: "http://lmgtfy.com/"
           }
         }
       };
+
+      function createMenuItem(text, disabled) {
+        disabled = disabled || false;
+        return {
+          name: text,
+          action: function () { alert("text"); },
+          enabled: !disabled
+        };
+      }
       CloudFileManager.createFrame(options, "wrapper", function (event) {
         if (event.type == 'connected') {
           var client = event.data.client;
-          client.insertMenuItemAfter('openFileDialog', {"name": "Import data...", action: client.importDataDialog.bind(client)});
+          client.insertMenuItemAfter('openFileDialog', {name: "Close", action: function () { client.closeFileDialog(); }});
         }
       });
     </script>

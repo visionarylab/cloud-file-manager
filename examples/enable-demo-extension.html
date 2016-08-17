@@ -3,7 +3,7 @@
     <script src="../js/globals.js"></script>
     <script src="../js/app.js"></script>
     <link rel="stylesheet" href="../css/app.css">
-    <title>Examples: All Providers</title>
+    <title>Examples: Enable Demo Extension</title>
   </head>
   <body>
     <div id="wrapper">
@@ -12,6 +12,7 @@
       var options = {
         app: "example-app",
         mimeType: "text/plain",
+        extension: ".demo",
         appName: "CFM_Demo",
         appVersion: "0.1",
         appBuildNum: "1",
@@ -20,7 +21,6 @@
           "localFile",
           {
             "name": "readOnly",
-            "urlDisplayName": "examples",
             "json": {
               "first-example": "This is the first readonly example",
               "second-example": "This is the second readonly example"
@@ -43,12 +43,7 @@
           }
         }
       };
-      CloudFileManager.createFrame(options, "wrapper", function (event) {
-        if (event.type == 'connected') {
-          var client = event.data.client;
-          client.insertMenuItemAfter('openFileDialog', {"name": "Import data...", action: client.importDataDialog.bind(client)});
-        }
-      });
+      CloudFileManager.createFrame(options, "wrapper");
     </script>
   </body>
 </html>

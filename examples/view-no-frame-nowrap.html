@@ -16,7 +16,8 @@
       }
     </style>
     <script type="text/javascript">
-      var cfmClient, cfmContent;
+      /* global CloudFileManager */
+      var cfmClient, cfmContent = {};
 
       // Disable "Expected an assignment or function call and instead saw an expression" warning
       /*jshint -W030 */
@@ -37,19 +38,48 @@
         cfmClient && cfmClient.saveFileAsDialog(getContent());
       }
 
-      function getContent() {
-        cfmContent = document.getElementById("text").value;
+      function getContent(iSharedMetadata) {
+        cfmContent.text = document.getElementById("text").value;
+        cfmContent.metadata = $.extend(true, {}, iSharedMetadata);
         return cfmContent;
       }
 
       function setContent(_cfmContent) {
-        cfmContent = _cfmContent;
-        document.getElementById("text").value = cfmContent;
+        cfmContent.metadata = {};
+        if(typeof _cfmContent === "string") {
+          // convert simple strings
+          cfmContent.text = _cfmContent;
+        }
+        else if(typeof _cfmContent === "object") {
+          if(_cfmContent.text === undefined) {
+            // convert files not written by this example
+            cfmContent.text = JSON.stringify(_cfmContent);
+          }
+          else {
+            // extract the text and metadata if it's one of our files
+            cfmContent.text = _cfmContent.text;
+            if(_cfmContent.metadata) {
+              cfmContent.metadata = $.extend(true, {}, _cfmContent.metadata);
+            }
+          }
+        }
+        else {
+          // convert files not written by this example
+          cfmContent.text = JSON.stringify(_cfmContent);
+        }
+        document.getElementById("text").value = cfmContent.text;
+        return cfmContent.metadata;
+      }
+
+      function setMetadata(iSharedMetadata) {
+        var dirty = !_.isEqual(cfmContent.metadata || {}, iSharedMetadata || {});
+        cfmContent.metadata = $.extend(true, {}, iSharedMetadata);
+        if(dirty) cfmClient.dirty();
       }
 
       function connected(client) {
         cfmClient = client;
-        cfmContent = document.getElementById("text").value;
+        cfmContent.text = document.getElementById("text").value;
       }
 
       function changed() {
@@ -64,23 +94,22 @@
   <body>
     <h2>Demo App</h2>
     <p>
-      This simple demo app uses the textarea below to edit text files.  You can either use the menu bar or the buttons below to open, save and create new files.
+      This simple demo app uses the textarea below to edit text files. You can use
+      the menu bar below to open, save and create new files.
     </p>
     <div>
       <textarea cols="50" rows="10" id="text"></textarea>
     </div>
-    <div id="buttons">
-      <button onclick="newFile()">New</button>
-      <button onclick="openFile()">Open</button>
-      <button onclick="saveFile()">Save</button>
-      <button onclick="saveFileAs()">Save As</button>
-    </div>
+    <!-- CFM menu bar will attach here -->
+    <div id="menuBar"></div>
     <script type="text/javascript">
       var clientOptions = {
         mimeType: "text/plain",
         appName: "CFM_Demo",
         appVersion: "0.1",
         appBuildNum: "1",
+        appOrMenuElemId: "menuBar",
+        wrapFileContent: false,
         providers: [
           "localStorage",
           {
@@ -103,21 +132,29 @@
       };
       CloudFileManager.init(clientOptions);
       CloudFileManager.clientConnect(function (event) {
-        console.log(event);
+        var result;
         switch (event.type) {
           case 'connected':
             connected(event.data.client);
             break;
 
             case 'getContent':
-              event.callback(getContent());
+              event.callback(getContent(event.data.shared));
               break;
 
             case 'newedFile':
             case 'openedFile':
-              setContent(event.data.content);
-              if(event.callback) event.callback();
+              result = setContent(event.data.content);
+              if(event.callback) event.callback(null, result);
               focus();
+              break;
+
+            case 'sharedFile':
+              setMetadata(event.data.shared);
+              break;
+
+            case 'unsharedFile':
+              setMetadata({});
               break;
         }
       });

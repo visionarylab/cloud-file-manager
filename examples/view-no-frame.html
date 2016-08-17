@@ -16,6 +16,7 @@
       }
     </style>
     <script type="text/javascript">
+      /* global CloudFileManager */
       var cfmClient, cfmContent;
 
       // Disable "Expected an assignment or function call and instead saw an expression" warning
@@ -64,23 +65,21 @@
   <body>
     <h2>Demo App</h2>
     <p>
-      This simple demo app uses the textarea below to edit text files.  You can either use the menu bar or the buttons below to open, save and create new files.
+      This simple demo app uses the textarea below to edit text files. You can use
+      the menu bar below to open, save and create new files.
     </p>
     <div>
       <textarea cols="50" rows="10" id="text"></textarea>
     </div>
-    <div id="buttons">
-      <button onclick="newFile()">New</button>
-      <button onclick="openFile()">Open</button>
-      <button onclick="saveFile()">Save</button>
-      <button onclick="saveFileAs()">Save As</button>
-    </div>
+    <!-- CFM menu bar will attach here -->
+    <div id="menuBar"></div>
     <script type="text/javascript">
       var clientOptions = {
         mimeType: "text/plain",
         appName: "CFM_Demo",
         appVersion: "0.1",
         appBuildNum: "1",
+        appOrMenuElemId: "menuBar",
         providers: [
           "localStorage",
           {

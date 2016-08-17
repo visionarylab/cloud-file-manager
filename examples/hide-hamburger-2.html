@@ -15,12 +15,12 @@
         appName: "CFM_Demo",
         appVersion: "0.1",
         appBuildNum: "1",
+        hideMenuBar: true,
         providers: [
           "localStorage",
           "localFile",
           {
             "name": "readOnly",
-            "urlDisplayName": "examples",
             "json": {
               "first-example": "This is the first readonly example",
               "second-example": "This is the second readonly example"
@@ -38,8 +38,7 @@
         ui: {
           menu: CloudFileManager.DefaultMenu,
           menuBar: {
-            info: "Version 1.0.0",
-            help: "http://lmgtfy.com/"
+            info: "Ths hides the menu via a single prop"
           }
         }
       };
