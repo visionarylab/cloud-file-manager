@@ -25,24 +25,22 @@ class ReadOnlyProvider extends ProviderInterface
   @Name: 'readOnly'
 
   load: (metadata, callback) ->
-    @_loadTree (err, tree) ->
-      return callback err if err
-      if metadata and not isArray metadata and metadata.type is CloudMetadata.File
-        if metadata.content?
-          callback null, metadata.content
-          return
-        else if metadata.url?
-          $.ajax
-            dataType: 'json'
-            url: metadata.url
-            success: (data) ->
-              callback null, cloudContentFactory.createEnvelopedCloudContent data
-            error: -> callback "Unable to load '#{metadata.name}'"
-          return
-      if metadata?.name?
+    if metadata and not isArray metadata and metadata.type is CloudMetadata.File
+      if metadata.content?
+        callback null, metadata.content
+        return
+      else if metadata.url?
+        $.ajax
+          dataType: 'json'
+          url: metadata.url
+          success: (data) ->
+            callback null, cloudContentFactory.createEnvelopedCloudContent data
+          error: -> callback "Unable to load '#{metadata.name}'"
+        return
+      else if metadata?.name?
         callback "Unable to load '#{metadata.name}'"
-      else
-        callback "Unable to load specified content"
+    else
+      callback "Unable to load specified content"
 
   list: (metadata, callback) ->
     @_loadTree (err, tree) =>
