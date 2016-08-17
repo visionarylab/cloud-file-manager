@@ -38,7 +38,14 @@ class ReadOnlyProvider extends ProviderInterface
           error: -> callback "Unable to load '#{metadata.name}'"
         return
       else if metadata?.name?
-        callback "Unable to load '#{metadata.name}'"
+        @_loadTree (err, tree) =>
+          return callback err if err
+          file = @_findFile tree, metadata.name
+          if file?
+            @load file, callback          # call load again with found file, as it may be remote
+          else
+            callback "Unable to load '#{metadata.name}'"
+          return
     else
       callback "Unable to load specified content"
 
@@ -49,7 +56,17 @@ class ReadOnlyProvider extends ProviderInterface
       # clone the metadata items so that any changes made to the filename or content in the edit is not cached
       callback null, _.map items, (metadataItem) -> new CloudMetadata metadataItem
 
-  canOpenSaved: -> false
+  openSaved: (openSavedParams, callback) ->
+    metadata = new CloudMetadata
+      name: unescape(openSavedParams)
+      type: CloudMetadata.File
+      parent: null
+      provider: @
+    @load metadata, (err, content) ->
+      callback err, content, metadata
+
+  getOpenSavedParams: (metadata) ->
+    metadata.name
 
   _loadTree: (callback) ->
     # wait for all promises to be resolved before proceeding
@@ -161,6 +178,16 @@ class ReadOnlyProvider extends ProviderInterface
         tree.push metadata
 
     tree
+
+  _findFile: (arr, filename) ->
+    for item in arr
+      if item.type is CloudMetadata.File
+        if item?.name is filename
+          return item
+      else if item.providerData?.children?.length
+        foundChild = @_findFile item.providerData.children, filename
+        if foundChild? then return foundChild
+    return null
 
   # Remote folder contents are likely to be loaded as part of
   # sample document hierarchies. The inability to load one subfolder
