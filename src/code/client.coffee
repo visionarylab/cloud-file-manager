@@ -27,6 +27,7 @@ class CloudFileManagerClient
     @_resetState()
     @_ui = new CloudFileManagerUI @
     @providers = {}
+    @urlProvider = new URLProvider()
 
   setAppOptions: (@appOptions = {})->
 
@@ -233,8 +234,7 @@ class CloudFileManagerClient
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   openUrlFile: (url) ->
-    urlProvider = new URLProvider()
-    urlProvider.openFileFromUrl url, (err, content, metadata) =>
+    @urlProvider.openFileFromUrl url, (err, content, metadata) =>
       return @alert(err) if err
       @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
