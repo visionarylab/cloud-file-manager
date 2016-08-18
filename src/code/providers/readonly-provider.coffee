@@ -57,6 +57,8 @@ class ReadOnlyProvider extends ProviderInterface
       # clone the metadata items so that any changes made to the filename or content in the edit is not cached
       callback null, _.map items, (metadataItem) -> new CloudMetadata metadataItem
 
+  canOpenSaved: -> true
+
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata
       name: unescape(openSavedParams)

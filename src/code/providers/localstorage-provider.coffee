@@ -76,6 +76,8 @@ class LocalStorageProvider extends ProviderInterface
     catch
       callback? 'Unable to rename'
 
+  canOpenSaved: -> true
+
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata
       name: openSavedParams

@@ -391,6 +391,8 @@ class DocumentStoreProvider extends ProviderInterface
         return if jqXHR.status is 403 # let statusCode handler deal with it
         callback "Unable to rename #{metadata.name}"
 
+  canOpenSaved: -> true
+
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata
       type: CloudMetadata.File

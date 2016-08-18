@@ -167,6 +167,8 @@ class GoogleDriveProvider extends ProviderInterface
     if metadata.providerData?.realTime?.doc?
       metadata.providerData.realTime.doc.close()
 
+  canOpenSaved: -> true
+
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata
       type: CloudMetadata.File
