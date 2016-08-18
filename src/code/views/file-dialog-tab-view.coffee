@@ -93,7 +93,7 @@ FileDialogTab = React.createClass
 
   getStateForFolder: (folder) ->
     metadata = if @isOpen() then @state?.metadata or null else @props.client.state.metadata
-    metadata.parent = folder
+    metadata?.parent = folder
 
     folder: folder
     metadata: metadata
