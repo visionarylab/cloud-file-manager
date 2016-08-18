@@ -61,6 +61,8 @@ class CloudFileManagerClient
           Provider = allProviders[providerName]
           provider = new Provider providerOptions, @
           @providers[providerName] = provider
+          if provider.urlDisplayName        # also add to here in providers list so we can look it up when parsing url hash
+            @providers[provider.urlDisplayName] = provider
           availableProviders.push provider
         else
           @alert "Unknown provider: #{providerName}"
@@ -557,7 +559,7 @@ class CloudFileManagerClient
 
   _getHashParams: (metadata) ->
     if metadata?.provider?.canOpenSaved()
-      "#file=#{metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}"
+      "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}"
     else if metadata?.provider instanceof URLProvider and
         window.location.hash.indexOf("#file=http") is 0
       window.location.hash    # leave it alone

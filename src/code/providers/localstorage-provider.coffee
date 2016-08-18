@@ -10,6 +10,7 @@ class LocalStorageProvider extends ProviderInterface
     super
       name: LocalStorageProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.LOCAL_STORAGE')
+      urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
         load: true
@@ -74,6 +75,8 @@ class LocalStorageProvider extends ProviderInterface
       callback null, metadata
     catch
       callback? 'Unable to rename'
+
+  canOpenSaved: -> true
 
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata
