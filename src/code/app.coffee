@@ -51,8 +51,11 @@ class CloudFileManager
     if hashParams.sharedContentId
       @client.openSharedContent hashParams.sharedContentId
     else if hashParams.fileParams
-      [providerName, providerParams] = hashParams.fileParams.split ':'
-      @client.openProviderFile providerName, providerParams
+      if hashParams.fileParams.indexOf("http") is 0
+        @client.openUrlFile hashParams.fileParams
+      else
+        [providerName, providerParams] = hashParams.fileParams.split ':'
+        @client.openProviderFile providerName, providerParams
     else if hashParams.copyParams
       @client.openCopiedFile hashParams.copyParams
     else

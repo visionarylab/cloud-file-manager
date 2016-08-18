@@ -8,6 +8,7 @@ ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
 LocalFileProvider = require './providers/local-file-provider'
+URLProvider = require './providers/url-provider'
 
 cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
 CloudContent = (require './providers/provider-interface').CloudContent
@@ -26,6 +27,7 @@ class CloudFileManagerClient
     @_resetState()
     @_ui = new CloudFileManagerUI @
     @providers = {}
+    @urlProvider = new URLProvider()
 
   setAppOptions: (@appOptions = {})->
 
@@ -230,6 +232,11 @@ class CloudFileManagerClient
           provider.openSaved providerParams, (err, content, metadata) =>
             return @alert(err) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+
+  openUrlFile: (url) ->
+    @urlProvider.openFileFromUrl url, (err, content, metadata) =>
+      return @alert(err) if err
+      @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   isSaveInProgress: ->
     @state.saving?
@@ -551,7 +558,12 @@ class CloudFileManagerClient
       document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
   _getHashParams: (metadata) ->
-    if metadata?.provider?.canOpenSaved() then "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}" else ""
+    if metadata?.provider?.canOpenSaved()
+      "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}"
+    else if metadata?.provider instanceof URLProvider and
+        window.location.hash.indexOf("#file=http") is 0
+      window.location.hash    # leave it alone
+    else ""
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
