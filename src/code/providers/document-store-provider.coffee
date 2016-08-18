@@ -49,6 +49,7 @@ class DocumentStoreProvider extends ProviderInterface
     super
       name: DocumentStoreProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
+      urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
         load: true
@@ -389,6 +390,8 @@ class DocumentStoreProvider extends ProviderInterface
       error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         callback "Unable to rename #{metadata.name}"
+
+  canOpenSaved: -> true
 
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata

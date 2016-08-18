@@ -38,6 +38,7 @@ class GoogleDriveProvider extends ProviderInterface
     super
       name: GoogleDriveProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.GOOGLE_DRIVE')
+      urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
         load: true
@@ -165,6 +166,8 @@ class GoogleDriveProvider extends ProviderInterface
   close: (metadata, callback) ->
     if metadata.providerData?.realTime?.doc?
       metadata.providerData.realTime.doc.close()
+
+  canOpenSaved: -> true
 
   openSaved: (openSavedParams, callback) ->
     metadata = new CloudMetadata
