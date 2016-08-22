@@ -48,7 +48,6 @@ class DocumentStoreProvider extends ProviderInterface
         list: true
         remove: true
         rename: true
-        share: true
         close: false
 
     @docStoreUrl = new DocumentStoreUrl @client.appOptions.hashParams.documentServer
@@ -178,14 +177,6 @@ class DocumentStoreProvider extends ProviderInterface
           @user = null
           @authCallback false
 
-  loadSharedContent: (id, callback) ->
-    sharedMetadata = new CloudMetadata
-      sharedContentId: id
-      type: CloudMetadata.File
-      overwritable: false
-    @load sharedMetadata, (err, content) ->
-      callback err, content, sharedMetadata
-
   load: (metadata, callback) ->
     withCredentials = unless metadata.sharedContentId then true else false
     $.ajax
@@ -221,49 +212,6 @@ class DocumentStoreProvider extends ProviderInterface
         else
           "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
         callback message
-
-  getSharingMetadata: (shared) ->
-    { _permissions: if shared then 1 else 0 }
-
-  share: (masterContent, sharedContent, metadata, callback) ->
-    # generate runKey if it doesn't already exist as 'shareEditKey'
-    runKey = masterContent.get("shareEditKey") or Math.random().toString(16).substring(2)
-
-    params =
-      runKey: runKey
-
-    # pass sharedDocumentId as 'recordid' query param
-    if masterContent.get("sharedDocumentId")
-      params.recordid = masterContent.get("sharedDocumentId")
-
-    mimeType = 'application/json' # Document Store requires JSON currently
-
-    $.ajax
-      dataType: 'json'
-      type: 'POST'
-      url: @docStoreUrl.saveDocument(params)
-      contentType: mimeType
-      data: pako.deflate sharedContent.getContentAsJSON()
-      processData: false
-      beforeSend: (xhr) ->
-        xhr.setRequestHeader('Content-Encoding', 'deflate')
-      context: @
-      xhrFields:
-        withCredentials: false
-      success: (data) ->
-        # on successful share/save, capture the sharedDocumentId and shareEditKey
-        masterContent.addMetadata
-          sharedDocumentId: data.id
-          shareEditKey: runKey
-        callback null, data.id
-      statusCode:
-        403: =>
-          @user = null
-          callback "Unable to share '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
-      error: (jqXHR) ->
-        return if jqXHR.status is 403 # let statusCode handler deal with it
-        docName = metadata?.filename or 'document'
-        callback "Unable to save #{docName}"
 
   save: (cloudContent, metadata, callback) ->
     content = cloudContent.getContent()
