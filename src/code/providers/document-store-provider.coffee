@@ -1,15 +1,5 @@
 {div, button, span} = React.DOM
 
-documentStore = "//document-store.concord.org"
-authorizeUrl      = "#{documentStore}/user/authenticate"
-checkLoginUrl     = "#{documentStore}/user/info"
-listUrl           = "#{documentStore}/document/all"
-loadDocumentUrl   = "#{documentStore}/document/open"
-saveDocumentUrl   = "#{documentStore}/document/save"
-patchDocumentUrl  = "#{documentStore}/document/patch"
-removeDocumentUrl = "#{documentStore}/document/delete"
-renameDocumentUrl = "#{documentStore}/document/rename"
-
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 jiff = require 'jiff'
@@ -18,6 +8,8 @@ pako = require 'pako'
 ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
+
+DocumentStoreUrl = require './document-store-url'
 
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
   displayName: 'DocumentStoreAuthorizationDialog'
@@ -59,6 +51,8 @@ class DocumentStoreProvider extends ProviderInterface
         share: true
         close: false
 
+    @docStoreUrl = new DocumentStoreUrl @client.appOptions.hashParams.documentServer
+
     @user = null
 
   @Name: 'documentStore'
@@ -96,7 +90,7 @@ class DocumentStoreProvider extends ProviderInterface
 
     $.ajax
       dataType: 'json'
-      url: checkLoginUrl
+      url: @docStoreUrl.checkLogin()
       xhrFields:
         withCredentials: true
       success: (data) -> loggedIn data
@@ -134,7 +128,7 @@ class DocumentStoreProvider extends ProviderInterface
         'menubar=no'
       ]
 
-      @_loginWindow = window.open(authorizeUrl, 'auth', windowFeatures.join())
+      @_loginWindow = window.open(@docStoreUrl.authorize(), 'auth', windowFeatures.join())
 
       if @_loginWindow
         pollAction = =>
@@ -163,7 +157,7 @@ class DocumentStoreProvider extends ProviderInterface
   list: (metadata, callback) ->
     $.ajax
       dataType: 'json'
-      url: listUrl
+      url: @docStoreUrl.listDocuments()
       context: @
       xhrFields:
         withCredentials: true
@@ -195,7 +189,7 @@ class DocumentStoreProvider extends ProviderInterface
   load: (metadata, callback) ->
     withCredentials = unless metadata.sharedContentId then true else false
     $.ajax
-      url: loadDocumentUrl
+      url: @docStoreUrl.loadDocument()
       dataType: 'json'
       data:
         recordid: metadata.providerData?.id or metadata.sharedContentId
@@ -243,12 +237,11 @@ class DocumentStoreProvider extends ProviderInterface
       params.recordid = masterContent.get("sharedDocumentId")
 
     mimeType = 'application/json' # Document Store requires JSON currently
-    url = @_addParams(saveDocumentUrl, params)
 
     $.ajax
       dataType: 'json'
       type: 'POST'
-      url: url
+      url: @docStoreUrl.saveDocument(params)
       contentType: mimeType
       data: pako.deflate sharedContent.getContentAsJSON()
       processData: false
@@ -296,12 +289,10 @@ class DocumentStoreProvider extends ProviderInterface
         callback null # no error indicates success
         return
       sendContent = diffJson
-      url = patchDocumentUrl
       mimeType = 'application/json-patch+json'
       willPatch = true
     else
       if metadata.filename then params.recordname = metadata.filename
-      url = saveDocumentUrl
       sendContent = contentJson
 
     if not willPatch
@@ -319,12 +310,10 @@ class DocumentStoreProvider extends ProviderInterface
       if @client.appOptions.hashParams.runKey
         params.runKey = @client.appOptions.hashParams.runKey
 
-    url = @_addParams(url, params)
-
     $.ajax
       dataType: 'json'
       type: 'POST'
-      url: url
+      url: if willPatch then @docStoreUrl.patchDocument(params) else @docStoreUrl.saveDocument(params)
       data: pako.deflate sendContent
       contentType: mimeType
       processData: false
@@ -355,7 +344,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   remove: (metadata, callback) ->
     $.ajax
-      url: removeDocumentUrl
+      url: @docStoreUrl.deleteDocument()
       data:
         recordname: metadata.filename
       context: @
@@ -373,7 +362,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   rename: (metadata, newName, callback) ->
     $.ajax
-      url: renameDocumentUrl
+      url: @docStoreUrl.renameDocument()
       data:
         recordid: metadata.providerData.id
         newRecordname: metadata.withExtension newName
@@ -404,13 +393,6 @@ class DocumentStoreProvider extends ProviderInterface
 
   getOpenSavedParams: (metadata) ->
     metadata.providerData.id
-
-  _addParams: (url, params) ->
-    return url unless params
-    kvp = []
-    for key, value of params
-      kvp.push [key, value].map(encodeURI).join "="
-    return url + "?" + kvp.join "&"
 
   _createDiff: (obj1, obj2) ->
     try
