@@ -1,5 +1,6 @@
 {div, button, span} = React.DOM
 
+getQueryParam = require '../utils/get-query-param'
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 jiff = require 'jiff'
@@ -50,7 +51,14 @@ class DocumentStoreProvider extends ProviderInterface
         rename: true
         close: false
 
-    @docStoreUrl = new DocumentStoreUrl @client.appOptions.hashParams.documentServer
+    @urlParams = {
+      documentServer: getQueryParam "documentServer"
+      recordid: getQueryParam "recordid"
+      runKey: getQueryParam "runKey"
+      runAsGuest: !!(getQueryParam "runAsGuest")
+      launchFromLara: !!(getQueryParam "launchFromLara")
+    }
+    @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
 
     @user = null
 
@@ -60,7 +68,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   # if 'runAsGuest' is specified, we don't need to authenticate at all
   isAuthorizationRequired: ->
-    not (@client.appOptions.hashParams.runKey and @client.appOptions.hashParams.runAsGuest)
+    not @urlParams.runKey
 
   authorized: (@authCallback) ->
     if @authCallback
@@ -153,6 +161,11 @@ class DocumentStoreProvider extends ProviderInterface
     else
       null
 
+  canHandleUrlParams: ->
+    if @urlParams.recordid \
+      then { providerName: @name, providerParams: @urlParams.recordid } \
+      else null
+
   list: (metadata, callback) ->
     $.ajax
       dataType: 'json'
@@ -184,7 +197,7 @@ class DocumentStoreProvider extends ProviderInterface
       dataType: 'json'
       data:
         recordid: metadata.providerData?.id or metadata.sharedContentId
-        runKey: if @client.appOptions.hashParams.runKey then @client.appOptions.hashParams.runKey else undefined
+        runKey: if @urlParams.runKey then @urlParams.runKey else undefined
       context: @
       xhrFields:
         {withCredentials}
@@ -219,8 +232,8 @@ class DocumentStoreProvider extends ProviderInterface
     params = {}
     if metadata.providerData.id then params.recordid = metadata.providerData.id
     # pass the runKey if one is provided
-    if @client.appOptions.hashParams.runKey
-      params.runKey = @client.appOptions.hashParams.runKey
+    if @urlParams.runKey
+      params.runKey = @urlParams.runKey
 
     # See if we can patch
     willPatch = false
@@ -255,8 +268,8 @@ class DocumentStoreProvider extends ProviderInterface
       # `willPatch` will always be false for an individual user's first save of a session. There
       # does not seem to be a way to see if we've launched a document that we own, so we just
       # assume we don't own it.
-      if @client.appOptions.hashParams.runKey
-        params.runKey = @client.appOptions.hashParams.runKey
+      if @urlParams.runKey
+        params.runKey = @urlParams.runKey
 
     $.ajax
       dataType: 'json'

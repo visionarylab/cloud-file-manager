@@ -10,7 +10,7 @@ DocumentStoreUrl = require './document-store-url'
 class DocumentStoreShareProvider
 
   constructor: (@client, @provider) ->
-    @docStoreUrl = new DocumentStoreUrl @client.appOptions.hashParams.documentServer
+    @docStoreUrl = @provider.docStoreUrl
 
   loadSharedContent: (id, callback) ->
     sharedMetadata = new CloudMetadata

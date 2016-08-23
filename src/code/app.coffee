@@ -4,7 +4,6 @@ CloudFileManagerUIMenu = (require './ui').CloudFileManagerUIMenu
 CloudFileManagerClient = (require './client').CloudFileManagerClient
 
 getHashParam = require './utils/get-hash-param'
-getQueryParam = require './utils/get-query-param'
 
 class CloudFileManager
 
@@ -26,9 +25,6 @@ class CloudFileManager
       fileParams: getHashParam "file"
       copyParams: getHashParam "copy"
       newInFolderParams: getHashParam "newInFolder"
-      documentServer: getQueryParam "documentServer"
-      runKey: getQueryParam "runKey"
-      runAsGuest: (getQueryParam "runAsGuest") is "true"
     }
 
     @client.setAppOptions @appOptions
@@ -49,22 +45,8 @@ class CloudFileManager
     @client.listen eventCallback
     @client.connect()
 
-    hashParams = @appOptions.hashParams
-    if hashParams.sharedContentId
-      @client.openSharedContent hashParams.sharedContentId
-    else if hashParams.fileParams
-      if hashParams.fileParams.indexOf("http") is 0
-        @client.openUrlFile hashParams.fileParams
-      else
-        [providerName, providerParams] = hashParams.fileParams.split ':'
-        @client.openProviderFile providerName, providerParams
-    else if hashParams.copyParams
-      @client.openCopiedFile hashParams.copyParams
-    else if hashParams.newInFolderParams
-      [providerName, folder] = hashParams.newInFolderParams.split ':'
-      @client.createNewInFolder providerName, folder
-    else
-      @client.ready()
+    # open any initial document (if any specified) and signal ready()
+    @client.processUrlParams()
 
   _createHiddenApp: ->
     anchor = document.createElement("div")

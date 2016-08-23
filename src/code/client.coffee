@@ -35,7 +35,7 @@ class CloudFileManagerClient
     @appOptions.wrapFileContent ?= true
     CloudContent.wrapFileContent = @appOptions.wrapFileContent
 
-    # flter for available providers
+    # filter for available providers
     allProviders = {}
     for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider, LocalFileProvider]
       if Provider.Available()
@@ -108,6 +108,41 @@ class CloudFileManagerClient
 
   connect: ->
     @_event 'connected', {client: @}
+
+  #
+  # Called from CloudFileManager.clientConnect to process the URL parameters
+  # and initiate opening any document specified by URL parameters. The CFM
+  # hash params are processed here after which providers are given a chance
+  # to process any provider-specific URL parameters. Calls ready() if no
+  # initial document opening occurs.
+  #
+  processUrlParams: ->
+    # process the hash params
+    hashParams = @appOptions.hashParams
+    if hashParams.sharedContentId
+      @openSharedContent hashParams.sharedContentId
+    else if hashParams.fileParams
+      if hashParams.fileParams.indexOf("http") is 0
+        @openUrlFile hashParams.fileParams
+      else
+        [providerName, providerParams] = hashParams.fileParams.split ':'
+        @openProviderFile providerName, providerParams
+    else if hashParams.copyParams
+      @openCopiedFile hashParams.copyParams
+    else if hashParams.newInFolderParams
+      [providerName, folder] = hashParams.newInFolderParams.split ':'
+      @createNewInFolder providerName, folder
+    else
+      # give providers a chance to process url params
+      for provider in @state.availableProviders
+        handleResult = provider.canHandleUrlParams()
+        if handleResult and handleResult.providerName
+          {providerName, providerParams} = handleResult
+          @openProviderFile providerName, providerParams
+          return
+
+      # if no providers handled it, then just signal ready()
+      @ready()
 
   ready: ->
     @_event 'ready'
