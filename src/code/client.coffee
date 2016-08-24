@@ -190,7 +190,7 @@ class CloudFileManagerClient
   openFile: (metadata, callback = null) ->
     if metadata?.provider?.can 'load'
       metadata.provider.load metadata, (err, content) =>
-        return @alert(err) if err
+        return @alert(err, => @ready()) if err
         # should wait to close current file until client signals open is complete
         @_closeCurrentFile()
         @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
@@ -249,7 +249,7 @@ class CloudFileManagerClient
 
   openSharedContent: (id) ->
     @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
-      return @alert(err) if err
+      return @alert(err, => @ready()) if err
       @_fileOpened content, metadata, {overwritable: false, openedContent: content.clone()}
 
   # must be called as a result of user action (e.g. click) to avoid popup blockers
@@ -268,12 +268,12 @@ class CloudFileManagerClient
         # we can open the document without authorization in some cases
         if authorized or not provider.isAuthorizationRequired()
           provider.openSaved providerParams, (err, content, metadata) =>
-            return @alert(err) if err
+            return @alert(err, => @ready()) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   openUrlFile: (url) ->
     @urlProvider.openFileFromUrl url, (err, content, metadata) =>
-      return @alert(err) if err
+      return @alert(err, => @ready()) if err
       @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
   createNewInFolder: (providerName, folder) ->
@@ -538,8 +538,8 @@ class CloudFileManagerClient
   confirm: (message, callback) ->
     @_ui.confirmDialog message, callback
 
-  alert: (message, title=null) ->
-    @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE")
+  alert: (message, title=null, callback) ->
+    @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE"), callback
 
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null
@@ -555,14 +555,13 @@ class CloudFileManagerClient
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
     @_event 'openedFile', { content: content?.getClientContent() }, (iError, iSharedMetadata) =>
-      if iError
-        @alert iError
-      else
-        metadata?.overwritable ?= true
-        if not @appOptions.wrapFileContent
-          content.addMetadata iSharedMetadata
-        @_updateState content, metadata, additionalState, hashParams
-        @ready()
+      return @alert(iError, => @ready()) if iError
+
+      metadata?.overwritable ?= true
+      if not @appOptions.wrapFileContent
+        content.addMetadata iSharedMetadata
+      @_updateState content, metadata, additionalState, hashParams
+      @ready()
 
   _updateState: (content, metadata, additionalState={}, hashParams=null) ->
     state =

@@ -154,6 +154,9 @@ class ProviderInterface
   can: (capability) ->
     @capabilities[capability]
 
+  isAuthorizationRequired: ->
+    false
+
   authorized: (callback) ->
     if callback
       callback true
