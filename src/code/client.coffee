@@ -6,6 +6,7 @@ CloudFileManagerUI = (require './ui').CloudFileManagerUI
 LocalStorageProvider = require './providers/localstorage-provider'
 ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
+LaraProvider = require './providers/lara-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
 DocumentStoreShareProvider = require './providers/document-store-share-provider'
 LocalFileProvider = require './providers/local-file-provider'
@@ -37,7 +38,7 @@ class CloudFileManagerClient
 
     # filter for available providers
     allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider, LocalFileProvider]
+    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, LaraProvider, DocumentStoreProvider, LocalFileProvider]
       if Provider.Available()
         allProviders[Provider.Name] = Provider
 

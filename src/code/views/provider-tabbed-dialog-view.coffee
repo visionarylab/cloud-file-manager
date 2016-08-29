@@ -21,13 +21,14 @@ module.exports = React.createClass
     for provider, i in @props.client.state.availableProviders
       if not capability or provider.capabilities[capability]
         filteredTabComponent = provider.filterTabComponent capability, TabComponent
-        component = filteredTabComponent
-          client: @props.client
-          dialog: @props.dialog
-          close: @props.close
-          provider: provider
-        tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component}
-        if provider.name is @props.client.state.metadata?.provider?.name
-          selectedTabIndex = tabs.length - 1
+        if filteredTabComponent
+          component = filteredTabComponent
+            client: @props.client
+            dialog: @props.dialog
+            close: @props.close
+            provider: provider
+          tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component}
+          if provider.name is @props.client.state.metadata?.provider?.name
+            selectedTabIndex = tabs.length - 1
 
     (ModalTabbedDialog {title: (tr @props.dialog.title), close: @props.close, tabs: tabs, selectedTabIndex: selectedTabIndex})

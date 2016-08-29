@@ -48,11 +48,15 @@ App = React.createClass
   componentWillMount: ->
     @props.client.listen (event) =>
       fileStatus = if event.state.saving
-        {message: "Saving...", type: 'info'}
+        {message: tr('~FILE_STATUS.SAVING'), type: 'info'}
       else if event.state.saved
-        {message: "All changes saved to #{event.state.metadata.provider.displayName}", type: 'info'}
+        providerName = event.state.metadata.provider.displayName
+        message = if providerName \
+                    then tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName: providerName }) \
+                    else tr('~FILE_STATUS.SAVED')
+        {message: message, type: 'info'}
       else if event.state.dirty
-        {message: 'Unsaved', type: 'alert'}
+        {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
       else
         null
       @setState

@@ -11,6 +11,7 @@ cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
 DocumentStoreUrl = require './document-store-url'
+PatchableContent = require './patchable-content'
 
 DocumentStoreAuthorizationDialog = React.createFactory React.createClass
   displayName: 'DocumentStoreAuthorizationDialog'
@@ -62,11 +63,11 @@ class DocumentStoreProvider extends ProviderInterface
 
     @user = null
 
+    @savedContent = new PatchableContent(@options.patchObjectHash)
+
   @Name: 'documentStore'
 
-  previouslySavedContent: null
-
-  # if 'runAsGuest' is specified, we don't need to authenticate at all
+  # if a runKey is specified, we don't need to authenticate at all
   isAuthorizationRequired: ->
     not @urlParams.runKey
 
@@ -228,54 +229,38 @@ class DocumentStoreProvider extends ProviderInterface
   save: (cloudContent, metadata, callback) ->
     content = cloudContent.getContent()
 
+    # See if we can patch
+    patchResults = @savedContent.createPatch(content, @options.patch and metadata.overwritable)
+
+    if patchResults.shouldPatch and not patchResults.diffLength
+      # no reason to patch if there are no diffs
+      callback null # no error indicates success
+      return
+
     params = {}
     if metadata.providerData.id then params.recordid = metadata.providerData.id
-    # pass the runKey if one is provided
+
+    if not patchResults.shouldPatch and metadata.filename
+      params.recordname = metadata.filename
+
+    # If we are saving for the first time as a student in a LARA activity, then we do not have
+    # authorization on the current document. However, we should have a runKey query parameter.
+    # When we save with this runKey, the document will save our changes to a copy of the document,
+    # owned by us.
+    #
+    # When we successfully save, we will get the id of the new document in the response, and use
+    # this id for future saving. We can then save via patches, and don't need the runKey.
     if @urlParams.runKey
       params.runKey = @urlParams.runKey
-
-    # See if we can patch
-    willPatch = false
-    mimeType = 'application/json' # Document Store requires JSON currently
-    contentJson = JSON.stringify content
-    canOverwrite = metadata.overwritable and @previouslySavedContent?
-    if canOverwrite and diff = @_createDiff @previouslySavedContent, content
-      diffJson = JSON.stringify diff
-    # only patch if the diff is smaller than saving the entire file
-    # e.g. when large numbers of cases are deleted the diff can be larger
-    if diff? and diffJson.length < contentJson.length
-      if diff.length is 0
-        # no reason to patch if there are no diffs
-        callback null # no error indicates success
-        return
-      sendContent = diffJson
-      mimeType = 'application/json-patch+json'
-      willPatch = true
-    else
-      if metadata.filename then params.recordname = metadata.filename
-      sendContent = contentJson
-
-    if not willPatch
-      # If we are saving for the first time as a student in a LARA activity, then we do not have
-      # authorization on the current document. However, we should have a runKey query parameter.
-      # When we save with this runKey, the document will save our changes to a copy of the document,
-      # owned by us.
-      #
-      # When we successfully save, we will get the id of the new document in the response, and use
-      # this id for future saving. We can then save via patches, and don't need the runKey.
-      #
-      # `willPatch` will always be false for an individual user's first save of a session. There
-      # does not seem to be a way to see if we've launched a document that we own, so we just
-      # assume we don't own it.
-      if @urlParams.runKey
-        params.runKey = @urlParams.runKey
 
     $.ajax
       dataType: 'json'
       type: 'POST'
-      url: if willPatch then @docStoreUrl.patchDocument(params) else @docStoreUrl.saveDocument(params)
-      data: pako.deflate sendContent
-      contentType: mimeType
+      url: if patchResults.shouldPatch \
+            then @docStoreUrl.patchDocument(params) \
+            else @docStoreUrl.saveDocument(params)
+      data: pako.deflate patchResults.sendContent
+      contentType: patchResults.mimeType
       processData: false
       beforeSend: (xhr) ->
         xhr.setRequestHeader('Content-Encoding', 'deflate')
@@ -283,7 +268,7 @@ class DocumentStoreProvider extends ProviderInterface
       xhrFields:
         withCredentials: true
       success: (data) ->
-        @previouslySavedContent = if @options.patch then _.cloneDeep(content) else null
+        @savedContent.updateContent(if @options.patch then _.cloneDeep(content) else null)
         if data.id then metadata.providerData.id = data.id
 
         callback null, data
@@ -348,24 +333,11 @@ class DocumentStoreProvider extends ProviderInterface
       provider: @
       providerData:
         id: openSavedParams
+
     @load metadata, (err, content) ->
       callback err, content, metadata
 
   getOpenSavedParams: (metadata) ->
     metadata.providerData.id
-
-  _createDiff: (obj1, obj2) ->
-    try
-      opts = {
-        hash: @options.patchObjectHash if typeof @options.patchObjectHash is "function"
-        invertible: false # smaller patches are worth more than invertibility
-      }
-      # clean objects before diffing
-      cleanedObj1 = JSON.parse JSON.stringify obj1
-      cleanedObj2 = JSON.parse JSON.stringify obj2
-      diff = jiff.diff(cleanedObj1, cleanedObj2, opts)
-      return diff
-    catch
-      return null
 
 module.exports = DocumentStoreProvider
