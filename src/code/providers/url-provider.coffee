@@ -31,6 +31,6 @@ class URLProvider extends ProviderInterface
       url: metadata.url
       success: (data) ->
         callback null, cloudContentFactory.createEnvelopedCloudContent(data), metadata
-      error: -> callback "Unable to load '#{metadata.name}'"
+      error: -> callback "Unable to load document from '#{metadata.url}'"
 
 module.exports = URLProvider
