@@ -194,6 +194,9 @@ class ProviderInterface
   close: (metadata, callback) ->
     @_notImplemented 'close'
 
+  setFolder: (metadata) ->
+    @_notImplemented 'setFolder'
+
   canOpenSaved: -> false
 
   openSaved: (openSavedParams, callback) ->

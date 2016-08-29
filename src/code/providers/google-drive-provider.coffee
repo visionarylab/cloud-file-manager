@@ -46,6 +46,7 @@ class GoogleDriveProvider extends ProviderInterface
         remove: false
         rename: true
         close: true
+        setFolder: true
 
     @authToken = null
     @user = null

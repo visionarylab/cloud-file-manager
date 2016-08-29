@@ -7,6 +7,13 @@ module.exports = React.createClass
 
   displayName: 'MenuBar'
 
+  componentWillMount: ->
+    @props.client._ui.listen (event) =>
+      switch event.type
+        when 'editInitialFilename'
+          @setState editingFilename: true
+          setTimeout (=> @focusFilename()), 10
+
   getFilename: (props) ->
     if props.filename?.length > 0 then props.filename else (tr "~MENUBAR.UNTITLED_DOCUMENT")
 

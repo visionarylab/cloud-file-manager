@@ -238,6 +238,19 @@ class CloudFileManagerClient
       return @alert(err) if err
       @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
+  createNewInFolder: (providerName, folder) ->
+    provider = @providers[providerName]
+    if provider and provider.can 'setFolder'
+      if not @state.metadata?
+        @state.metadata = new CloudMetadata
+          type: CloudMetadata.File
+          provider: provider
+
+      @state.metadata.parent = new CloudMetadata
+        type: CloudMetadata.Folder
+        providerData:
+          id: folder
+
   isSaveInProgress: ->
     @state.saving?
 
