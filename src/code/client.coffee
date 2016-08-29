@@ -261,6 +261,14 @@ class CloudFileManagerClient
         provider.authorize =>
           @openProviderFile providerName providerParams
 
+  confirmAuthorizeAndOpen: (provider, providerParams) ->
+    # trigger authorize() from confirmation dialog to avoid popup blockers
+    @confirm tr("~CONFIRM.AUTHORIZE_OPEN"), =>
+      provider.authorize =>
+        provider.openSaved providerParams, (err, content, metadata) =>
+          return @alert(err) if err
+          @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+
   openProviderFile: (providerName, providerParams) ->
     provider = @providers[providerName]
     if provider
@@ -270,6 +278,10 @@ class CloudFileManagerClient
           provider.openSaved providerParams, (err, content, metadata) =>
             return @alert(err, => @ready()) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+        else
+          @confirmAuthorizeAndOpen(provider, providerParams)
+    else
+      @alert tr("~ALERT.NO_PROVIDER")
 
   openUrlFile: (url) ->
     @urlProvider.openFileFromUrl url, (err, content, metadata) =>

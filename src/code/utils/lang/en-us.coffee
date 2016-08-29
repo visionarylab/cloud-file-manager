@@ -62,6 +62,7 @@ module.exports =
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?"
   "~CONFIRM.NEW_FILE": "You have unsaved changes. Are you sure you want to create a new document?"
+  "~CONFIRM.AUTHORIZE_OPEN": "Authorization is required to open the document. Would you like to proceed with authorization?"
   "~CONFIRM.AUTHORIZE_SAVE": "Authorization is required to save the document. Would you like to proceed with authorization?"
   "~CONFIRM.CLOSE_FILE": "You have unsaved changes. Are you sure you want to close the document?"
   "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want to revert the document to its most recently opened state?"
@@ -88,3 +89,5 @@ module.exports =
 
   "~ALERT_DIALOG.TITLE": "Alert"
   "~ALERT_DIALOG.CLOSE": "Close"
+
+  "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
