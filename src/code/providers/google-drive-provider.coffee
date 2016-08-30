@@ -65,10 +65,11 @@ class GoogleDriveProvider extends ProviderInterface
   @IMMEDIATE = true
   @SHOW_POPUP = false
 
-  authorized: (@authCallback) ->
-    if @authCallback
+  authorized: (authCallback) ->
+    @authCallback = authCallback unless not authCallback?
+    if authCallback
       if @authToken
-        @authCallback true
+        authCallback true
       else
         @authorize GoogleDriveProvider.IMMEDIATE
     else
