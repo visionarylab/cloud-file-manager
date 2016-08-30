@@ -11,7 +11,9 @@ module.exports = React.createClass
     @props.client._ui.listen (event) =>
       switch event.type
         when 'editInitialFilename'
-          @setState editingFilename: true
+          @setState
+            editingFilename: true
+            editingInitialFilename: true
           setTimeout (=> @focusFilename()), 10
 
   getFilename: (props) ->
@@ -26,6 +28,7 @@ module.exports = React.createClass
       filename: @getFilename @props
       editableFilename: @getEditableFilename @props
       initialEditableFilename: @getEditableFilename @props
+      editingInitialFilename: false
 
   componentWillReceiveProps: (nextProps) ->
     @setState
@@ -36,7 +39,9 @@ module.exports = React.createClass
   filenameClicked: (e) ->
     e.preventDefault()
     e.stopPropagation()
-    @setState editingFilename: true
+    @setState
+      editingFilename: true
+      editingInitialFilename: false
     setTimeout (=> @focusFilename()), 10
 
   filenameChanged: ->
@@ -62,7 +67,10 @@ module.exports = React.createClass
   rename: ->
     filename = @state.editableFilename.replace /^\s+|\s+$/, ''
     if filename.length > 0
-      @props.client.rename @props.client.state.metadata, filename
+      if @state.editingInitialFilename
+        @props.client.setInitialFilename filename
+      else
+        @props.client.rename @props.client.state.metadata, filename
       @setState
         editingFilename: false
         filename: filename

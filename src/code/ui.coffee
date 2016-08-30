@@ -162,6 +162,9 @@ class CloudFileManagerUI
   hideBlockingModal: ->
     @listenerCallback new CloudFileManagerUIEvent 'hideBlockingModal'
 
+  editInitialFilename: ->
+    @listenerCallback new CloudFileManagerUIEvent 'editInitialFilename'
+
   alertDialog: (message, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showAlertDialog',
       title: title

@@ -251,6 +251,13 @@ class CloudFileManagerClient
         providerData:
           id: folder
 
+      @_ui.editInitialFilename()
+
+  setInitialFilename: (filename) ->
+    @state.metadata.name = filename
+    @state.metadata.filename = filename
+    @save()
+
   isSaveInProgress: ->
     @state.saving?
 
