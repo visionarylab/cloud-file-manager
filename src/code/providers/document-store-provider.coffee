@@ -376,7 +376,7 @@ class DocumentStoreProvider extends ProviderInterface
       url: renameDocumentUrl
       data:
         recordid: metadata.providerData.id
-        newRecordname: metadata.withExtension newName
+        newRecordname: CloudMetadata.withExtension newName
       context: @
       xhrFields:
         withCredentials: true

@@ -21,6 +21,13 @@ class CloudMetadata
     # for now mapping is 1-to-1 defaulting to 'file'
     iType or @File
 
+  @withExtension: (name, defaultExtension) ->
+    extension = CloudMetadata.Extension or defaultExtension
+    if extension? and name.substr(-extension.length) isnt extension
+      name + "." + extension
+    else
+      name
+
   path: ->
     _path = []
     parent = @parent
@@ -33,18 +40,12 @@ class CloudMetadata
     @name = newName
     @_updateFilename()
 
-  withExtension: (name) ->
-    if CloudMetadata.Extension? and name.substr(-CloudMetadata.Extension.length) isnt CloudMetadata.Extension
-      name + CloudMetadata.Extension
-    else
-      name
-
   _updateFilename: ->
     @filename = @name
     if @name?.substr? and CloudMetadata.Extension? and @type is CloudMetadata.File
       extLen = CloudMetadata.Extension.length
-      @name = @name.substr(0, @name.length - extLen) if @name.substr(-extLen) is CloudMetadata.Extension
-      @filename = @withExtension @name
+      @name = @name.substr(0, @name.length - (extLen+1)) if @name.substr(-extLen) is CloudMetadata.Extension
+      @filename = CloudMetadata.withExtension @name
 
 # singleton that can create CloudContent wrapped with global options
 class CloudContentFactory

@@ -155,7 +155,7 @@ class GoogleDriveProvider extends ProviderInterface
       request = gapi.client.drive.files.patch
         fileId: metadata.providerData.id
         resource:
-          title: metadata.withExtension newName
+          title: CloudMetadata.withExtension newName
       request.execute (result) ->
         if result?.error
           callback? result.error

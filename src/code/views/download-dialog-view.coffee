@@ -10,7 +10,7 @@ module.exports = React.createClass
   displayName: 'DownloadDialogView'
 
   getInitialState: ->
-    filename = "#{@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{CloudMetadata.Extension or '.json'}"
+    filename = CloudMetadata.withExtension(@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT"), 'json')
     includeShareInfo = false
     state =
       filename: filename
