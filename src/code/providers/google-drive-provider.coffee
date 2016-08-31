@@ -53,6 +53,7 @@ class GoogleDriveProvider extends ProviderInterface
     if not @clientId
       throw new Error 'Missing required clientId in googleDrive provider options'
     @mimeType = @options.mimeType or "text/plain"
+    @readableMimetypes = @options.readableMimetypes
     @useRealTimeAPI = @options.useRealTimeAPI or false
     if @useRealTimeAPI
       @mimeType += '+cfm_realtime'
@@ -119,8 +120,9 @@ class GoogleDriveProvider extends ProviderInterface
 
   list: (metadata, callback) ->
     @_loadedGAPI =>
+      mimeTypesQuery = ("(mimeType = '#{mimeType}')" for mimeType in @readableMimetypes).join " or "
       request = gapi.client.drive.files.list
-        q: query = "((mimeType = '#{@mimeType}') or (mimeType = 'application/vnd.google-apps.folder')) and '#{if metadata then metadata.providerData.id else 'root'}' in parents"
+        q: query = "(#{mimeTypesQuery} or (mimeType = 'application/vnd.google-apps.folder')) and '#{if metadata then metadata.providerData.id else 'root'}' in parents"
       request.execute (result) =>
         return callback('Unable to list files') if not result
         list = []

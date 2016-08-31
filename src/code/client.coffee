@@ -51,12 +51,16 @@ class CloudFileManagerClient
     CloudMetadata.ReadableExtensions = @appOptions.readableExtensions or []
     if CloudMetadata.Extension then CloudMetadata.ReadableExtensions.push CloudMetadata.Extension
 
+    readableMimetypes = @appOptions.readableMimeTypes or []
+    readableMimetypes.push @appOptions.mimeType
+
     # check the providers
     availableProviders = []
     for provider in @appOptions.providers
       [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
       # merge in other options as needed
       providerOptions.mimeType ?= @appOptions.mimeType
+      providerOptions.readableMimetypes = readableMimetypes
       if not providerName
         @alert "Invalid provider spec - must either be string or object with name property"
       else
