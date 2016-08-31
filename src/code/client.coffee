@@ -48,6 +48,8 @@ class CloudFileManagerClient
 
     # preset the extension if Available
     CloudMetadata.Extension = @appOptions.extension
+    CloudMetadata.ReadableExtensions = @appOptions.readableExtensions or []
+    if CloudMetadata.Extension then CloudMetadata.ReadableExtensions.push CloudMetadata.Extension
 
     # check the providers
     availableProviders = []

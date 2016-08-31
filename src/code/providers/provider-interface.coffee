@@ -168,8 +168,12 @@ class ProviderInterface
     defaultComponent
 
   matchesExtension: (name) ->
-    if CloudMetadata.Extension?
-      name.substr(-CloudMetadata.Extension.length) is CloudMetadata.Extension
+    if CloudMetadata.ReadableExtensions? and CloudMetadata.ReadableExtensions.length > 0
+      for extension in CloudMetadata.ReadableExtensions
+        return true if name.substr(-extension.length) is extension
+        if extension is ""
+          return true if !~name.indexOf(".")
+      return false
     else
       # may seem weird but it means that without an extension specified all files match
       true
