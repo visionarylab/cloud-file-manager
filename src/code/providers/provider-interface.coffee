@@ -21,7 +21,9 @@ class CloudMetadata
     # for now mapping is 1-to-1 defaulting to 'file'
     iType or @File
 
-  @withExtension: (name, defaultExtension) ->
+  @withExtension: (name, defaultExtension, keepOriginalExtension) ->
+    if keepOriginalExtension and ~name.indexOf(".")
+      return name
     extension = CloudMetadata.Extension or defaultExtension
     if extension? and name.substr(-extension.length) isnt extension
       name + "." + extension
@@ -45,7 +47,7 @@ class CloudMetadata
     if @name?.substr? and CloudMetadata.Extension? and @type is CloudMetadata.File
       extLen = CloudMetadata.Extension.length
       @name = @name.substr(0, @name.length - (extLen+1)) if @name.substr(-extLen) is CloudMetadata.Extension
-      @filename = CloudMetadata.withExtension @name
+      @filename = CloudMetadata.withExtension @name, null, true
 
 # singleton that can create CloudContent wrapped with global options
 class CloudContentFactory
