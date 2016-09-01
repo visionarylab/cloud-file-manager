@@ -46,6 +46,7 @@ class GoogleDriveProvider extends ProviderInterface
         remove: false
         rename: true
         close: true
+        setFolder: true
 
     @authToken = null
     @user = null
@@ -64,10 +65,11 @@ class GoogleDriveProvider extends ProviderInterface
   @IMMEDIATE = true
   @SHOW_POPUP = false
 
-  authorized: (@authCallback) ->
-    if @authCallback
+  authorized: (authCallback) ->
+    @authCallback = authCallback unless not authCallback?
+    if authCallback
       if @authToken
-        @authCallback true
+        authCallback true
       else
         @authorize GoogleDriveProvider.IMMEDIATE
     else
@@ -214,6 +216,12 @@ class GoogleDriveProvider extends ProviderInterface
         metadata.rename file.title
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
+        if not metadata.parent? and file.parents?.length > 0
+          metadata.parent = new CloudMetadata
+            type: CloudMetadata.Folder
+            provider: @
+            providerData:
+              id: file.parents[0].id
         xhr = new XMLHttpRequest()
         xhr.open 'GET', file.downloadUrl
         if @authToken

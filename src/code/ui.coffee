@@ -91,6 +91,7 @@ class CloudFileManagerUI
 
   constructor: (@client)->
     @menu = null
+    @listenerCallbacks = []
 
   init: (options) ->
     options = options or {}
@@ -101,7 +102,12 @@ class CloudFileManagerUI
       @menu = new CloudFileManagerUIMenu options, @client
 
   # for React to listen for dialog changes
-  listen: (@listenerCallback) ->
+  listen: (callback) ->
+    @listenerCallbacks.push callback
+
+  listenerCallback: (evt) ->
+    for callback in @listenerCallbacks
+      callback evt
 
   appendMenuItem: (item) ->
     @listenerCallback new CloudFileManagerUIEvent 'appendMenuItem', item
@@ -161,6 +167,9 @@ class CloudFileManagerUI
 
   hideBlockingModal: ->
     @listenerCallback new CloudFileManagerUIEvent 'hideBlockingModal'
+
+  editInitialFilename: ->
+    @listenerCallback new CloudFileManagerUIEvent 'editInitialFilename'
 
   alertDialog: (message, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showAlertDialog',

@@ -25,6 +25,7 @@ class CloudFileManager
       sharedContentId: getHashParam "shared"
       fileParams: getHashParam "file"
       copyParams: getHashParam "copy"
+      newInFolderParams: getHashParam "newInFolder"
       documentServer: getQueryParam "documentServer"
       runKey: getQueryParam "runKey"
       runAsGuest: (getQueryParam "runAsGuest") is "true"
@@ -59,6 +60,9 @@ class CloudFileManager
         @client.openProviderFile providerName, providerParams
     else if hashParams.copyParams
       @client.openCopiedFile hashParams.copyParams
+    else if hashParams.newInFolderParams
+      [providerName, folder] = hashParams.newInFolderParams.split ':'
+      @client.createNewInFolder providerName, folder
     else
       @client.ready()
 
