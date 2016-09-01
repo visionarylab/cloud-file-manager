@@ -25,6 +25,7 @@ class CloudFileManager
       sharedContentId: getHashParam "shared"
       fileParams: getHashParam "file"
       copyParams: getHashParam "copy"
+      documentServer: getQueryParam "documentServer"
       runKey: getQueryParam "runKey"
       runAsGuest: (getQueryParam "runAsGuest") is "true"
     }
