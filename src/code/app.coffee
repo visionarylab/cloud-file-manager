@@ -26,6 +26,7 @@ class CloudFileManager
       fileParams: getHashParam "file"
       copyParams: getHashParam "copy"
       newInFolderParams: getHashParam "newInFolder"
+      documentServer: getQueryParam "documentServer"
       runKey: getQueryParam "runKey"
       runAsGuest: (getQueryParam "runAsGuest") is "true"
     }

@@ -7,6 +7,7 @@ LocalStorageProvider = require './providers/localstorage-provider'
 ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
+DocumentStoreShareProvider = require './providers/document-store-share-provider'
 LocalFileProvider = require './providers/local-file-provider'
 URLProvider = require './providers/url-provider'
 
@@ -67,13 +68,9 @@ class CloudFileManagerClient
           availableProviders.push provider
         else
           @alert "Unknown provider: #{providerName}"
-    @_setState availableProviders: availableProviders
-
-    # add singleton shareProvider, if it exists
-    for provider in @state.availableProviders
-      if provider.can 'share'
-        @_setState shareProvider: provider
-        break
+    @_setState
+      availableProviders: availableProviders
+      shareProvider: new DocumentStoreShareProvider(@, @providers[DocumentStoreProvider.Name])
 
     @appOptions.ui or= {}
     @appOptions.ui.windowTitleSuffix or= document.title
