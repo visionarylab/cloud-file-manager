@@ -135,11 +135,7 @@ class CloudFileManagerClient
     else
       # give providers a chance to process url params
       for provider in @state.availableProviders
-        handleResult = provider.canHandleUrlParams()
-        if handleResult and handleResult.providerName
-          {providerName, providerParams} = handleResult
-          @openProviderFile providerName, providerParams
-          return
+        return if provider.handleUrlParams()
 
       # if no providers handled it, then just signal ready()
       @ready()

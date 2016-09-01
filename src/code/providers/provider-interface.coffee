@@ -183,8 +183,8 @@ class ProviderInterface
       # may seem weird but it means that without an extension specified all files match
       true
 
-  canHandleUrlParams: ->
-    null # by default, no additional URL handling
+  handleUrlParams: ->
+    false # by default, no additional URL handling
 
   dialog: (callback) ->
     @_notImplemented 'dialog'
