@@ -21,6 +21,15 @@ class CloudMetadata
     # for now mapping is 1-to-1 defaulting to 'file'
     iType or @File
 
+  @withExtension: (name, defaultExtension, keepOriginalExtension) ->
+    if keepOriginalExtension and ~name.indexOf(".")
+      return name
+    extension = CloudMetadata.Extension or defaultExtension
+    if extension? and name.substr(-extension.length+1) isnt ".#{extension}"
+      name + "." + extension
+    else
+      name
+
   path: ->
     _path = []
     parent = @parent
@@ -33,18 +42,12 @@ class CloudMetadata
     @name = newName
     @_updateFilename()
 
-  withExtension: (name) ->
-    if CloudMetadata.Extension? and name.substr(-CloudMetadata.Extension.length) isnt CloudMetadata.Extension
-      name + CloudMetadata.Extension
-    else
-      name
-
   _updateFilename: ->
     @filename = @name
     if @name?.substr? and CloudMetadata.Extension? and @type is CloudMetadata.File
       extLen = CloudMetadata.Extension.length
-      @name = @name.substr(0, @name.length - extLen) if @name.substr(-extLen) is CloudMetadata.Extension
-      @filename = @withExtension @name
+      @name = @name.substr(0, @name.length - (extLen+1)) if @name.substr(-extLen+1) is ".#{CloudMetadata.Extension}"
+      @filename = CloudMetadata.withExtension @name, null, true
 
 # singleton that can create CloudContent wrapped with global options
 class CloudContentFactory
@@ -167,8 +170,12 @@ class ProviderInterface
     defaultComponent
 
   matchesExtension: (name) ->
-    if CloudMetadata.Extension?
-      name.substr(-CloudMetadata.Extension.length) is CloudMetadata.Extension
+    if CloudMetadata.ReadableExtensions? and CloudMetadata.ReadableExtensions.length > 0
+      for extension in CloudMetadata.ReadableExtensions
+        return true if name.substr(-extension.length) is extension
+        if extension is ""
+          return true if !~name.indexOf(".")
+      return false
     else
       # may seem weird but it means that without an extension specified all files match
       true

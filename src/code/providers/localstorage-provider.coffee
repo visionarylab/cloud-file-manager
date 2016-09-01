@@ -69,7 +69,7 @@ class LocalStorageProvider extends ProviderInterface
   rename: (metadata, newName, callback) ->
     try
       content = window.localStorage.getItem @_getKey metadata.filename
-      window.localStorage.setItem @_getKey(metadata.withExtension newName), content
+      window.localStorage.setItem @_getKey(CloudMetadata.withExtension newName), content
       window.localStorage.removeItem @_getKey(metadata.filename)
       metadata.rename newName
       callback null, metadata

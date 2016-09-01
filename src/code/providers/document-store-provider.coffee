@@ -313,7 +313,7 @@ class DocumentStoreProvider extends ProviderInterface
       url: @docStoreUrl.renameDocument()
       data:
         recordid: metadata.providerData.id
-        newRecordname: metadata.withExtension newName
+        newRecordname: CloudMetadata.withExtension newName
       context: @
       xhrFields:
         withCredentials: true
