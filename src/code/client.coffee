@@ -252,6 +252,7 @@ class CloudFileManagerClient
           id: folder
 
       @_ui.editInitialFilename()
+    @_event 'newedFile', {content: ""}
 
   setInitialFilename: (filename) ->
     @state.metadata.name = filename
