@@ -255,8 +255,7 @@ class CloudFileManagerClient
     @_event 'newedFile', {content: ""}
 
   setInitialFilename: (filename) ->
-    @state.metadata.name = filename
-    @state.metadata.filename = filename
+    @state.metadata.rename filename
     @save()
 
   isSaveInProgress: ->
