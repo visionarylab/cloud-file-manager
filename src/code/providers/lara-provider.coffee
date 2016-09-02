@@ -32,6 +32,7 @@ class LaraProvider extends ProviderInterface
       documentServer: getQueryParam "documentServer"
       launchFromLara: getQueryParam "launchFromLara"
     }
+    @removableQueryParams = ['launchFromLara', 'runAsGuest']
     if @urlParams.launchFromLara
       @laraParams = @decodeParams @urlParams.launchFromLara
 
@@ -152,6 +153,7 @@ class LaraProvider extends ProviderInterface
     if openSavedParams and openSavedParams.recordid
       metadata.providerData = openSavedParams
       @load metadata, (err, content) ->
+        @client.removeQueryParams @removableQueryParams
         callback err, content, metadata
       return
 
@@ -167,6 +169,7 @@ class LaraProvider extends ProviderInterface
             metadata.providerData = response.raw_data.docStore
 
           @load metadata, (err, content) ->
+            @client.removeQueryParams @removableQueryParams
             callback err, content, metadata
 
         error: (jqXHR) ->

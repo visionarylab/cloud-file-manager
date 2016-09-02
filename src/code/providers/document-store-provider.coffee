@@ -56,9 +56,10 @@ class DocumentStoreProvider extends ProviderInterface
       documentServer: getQueryParam "documentServer"
       recordid: getQueryParam "recordid"
       runKey: getQueryParam "runKey"
-      runAsGuest: !!(getQueryParam "runAsGuest")
-      launchFromLara: !!(getQueryParam "launchFromLara")
     }
+    # query params that can be removed after initial processing
+    @removableQueryParams = ['recordid']
+
     @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
 
     @user = null
@@ -334,7 +335,8 @@ class DocumentStoreProvider extends ProviderInterface
       providerData:
         id: openSavedParams
 
-    @load metadata, (err, content) ->
+    @load metadata, (err, content) =>
+      @client.removeQueryParams @removableQueryParams
       callback err, content, metadata
 
   getOpenSavedParams: (metadata) ->

@@ -547,6 +547,25 @@ class CloudFileManagerClient
     # Check browser support for document.location.origin (& window.location.origin)
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
 
+  # Takes an array of strings representing url parameters to be removed from the URL.
+  # Removes the specified parameters from the URL and then uses the history API's
+  # pushState() method to update the URL without reloading the page.
+  # Adapted from http://stackoverflow.com/a/11654436.
+  removeQueryParams: (params) ->
+    url = window.location.href
+    hash = url.split('#')
+
+    for key in params
+      re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "g")
+
+      if re.test(url)
+        url = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '')
+        if hash[1]?
+          url += '#' + hash[1]
+    
+    if url isnt window.location.href
+      history.pushState { originalUrl: window.location.href }, '', url
+
   confirm: (message, callback) ->
     @_ui.confirmDialog message, callback
 
