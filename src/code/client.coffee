@@ -559,10 +559,10 @@ class CloudFileManagerClient
       re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "g")
 
       if re.test(url)
-        url = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '')
-        if hash[1]?
-          url += '#' + hash[1]
-    
+        hash[0] = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '')
+
+    url = hash[0] + if hash[1]? then '#' + hash[1] else ''
+
     if url isnt window.location.href
       history.pushState { originalUrl: window.location.href }, '', url
 
