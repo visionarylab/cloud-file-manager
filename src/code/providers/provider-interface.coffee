@@ -154,6 +154,9 @@ class ProviderInterface
   can: (capability) ->
     @capabilities[capability]
 
+  isAuthorizationRequired: ->
+    false
+
   authorized: (callback) ->
     if callback
       callback true
@@ -179,6 +182,9 @@ class ProviderInterface
     else
       # may seem weird but it means that without an extension specified all files match
       true
+
+  handleUrlParams: ->
+    false # by default, no additional URL handling
 
   dialog: (callback) ->
     @_notImplemented 'dialog'

@@ -8,12 +8,16 @@ module.exports = React.createClass
 
   displayName: 'AlertDialogView'
 
+  close: ->
+    @props.close?()
+    @props.callback?()
+
   render: ->
-    (ModalDialog {title: @props.title or (tr '~ALERT_DIALOG.TITLE'), close: @props.close, zIndex: 100},
+    (ModalDialog {title: @props.title or (tr '~ALERT_DIALOG.TITLE'), close: @close, zIndex: 100},
       (div {className: 'alert-dialog'},
         (div {className: 'alert-dialog-message'}, @props.message)
         (div {className: 'buttons'},
-          (button {onClick: @props.close}, tr '~ALERT_DIALOG.CLOSE')
+          (button {onClick: @close}, tr '~ALERT_DIALOG.CLOSE')
         )
       )
     )

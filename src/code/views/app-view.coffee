@@ -158,7 +158,7 @@ App = React.createClass
 
       # alert and confirm dialogs can be overlayed on other dialogs
       if @state.alertDialog
-        (AlertDialog {title: @state.alertDialog.title, message: @state.alertDialog.message, close: @closeAlert})
+        (AlertDialog {title: @state.alertDialog.title, message: @state.alertDialog.message, callback: @state.alertDialog.callback, close: @closeAlert})
       if @state.confirmDialog
         (ConfirmDialog {message: @state.confirmDialog.message, callback: @state.confirmDialog.callback, close: @closeConfirm})
     )
