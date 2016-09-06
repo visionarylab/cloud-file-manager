@@ -50,14 +50,23 @@ class LaraProvider extends ProviderInterface
       decoded = null
     decoded
 
-  canHandleUrlParams: ->
-    if @laraParams and @laraParams.docStore
-      return { providerName: @name, providerParams: @laraParams.docStore }
-    null
+  handleUrlParams: ->
+    if @laraParams
+      @client.openProviderFile @name, @laraParams
+    false
 
   # don't show in provider open/save dialogs
   filterTabComponent: (capability, defaultComponent) ->
     null
+
+  extractRawDataFromRunState: (runState) ->
+    rawData = runState?.raw_data or {}
+    if typeof rawData is "string"
+      try
+        rawData = JSON.parse(rawData)
+      catch e
+        rawData = {}
+    rawData
 
   load: (metadata, callback) ->
     {method, url} = @docStoreUrl.v2LoadDocument(metadata.providerData?.recordid)
@@ -150,36 +159,127 @@ class LaraProvider extends ProviderInterface
     if typeof openSavedParams is "string"
       openSavedParams = @decodeParams openSavedParams
 
+    #
+    # if we have a document ID we can just load the document
+    #
     if openSavedParams and openSavedParams.recordid
       metadata.providerData = openSavedParams
-      @load metadata, (err, content) ->
+      @load metadata, (err, content) =>
         @client.removeQueryParams @removableQueryParams
         callback err, content, metadata
       return
 
+    #
+    # Process the initial run state response
+    #
+    processInitialRunState = (runStateUrl, sourceID, runState) =>
+      # Check if we have a document associated with this run state already (2a) or not (2b)
+      rawData = @extractRawDataFromRunState runState
+      docStoreParams = rawData.docStore
+      if docStoreParams? and docStoreParams.recordid? and
+          (docStoreParams.accessKeys?.readOnly? or docStoreParams.accessKeys?.readWrite?)
+        # (2a) load the document associated with this run state
+        metadata.providerData = _.cloneDeep docStoreParams
+        @load metadata, (err, content) =>
+          @client.removeQueryParams @removableQueryParams
+          callback err, content, metadata
+        return
+
+      # we need a sourceID to be able to create a copy
+      if not sourceID
+        callback "Could not open the specified document because an error occurred [noSource]"
+        return
+
+      # (2b) request a copy of the shared document
+      {method, url} = @docStoreUrl.v2CreateDocument({ source: sourceID })
+      $.ajax({
+        type: method
+        url: url,
+        dataType: 'json'
+      })
+      .done (data, status, jqXHR) ->
+        updateInteractiveRunStateAndLoad runStateUrl, runState, data
+      .fail (jqXHR, status, error) ->
+        callback "Could not open the specified document because an error occurred [createCopy]"
+
+    #
+    # Utility function used when opening an unshared copy of a shared document.
+    # Updates the run state and then loads the newly created copy.
+    #
+    updateInteractiveRunStateAndLoad = (runStateUrl, runState, createResponse) =>
+      if runState? and createResponse.id? and
+          (createResponse.readAccessKey? or createResponse.readWriteAccessKey?)
+
+        # metadata for loading the file
+        docStoreMetadata =
+          recordid: createResponse.id
+          accessKeys:
+            readOnly: createResponse.readAccessKey
+            readWrite: createResponse.readWriteAccessKey
+        metadata.providerData = _.merge({}, docStoreMetadata, { url: runStateUrl })
+
+        # build the reporting_url
+        codapUrl = window.location.origin or "${window.location.protocol}//${window.location.host}"
+        reportUrlLaraParams =
+          recordid: createResponse.id
+          accessKeys:
+            readOnly: createResponse.readAccessKey
+        encodedLaraParams = @encodeParams reportUrlLaraParams
+
+        # (3) update the interactive run state
+        rawData = @extractRawDataFromRunState runState
+        rawData.docStore = docStoreMetadata
+        rawData.reporting_url = "#{codapUrl}?launchFromLara=#{encodedLaraParams}"
+        rawData = JSON.stringify(rawData)
+        learnerUrl = if runState.learner_url? and typeof runState.learner_url is "string" \
+                      then runState.learner_url \
+                      else null
+
+        putUrl = "#{openSavedParams.url}" +
+                    "?learner_url=#{encodeURIComponent(learnerUrl)}" +
+                    "&raw_data=#{encodeURIComponent(rawData)}"
+        $.ajax({
+          type: 'PUT'
+          url: putUrl
+          dataType: 'json'
+          xhrFields:
+            withCredentials: true
+        })
+        # (4) success - load the document
+        .done (data, status, jqXHR) =>
+          @load metadata, (err, content) =>
+            @client.removeQueryParams @removableQueryParams
+            callback err, content, metadata
+        # failure - report back to user
+        .fail (jqXHR, status, error) ->
+          callback "Could not open the specified document because an error occurred [updateState]"
+
+    #
+    # We have a run state URL and a source document. We must copy the source
+    # document and update the run state before opening the copied document.
+    #
     if openSavedParams and openSavedParams.url
-      # Retrieve the document ID and access keys from the LARA interactive run state
+      # (1) request the interactive run state
       $.ajax({
         type: 'GET'
         url: openSavedParams.url
         dataType: 'json'
-        success: (response) =>
-          # retrieve the metadata from the interactive run state
-          if (response?.raw_data?.docStore?.recordid? and response?.raw_data?.docStore?.accessKeys?)
-            metadata.providerData = response.raw_data.docStore
-
-          @load metadata, (err, content) ->
-            @client.removeQueryParams @removableQueryParams
-            callback err, content, metadata
-
-        error: (jqXHR) ->
-          authCallback(false)
+        xhrFields:
+          withCredentials: true
       })
+      .done (data, status, jqXHR) ->
+        processInitialRunState openSavedParams.url, openSavedParams.source, data
+
+      .fail (jqXHR, status, error) ->
+        callback "Could not open the specified document because an error occurred [getState]"
+
       return
 
     callback "Cannot open the specified document"
 
   getOpenSavedParams: (metadata) ->
-    @encodeParams metadata.providerData
+    @encodeParams if metadata.providerData.url \
+                    then { url: metadata.providerData.url } \
+                    else metadata.providerData
 
 module.exports = LaraProvider
