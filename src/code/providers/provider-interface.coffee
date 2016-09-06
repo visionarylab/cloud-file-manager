@@ -219,6 +219,9 @@ class ProviderInterface
   getOpenSavedParams: (metadata) ->
     @_notImplemented 'getOpenSavedParams'
 
+  fileOpened: ->
+    # do nothing by default
+
   _notImplemented: (methodName) ->
     # this uses a browser alert instead of client.alert because this is just here for debugging
     alert "#{methodName} not implemented for #{@name} provider"

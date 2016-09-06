@@ -177,10 +177,8 @@ class CloudFileManagerUI
       message: message
       callback: callback
 
-  confirmDialog: (message, callback) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showConfirmDialog',
-      message: message
-      callback: callback
+  confirmDialog: (params) ->
+    @listenerCallback new CloudFileManagerUIEvent 'showConfirmDialog', params
 
   _showProviderDialog: (action, title, callback) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',

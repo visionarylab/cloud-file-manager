@@ -96,3 +96,28 @@ module.exports =
   "~ALERT_DIALOG.CLOSE": "Close"
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
+
+  "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE": "Concord Cloud Alert"
+  "~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1":
+    "The Concord Cloud is closing down." +
+    " On November 1st you will no longer be able to save to the Concord Cloud." +
+    " On January 1st you will not be able to open documents from the Concord Cloud." +
+    " Please save your documents to another location as soon as possible."
+  "~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2":
+    "The Concord Cloud is closing down." +
+    " This document can no longer be saved to the Concord Cloud." +
+    " After January 1st you will not be able to open this document from the Concord Cloud." +
+    " Please save this document to another location."
+  "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE": "Save Elsewhere"
+  "~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER": "I'll do it later"
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1":
+    "The Concord Cloud is closing down." +
+    " On November 1st you will no longer be able to save to the Concord Cloud." +
+    " On January 1st you will not be able to open documents from the Concord Cloud." +
+    " Please save this document to another location as soon as possible."
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2":
+    "The Concord Cloud is closing down." +
+    " You can no longer save this document to the Concord Cloud." +
+    " On January 1st you will not be able to open this document from the Concord Cloud." +
+    " Please save this document to another location."
+

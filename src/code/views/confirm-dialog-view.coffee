@@ -12,13 +12,17 @@ module.exports = React.createClass
     @props.callback?()
     @props.close()
 
+  reject: ->
+    @props.rejectCallback?()
+    @props.close()
+
   render: ->
-    (ModalDialog {title: tr '~CONFIRM_DIALOG.TITLE', close: @props.close, zIndex: 100},
+    (ModalDialog {title: @props.title or tr '~CONFIRM_DIALOG.TITLE', close: @props.close, zIndex: 100},
       (div {className: 'confirm-dialog'},
         (div {className: 'confirm-dialog-message'}, @props.message)
         (div {className: 'buttons'},
-          (button {onClick: @confirm}, tr '~CONFIRM_DIALOG.YES')
-          (button {onClick: @props.close}, tr '~CONFIRM_DIALOG.NO')
+          (button {onClick: @confirm}, @props.yesTitle or tr '~CONFIRM_DIALOG.YES')
+          (button {onClick: @reject}, @props.noTitle or tr '~CONFIRM_DIALOG.NO')
         )
       )
     )

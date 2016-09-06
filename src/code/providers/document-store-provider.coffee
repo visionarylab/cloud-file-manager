@@ -40,12 +40,13 @@ DocumentStoreAuthorizationDialog = React.createFactory React.createClass
 class DocumentStoreProvider extends ProviderInterface
 
   constructor: (@options = {}, @client) ->
+    @options.deprecationPhase = 0 if not @options.deprecationPhase?
     super
       name: DocumentStoreProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
       urlDisplayName: @options.urlDisplayName
       capabilities:
-        save: true
+        save: @options.deprecationPhase < 2
         load: true
         list: true
         remove: true
@@ -341,5 +342,24 @@ class DocumentStoreProvider extends ProviderInterface
 
   getOpenSavedParams: (metadata) ->
     metadata.providerData.id
+
+  fileOpened: (content, metadata) ->
+    deprecationPhase = @options.deprecationPhase or 0
+    return if not deprecationPhase
+    deprecationMessages = [
+      tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1'
+      tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2'
+    ]
+    @client.confirmDialog {
+      title: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'
+      message: deprecationMessages[deprecationPhase-1]
+      yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
+      noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
+      callback: =>
+        @client.saveFileAsDialog content
+      rejectCallback: =>
+        if deprecationPhase > 1
+          @client.appOptions.autoSaveInterval = null
+    }
 
 module.exports = DocumentStoreProvider
