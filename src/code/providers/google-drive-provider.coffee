@@ -127,9 +127,9 @@ class GoogleDriveProvider extends ProviderInterface
 
   list: (metadata, callback) ->
     @_loadedGAPI =>
-      mimeTypesQuery = ("(mimeType = '#{mimeType}')" for mimeType in @readableMimetypes).join " or "
+      mimeTypesQuery = ("mimeType = '#{mimeType}'" for mimeType in @readableMimetypes).join " or "
       request = gapi.client.drive.files.list
-        q: query = "(#{mimeTypesQuery} or (mimeType = 'application/vnd.google-apps.folder')) and '#{if metadata then metadata.providerData.id else 'root'}' in parents"
+        q: query = "trashed = false and (#{mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '#{if metadata then metadata.providerData.id else 'root'}' in parents"
       request.execute (result) =>
         return callback('Unable to list files') if not result
         list = []
