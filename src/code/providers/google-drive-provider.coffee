@@ -80,7 +80,12 @@ class GoogleDriveProvider extends ProviderInterface
     @_loadedGAPI =>
       args =
         client_id: @clientId
-        scope: ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/userinfo.profile']
+        scope: [
+          'https://www.googleapis.com/auth/drive'
+          'https://www.googleapis.com/auth/drive.install'
+          'https://www.googleapis.com/auth/drive.file'
+          'https://www.googleapis.com/auth/userinfo.profile'
+        ]
         immediate: immediate
       gapi.auth.authorize args, (authToken) =>
         @authToken = if authToken and not authToken.error then authToken else null
