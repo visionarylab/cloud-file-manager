@@ -236,8 +236,8 @@ class LaraProvider extends ProviderInterface
                       else null
 
         putUrl = "#{openSavedParams.url}" +
-                    "?learner_url=#{encodeURIComponent(learnerUrl)}" +
-                    "&raw_data=#{encodeURIComponent(rawData)}"
+                    "?raw_data=#{encodeURIComponent(rawData)}" +
+                    if learnerUrl then "&learner_url=#{encodeURIComponent(learnerUrl)}" else ""
         $.ajax({
           type: 'PUT'
           url: putUrl
