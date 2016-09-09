@@ -229,7 +229,8 @@ class LaraProvider extends ProviderInterface
         # (3) update the interactive run state
         rawData = @extractRawDataFromRunState runState
         rawData.docStore = docStoreMetadata
-        rawData.reporting_url = "#{codapUrl}?launchFromLara=#{encodedLaraParams}"
+        rawData.lara_options ?= {}
+        rawData.lara_options.reporting_url = "#{codapUrl}?launchFromLara=#{encodedLaraParams}"
         rawData = JSON.stringify(rawData)
         learnerUrl = if runState.learner_url? and typeof runState.learner_url is "string" \
                       then runState.learner_url \
