@@ -17,7 +17,7 @@ module.exports = React.createClass
     @props.close()
 
   render: ->
-    (ModalDialog {title: @props.title or tr '~CONFIRM_DIALOG.TITLE', close: @props.close, zIndex: 100},
+    (ModalDialog {title: @props.title or tr '~CONFIRM_DIALOG.TITLE', close: @props.close, zIndex: 500},
       (div {className: 'confirm-dialog'},
         (div {className: 'confirm-dialog-message'}, @props.message)
         (div {className: 'buttons'},

@@ -2,7 +2,7 @@
 
 class TabInfo
   constructor: (settings={}) ->
-    {@label, @component} = settings
+    {@label, @component, @capability, @onSelected} = settings
 
 Tab = React.createFactory React.createClass
 
@@ -23,10 +23,14 @@ module.exports = React.createClass
   getInitialState: ->
     selectedTabIndex: @props.selectedTabIndex or 0
 
+  componentDidMount: ->
+    @props.tabs[@state.selectedTabIndex].onSelected?(@props.tabs[@state.selectedTabIndex].capability)
+
   statics:
     Tab: (settings) -> new TabInfo settings
 
   selectedTab: (index) ->
+    @props.tabs[index].onSelected?(@props.tabs[index].capability)
     @setState selectedTabIndex: index
 
   renderTab: (tab, index) ->

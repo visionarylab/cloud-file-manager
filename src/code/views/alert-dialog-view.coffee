@@ -13,7 +13,7 @@ module.exports = React.createClass
     @props.callback?()
 
   render: ->
-    (ModalDialog {title: @props.title or (tr '~ALERT_DIALOG.TITLE'), close: @close, zIndex: 100},
+    (ModalDialog {title: @props.title or (tr '~ALERT_DIALOG.TITLE'), close: @close, zIndex: 500},
       (div {className: 'alert-dialog'},
         (div {className: 'alert-dialog-message'}, @props.message)
         (div {className: 'buttons'},

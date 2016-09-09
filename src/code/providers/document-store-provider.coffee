@@ -67,6 +67,11 @@ class DocumentStoreProvider extends ProviderInterface
 
     @savedContent = new PatchableContent(@options.patchObjectHash)
 
+    @deprecationMessages = [
+      tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1'
+      tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2'
+    ]
+
   @Name: 'documentStore'
 
   # if a runKey is specified, we don't need to authenticate at all
@@ -171,6 +176,11 @@ class DocumentStoreProvider extends ProviderInterface
       null
     else
       defaultComponent
+
+  onProviderTabSelected: (capability) ->
+    # only show alert dialog on save when deprecation is in effect
+    return unless capability is 'save' and @options.deprecationPhase > 0
+    @client.alert @deprecationMessages[@options.deprecationPhase-1], (tr '~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')
 
   handleUrlParams: ->
     if @urlParams.recordid
@@ -354,13 +364,9 @@ class DocumentStoreProvider extends ProviderInterface
   fileOpened: (content, metadata) ->
     deprecationPhase = @options.deprecationPhase or 0
     return if not deprecationPhase
-    deprecationMessages = [
-      tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1'
-      tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2'
-    ]
     @client.confirmDialog {
       title: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'
-      message: deprecationMessages[deprecationPhase-1]
+      message: @deprecationMessages[deprecationPhase-1]
       yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
       noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
       callback: =>

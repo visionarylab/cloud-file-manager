@@ -98,6 +98,7 @@ module.exports =
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
 
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE": "Concord Cloud Alert"
+  "~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE": "Concord Cloud Alert"
   "~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1":
     "The Concord Cloud is closing down." +
     " On November 1st you will no longer be able to save to the Concord Cloud." +
