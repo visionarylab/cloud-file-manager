@@ -29,7 +29,7 @@ module.exports =
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
   "~PROVIDER.GOOGLE_DRIVE": "Google Drive"
-  "~PROVIDER.DOCUMENT_STORE": "Document Store"
+  "~PROVIDER.DOCUMENT_STORE": "Concord Cloud"
   "~PROVIDER.LOCAL_FILE": "Local File"
 
   "~FILE_STATUS.SAVING": "Saving..."
@@ -106,9 +106,9 @@ module.exports =
     " Please save your documents to another location as soon as possible."
   "~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2":
     "The Concord Cloud is closing down." +
-    " This document can no longer be saved to the Concord Cloud." +
-    " After January 1st you will not be able to open this document from the Concord Cloud." +
-    " Please save this document to another location."
+    " Documents can no longer be saved to the Concord Cloud." +
+    " After January 1st you will not be able to open documents from the Concord Cloud." +
+    " Please save your documents to another location as soon as possible."
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE": "Save Elsewhere"
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER": "I'll do it later"
   "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1":
