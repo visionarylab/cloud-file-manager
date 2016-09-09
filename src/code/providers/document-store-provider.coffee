@@ -164,6 +164,14 @@ class DocumentStoreProvider extends ProviderInterface
     else
       null
 
+  filterTabComponent: (capability, defaultComponent) ->
+    # allow the save elsewhere button to hide the document provider tab in save
+    if capability is 'save' and @disableForNextSave
+      @disableForNextSave = false
+      null
+    else
+      defaultComponent
+
   handleUrlParams: ->
     if @urlParams.recordid
       @client.openProviderFile @name, @urlParams.recordid
@@ -356,6 +364,7 @@ class DocumentStoreProvider extends ProviderInterface
       yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
       noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
       callback: =>
+        @disableForNextSave = true
         @client.saveFileAsDialog content
       rejectCallback: =>
         if deprecationPhase > 1
