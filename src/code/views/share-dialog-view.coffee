@@ -1,6 +1,7 @@
 {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = React.DOM
 
 ModalDialog = React.createFactory require './modal-dialog-view'
+getQueryParam = require '../utils/get-query-param'
 
 tr = require '../utils/translate'
 socialIcons = require 'svg-social-icons/lib/icons.json'
@@ -70,9 +71,11 @@ module.exports = React.createClass
   getLara: (options = null) ->
     sharedDocumentId = @getSharedDocumentId()
     if sharedDocumentId
+      documentServer = getQueryParam('documentServer') or 'https://document-store.concord.org'
+      documentServer = documentServer.slice(0, -1) while documentServer.substr(-1) is '/'  # remove trailing slash
       server = encodeURIComponent (if options?.hasOwnProperty('codapServerUrl') then options.codapServerUrl else @state.codapServerUrl)
       buttonText = encodeURIComponent (if options?.hasOwnProperty('launchButtonText') then options.launchButtonText else @state.launchButtonText)
-      "https://document-store.concord.org/document/launch?recordid=#{sharedDocumentId}&server=#{server}&buttonText=#{buttonText}"
+      "#{documentServer}/v2/documents/#{sharedDocumentId}/launch?server=#{server}&buttonText=#{buttonText}"
     else
       null
 
