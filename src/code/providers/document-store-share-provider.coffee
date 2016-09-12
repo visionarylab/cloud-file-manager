@@ -1,5 +1,6 @@
 CloudMetadata = (require './provider-interface').CloudMetadata
 DocumentStoreUrl = require './document-store-url'
+pako = require 'pako'
 
 #
 # A utility class for providing sharing functionality via the Concord Document Store.
@@ -53,6 +54,8 @@ class DocumentStoreShareProvider
         beforeSend: (xhr) ->
           xhr.setRequestHeader('Content-Encoding', 'deflate')
         context: @
+        xhrFields:
+          withCredentials: true
         success: (data) ->
           # on successful share/save, capture the sharedDocumentId and shareEditKey
           if runKey and not accessKeys?
@@ -78,6 +81,8 @@ class DocumentStoreShareProvider
         beforeSend: (xhr) ->
           xhr.setRequestHeader('Content-Encoding', 'deflate')
         context: @
+        xhrFields:
+          withCredentials: true
         success: (data) ->
           # on successful share/save, capture the sharedDocumentId and shareEditKey
           masterContent.addMetadata
