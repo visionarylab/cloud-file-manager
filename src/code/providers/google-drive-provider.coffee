@@ -47,6 +47,7 @@ class GoogleDriveProvider extends ProviderInterface
         rename: true
         close: true
         setFolder: true
+        saveUnwrapped: true
 
     @authToken = null
     @user = null
@@ -255,7 +256,7 @@ class GoogleDriveProvider extends ProviderInterface
 
     body = [
       "\r\n--#{boundary}\r\nContent-Type: application/json\r\n\r\n#{header}",
-      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content.getContentAsJSON()}",
+      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content.getContentAsJSON?() or content}",
       "\r\n--#{boundary}--"
     ].join ''
 
