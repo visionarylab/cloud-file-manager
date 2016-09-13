@@ -244,9 +244,10 @@ class GoogleDriveProvider extends ProviderInterface
 
   _saveFile: (content, metadata, callback) ->
     boundary = '-------314159265358979323846'
+    mimeType = metadata.mimeType or @mimeType
     header = JSON.stringify
       title: metadata.filename
-      mimeType: @mimeType
+      mimeType: mimeType
       parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
 
     [method, path] = if metadata.providerData?.id
@@ -256,7 +257,7 @@ class GoogleDriveProvider extends ProviderInterface
 
     body = [
       "\r\n--#{boundary}\r\nContent-Type: application/json\r\n\r\n#{header}",
-      "\r\n--#{boundary}\r\nContent-Type: #{@mimeType}\r\n\r\n#{content.getContentAsJSON?() or content}",
+      "\r\n--#{boundary}\r\nContent-Type: #{mimeType}\r\n\r\n#{content.getContentAsJSON?() or content}",
       "\r\n--#{boundary}--"
     ].join ''
 
