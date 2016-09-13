@@ -30,6 +30,11 @@ class CloudMetadata
     else
       name
 
+  @newExtension: (name, extension) ->
+    if ~name.indexOf(".")
+      name = name.split(".")[0]
+    name + "." + extension
+
   path: ->
     _path = []
     parent = @parent

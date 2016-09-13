@@ -508,6 +508,26 @@ class CloudFileManagerClient
     else
       callback? 'No initial opened version was found for the currently active file'
 
+  saveSecondaryFileAsDialog: (stringContent, extension, callback) ->
+    @_ui.saveSecondaryFileAsDialog (metadata) =>
+      if extension
+        # replace default extension
+        metadata.filename = CloudMetadata.newExtension metadata.filename, extension
+      @saveSecondaryFile stringContent, metadata, callback
+
+  # Saves a file to backend, but does not update current metadata.
+  # Used e.g. when exporting .csv files from CODAP
+  saveSecondaryFile: (stringContent, metadata, callback = null) ->
+    if metadata?.provider?.can 'save'
+      @_setState
+        saving: metadata
+      metadata.provider.save stringContent, metadata, (err, statusCode) =>
+        if err
+          return @alert(err)
+        @_setState
+          saving: null
+        callback? currentContent, metadata
+
   dirty: (isDirty = true)->
     @_setState
       dirty: isDirty

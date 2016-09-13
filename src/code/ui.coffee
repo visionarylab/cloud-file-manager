@@ -49,6 +49,7 @@ class CloudFileManagerUIMenu
       revertToSharedDialog: tr "~MENU.REVERT_TO_SHARED_VIEW"
       save: tr "~MENU.SAVE"
       saveFileAsDialog: tr "~MENU.SAVE_AS"
+      saveSecondaryFileAsDialog: tr "~MENU.EXPORT_AS"
       createCopy: tr "~MENU.CREATE_COPY"
       shareGetLink: tr "~MENU.SHARE_GET_LINK"
       shareUpdate: tr "~MENU.SHARE_UPDATE"
@@ -138,6 +139,9 @@ class CloudFileManagerUI
 
   saveFileAsDialog: (callback) ->
     @_showProviderDialog 'saveFileAs', (tr '~DIALOG.SAVE_AS'), callback
+
+  saveSecondaryFileAsDialog: (callback) ->
+    @_showProviderDialog 'saveSecondaryFileAs', (tr '~DIALOG.EXPORT_AS'), callback
 
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
