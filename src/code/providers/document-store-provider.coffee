@@ -195,6 +195,9 @@ class DocumentStoreProvider extends ProviderInterface
   handleUrlParams: ->
     if @urlParams.recordid
       @client.openProviderFile @name, @urlParams.recordid
+      true # signal that the provider is handling the params
+    else
+      false
 
   list: (metadata, callback) ->
     $.ajax

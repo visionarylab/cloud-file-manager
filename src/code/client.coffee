@@ -281,7 +281,7 @@ class CloudFileManagerClient
         else
           @confirmAuthorizeAndOpen(provider, providerParams)
     else
-      @alert tr("~ALERT.NO_PROVIDER")
+      @alert tr("~ALERT.NO_PROVIDER"), => @ready()
 
   openUrlFile: (url) ->
     @urlProvider.openFileFromUrl url, (err, content, metadata) =>
@@ -575,8 +575,11 @@ class CloudFileManagerClient
   confirmDialog: (params) ->
     @_ui.confirmDialog params
 
-  alert: (message, title=null, callback) ->
-    @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE"), callback
+  alert: (message, titleOrCallback, callback) ->
+    if _.isFunction(titleOrCallback)
+      callback = titleOrCallback
+      titleOrCallback = null
+    @_ui.alertDialog message, (titleOrCallback or tr "~CLIENT_ERROR.TITLE"), callback
 
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null

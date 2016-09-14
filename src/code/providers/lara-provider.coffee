@@ -53,7 +53,9 @@ class LaraProvider extends ProviderInterface
   handleUrlParams: ->
     if @laraParams
       @client.openProviderFile @name, @laraParams
-    false
+      true # signal that the provider is handling the params
+    else
+      false
 
   # don't show in provider open/save dialogs
   filterTabComponent: (capability, defaultComponent) ->
