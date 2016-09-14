@@ -33,8 +33,8 @@ class LaraProvider extends ProviderInterface
       launchFromLara: getQueryParam "launchFromLara"
     }
     @removableQueryParams = ['launchFromLara', 'runAsGuest']
-    if @urlParams.launchFromLara
-      @laraParams = @decodeParams @urlParams.launchFromLara
+    
+    @laraParams = if @urlParams.launchFromLara then @decodeParams(@urlParams.launchFromLara) else null
 
     @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
 
@@ -279,7 +279,6 @@ class LaraProvider extends ProviderInterface
     callback "Cannot open the specified document"
 
   getOpenSavedParams: (metadata) ->
-    # if loaded from lara then reuse the params so we don't leak the keys
-    @encodeParams @laraParams or metadata.providerData
+    @encodeParams @laraParams
 
 module.exports = LaraProvider
