@@ -173,6 +173,7 @@ class ProviderInterface
     defaultComponent
 
   matchesExtension: (name) ->
+    return false if not name
     if CloudMetadata.ReadableExtensions? and CloudMetadata.ReadableExtensions.length > 0
       for extension in CloudMetadata.ReadableExtensions
         return true if name.substr(-extension.length) is extension
