@@ -255,9 +255,14 @@ class GoogleDriveProvider extends ProviderInterface
     else
       ['POST', '/upload/drive/v2/files']
 
+    transferEncoding = ""
+    if mimeType.indexOf("image/") is 0
+      # assume we're transfering any images as base64
+      transferEncoding = "\r\nContent-Transfer-Encoding: base64"
+
     body = [
       "\r\n--#{boundary}\r\nContent-Type: application/json\r\n\r\n#{header}",
-      "\r\n--#{boundary}\r\nContent-Type: #{mimeType}\r\n\r\n#{content.getContentAsJSON?() or content}",
+      "\r\n--#{boundary}\r\nContent-Type: #{mimeType}#{transferEncoding}\r\n\r\n#{content.getContentAsJSON?() or content}",
       "\r\n--#{boundary}--"
     ].join ''
 
