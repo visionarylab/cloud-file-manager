@@ -279,8 +279,7 @@ class LaraProvider extends ProviderInterface
     callback "Cannot open the specified document"
 
   getOpenSavedParams: (metadata) ->
-    @encodeParams if metadata.providerData.url \
-                    then { url: metadata.providerData.url } \
-                    else metadata.providerData
+    # if loaded from lara then reuse the params so we don't leak the keys
+    @encodeParams @laraParams or metadata.providerData
 
 module.exports = LaraProvider

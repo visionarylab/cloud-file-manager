@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <script src="../js/globals.js"></script>
+    <script src="../js/app.js"></script>
+    <link rel="stylesheet" href="../css/app.css">
+    <title>Examples: Lara Provider</title>
+  </head>
+  <body>
+    <div id="wrapper">
+    </div>
+    <script>
+      var options = {
+        app: "example-app",
+        mimeType: "text/plain",
+        appName: "CFM_Demo",
+        appVersion: "0.1",
+        appBuildNum: "1",
+        enableLaraSharing: true,
+        providers: [
+          "localStorage",
+          "localFile",
+          "lara",
+          {
+            "name": "readOnly",
+            "json": {
+              "first-example": "This is the first readonly example",
+              "second-example": "This is the second readonly example"
+            }
+          },
+          {
+            "name": "googleDrive",
+            "clientId": "1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com"
+          },
+          {
+            "name": "documentStore",
+            "patch": true
+          }
+        ],
+        ui: {
+          menu: CloudFileManager.DefaultMenu,
+          menuBar: {
+            info: "Version 1.0.0",
+            help: "http://lmgtfy.com/"
+          }
+        }
+      };
+      CloudFileManager.createFrame(options, "wrapper");
+    </script>
+  </body>
+</html>
