@@ -31,8 +31,8 @@ class CloudMetadata
       name
 
   @newExtension: (name, extension) ->
-    if ~name.indexOf(".")
-      name = name.split(".")[0]
+    # drop last extension, if there is one
+    name = name.substr(0, name.lastIndexOf('.')) or name
     name + "." + extension
 
   path: ->
