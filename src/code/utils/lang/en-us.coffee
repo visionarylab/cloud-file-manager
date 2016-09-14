@@ -32,6 +32,11 @@ module.exports =
   "~PROVIDER.DOCUMENT_STORE": "Document Store"
   "~PROVIDER.LOCAL_FILE": "Local File"
 
+  "~FILE_STATUS.SAVING": "Saving..."
+  "~FILE_STATUS.SAVED": "All changes saved"
+  "~FILE_STATUS.SAVED_TO_PROVIDER": "All changes saved to %{providerName}"
+  "~FILE_STATUS.UNSAVED": "Unsaved"
+
   "~FILE_DIALOG.FILENAME": "Filename"
   "~FILE_DIALOG.OPEN": "Open"
   "~FILE_DIALOG.SAVE": "Save"

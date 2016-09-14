@@ -6,6 +6,7 @@ CloudFileManagerUI = (require './ui').CloudFileManagerUI
 LocalStorageProvider = require './providers/localstorage-provider'
 ReadOnlyProvider = require './providers/readonly-provider'
 GoogleDriveProvider = require './providers/google-drive-provider'
+LaraProvider = require './providers/lara-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
 DocumentStoreShareProvider = require './providers/document-store-share-provider'
 LocalFileProvider = require './providers/local-file-provider'
@@ -37,7 +38,7 @@ class CloudFileManagerClient
 
     # filter for available providers
     allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, DocumentStoreProvider, LocalFileProvider]
+    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, LaraProvider, DocumentStoreProvider, LocalFileProvider]
       if Provider.Available()
         allProviders[Provider.Name] = Provider
 
@@ -437,9 +438,12 @@ class CloudFileManagerClient
           currentContent.remove 'isUnshared'
         else
           currentContent.set 'isUnshared', true
-        @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
-          return @alert(err) if err
-          callback? null, sharedContentId, currentContent
+        if shared
+          @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
+            return @alert(err) if err
+            callback? null, sharedContentId, currentContent
+        else
+          callback? null
 
   share: (callback) ->
     @setShareState true, (err, sharedContentId, currentContent) =>
@@ -542,6 +546,25 @@ class CloudFileManagerClient
     suffix = if queryString? then "?#{queryString}" else ""
     # Check browser support for document.location.origin (& window.location.origin)
     "#{document.location.origin}#{document.location.pathname}#{suffix}"
+
+  # Takes an array of strings representing url parameters to be removed from the URL.
+  # Removes the specified parameters from the URL and then uses the history API's
+  # pushState() method to update the URL without reloading the page.
+  # Adapted from http://stackoverflow.com/a/11654436.
+  removeQueryParams: (params) ->
+    url = window.location.href
+    hash = url.split('#')
+
+    for key in params
+      re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "g")
+
+      if re.test(url)
+        hash[0] = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '')
+
+    url = hash[0] + if hash[1]? then '#' + hash[1] else ''
+
+    if url isnt window.location.href
+      history.pushState { originalUrl: window.location.href }, '', url
 
   confirm: (message, callback) ->
     @_ui.confirmDialog message, callback

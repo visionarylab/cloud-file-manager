@@ -44,4 +44,26 @@ class DocumentStoreUrl
   renameDocument: (params) ->
     @addParams "#{@docStoreUrl}/document/rename", params
 
+  #
+  # Version 2 API
+  #
+  v2Document: (id, params) ->
+    @addParams "#{@docStoreUrl}/v2/documents/#{id}", params
+
+  v2CreateDocument: (params) ->
+    { method: 'POST', url: @v2Document('', params) }
+    
+  v2LoadDocument: (id, params) ->
+    { method: 'GET', url: @v2Document(id, params) }
+    
+  v2SaveDocument: (id, params) ->
+    { method: 'PUT', url: @v2Document(id, params) }
+    
+  v2PatchDocument: (id, params) ->
+    { method: 'PATCH', url: @v2Document(id, params) }
+    
+  # Not implemented by the server
+  # v2DeleteDocument: (id, params) ->
+  #   { method: 'DELETE', url: @v2Document(id, params) }
+    
 module.exports = DocumentStoreUrl
