@@ -40,16 +40,17 @@ DocumentStoreAuthorizationDialog = React.createFactory React.createClass
 class DocumentStoreProvider extends ProviderInterface
 
   constructor: (@options = {}, @client) ->
+    @options.deprecationPhase = 0 if not @options.deprecationPhase?
     super
       name: DocumentStoreProvider.Name
       displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
       urlDisplayName: @options.urlDisplayName
       capabilities:
-        save: true
-        load: true
-        list: true
-        remove: true
-        rename: true
+        save: @isNotDeprecated('save')
+        load: @isNotDeprecated('load')
+        list: @isNotDeprecated('list')
+        remove: @isNotDeprecated('remove')
+        rename: @isNotDeprecated('rename')
         close: false
 
     @urlParams = {
@@ -162,6 +163,34 @@ class DocumentStoreProvider extends ProviderInterface
       (span {}, (span {className: 'document-store-icon'}), @user.name)
     else
       null
+
+  filterTabComponent: (capability, defaultComponent) ->
+    # allow the save elsewhere button to hide the document provider tab in save
+    if capability is 'save' and @disableForNextSave
+      @disableForNextSave = false
+      null
+    else
+      defaultComponent
+
+  isNotDeprecated: (capability) ->
+    if capability is 'save'
+      @options.deprecationPhase < 2
+    else
+      @options.deprecationPhase < 3
+
+  deprecationMessage: ->
+    messages = [
+      tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1'
+      tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2'
+    ]
+    if @options.deprecationPhase > 0 and @options.deprecationPhase <= messages.length
+      messages[@options.deprecationPhase - 1]
+    else
+      null
+
+  onProviderTabSelected: (capability) ->
+    if capability is 'save' and @deprecationMessage()
+      @client.alert @deprecationMessage(), (tr '~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')
 
   handleUrlParams: ->
     if @urlParams.recordid
@@ -341,5 +370,21 @@ class DocumentStoreProvider extends ProviderInterface
 
   getOpenSavedParams: (metadata) ->
     metadata.providerData.id
+
+  fileOpened: (content, metadata) ->
+    deprecationPhase = @options.deprecationPhase or 0
+    return if not deprecationPhase
+    @client.confirmDialog {
+      title: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'
+      message: @deprecationMessage()
+      yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
+      noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
+      callback: =>
+        @disableForNextSave = true
+        @client.saveFileAsDialog content
+      rejectCallback: =>
+        if deprecationPhase > 1
+          @client.appOptions.autoSaveInterval = null
+    }
 
 module.exports = DocumentStoreProvider

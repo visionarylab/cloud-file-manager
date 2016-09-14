@@ -192,6 +192,7 @@ class CloudFileManagerClient
         @_closeCurrentFile()
         @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
         callback? content, metadata
+        metadata.provider.fileOpened content, metadata
     else
       @openFileDialog callback
 
@@ -265,6 +266,7 @@ class CloudFileManagerClient
         provider.openSaved providerParams, (err, content, metadata) =>
           return @alert(err) if err
           @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+          provider.fileOpened content, metadata
 
   openProviderFile: (providerName, providerParams) ->
     provider = @providers[providerName]
@@ -275,6 +277,7 @@ class CloudFileManagerClient
           provider.openSaved providerParams, (err, content, metadata) =>
             return @alert(err, => @ready()) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+            provider.fileOpened content, metadata
         else
           @confirmAuthorizeAndOpen(provider, providerParams)
     else
@@ -567,7 +570,10 @@ class CloudFileManagerClient
       history.pushState { originalUrl: window.location.href }, '', url
 
   confirm: (message, callback) ->
-    @_ui.confirmDialog message, callback
+    @confirmDialog { message: message, callback: callback }
+
+  confirmDialog: (params) ->
+    @_ui.confirmDialog params
 
   alert: (message, title=null, callback) ->
     @_ui.alertDialog message, (title or tr "~CLIENT_ERROR.TITLE"), callback

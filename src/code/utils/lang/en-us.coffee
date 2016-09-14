@@ -29,7 +29,7 @@ module.exports =
   "~PROVIDER.LOCAL_STORAGE": "Local Storage"
   "~PROVIDER.READ_ONLY": "Read Only"
   "~PROVIDER.GOOGLE_DRIVE": "Google Drive"
-  "~PROVIDER.DOCUMENT_STORE": "Document Store"
+  "~PROVIDER.DOCUMENT_STORE": "Concord Cloud"
   "~PROVIDER.LOCAL_FILE": "Local File"
 
   "~FILE_STATUS.SAVING": "Saving..."
@@ -96,3 +96,36 @@ module.exports =
   "~ALERT_DIALOG.CLOSE": "Close"
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
+
+  "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE": "Concord Cloud Alert"
+  "~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE": "Concord Cloud Alert"
+  "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE": "Save Elsewhere"
+  "~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER": "I'll do it later"
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1": """
+      <div style="text-align: left">
+        <strong>The Concord Cloud is shutting down soon!</strong>
+        <p>
+          <ul>
+            <li>Nov. 1: Saving to the Concord Cloud will be disabled.</li>
+            <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+          </ul>
+        </p>
+        <p>
+          Please save your documents to another location as soon as possible.
+        </p>
+      </div>
+    """
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2": """
+      <div style="text-align: left">
+        <strong>The Concord Cloud is shutting down soon!</strong>
+        <p>
+          <ul>
+            <li>Nov. 1: Saving to the Concord Cloud was disabled.</li>
+            <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+          </ul>
+        </p>
+        <p>
+          Please save your documents to another location as soon as possible.
+        </p>
+      </div>
+    """

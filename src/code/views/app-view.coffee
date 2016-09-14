@@ -164,7 +164,7 @@ App = React.createClass
       if @state.alertDialog
         (AlertDialog {title: @state.alertDialog.title, message: @state.alertDialog.message, callback: @state.alertDialog.callback, close: @closeAlert})
       if @state.confirmDialog
-        (ConfirmDialog {message: @state.confirmDialog.message, callback: @state.confirmDialog.callback, close: @closeConfirm})
+        (ConfirmDialog _.merge {}, @state.confirmDialog, { close: @closeConfirm })
     )
 
   render: ->

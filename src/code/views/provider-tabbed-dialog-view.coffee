@@ -27,7 +27,8 @@ module.exports = React.createClass
             dialog: @props.dialog
             close: @props.close
             provider: provider
-          tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component}
+          onSelected = if provider.onProviderTabSelected then provider.onProviderTabSelected.bind(provider) else null
+          tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component, capability: capability, onSelected: onSelected}
           if provider.name is @props.client.state.metadata?.provider?.name
             selectedTabIndex = tabs.length - 1
 
