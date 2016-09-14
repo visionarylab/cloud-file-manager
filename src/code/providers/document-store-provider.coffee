@@ -178,26 +178,19 @@ class DocumentStoreProvider extends ProviderInterface
     else
       @options.deprecationPhase < 3
 
-  deprecationMessage: (capability) ->
-    messages = switch capability
-      when 'save'
-        [
-          tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1'
-          tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2'
-        ]
-      else
-        [
-          tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1'
-          tr '~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2'
-        ]
+  deprecationMessage: ->
+    messages = [
+      tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1'
+      tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2'
+    ]
     if @options.deprecationPhase > 0 and @options.deprecationPhase <= messages.length
       messages[@options.deprecationPhase - 1]
     else
       null
 
   onProviderTabSelected: (capability) ->
-    if capability in ['save', 'list'] and @deprecationMessage(capability)
-      @client.alert @deprecationMessage(capability), (tr '~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')
+    if capability is 'save' and @deprecationMessage()
+      @client.alert @deprecationMessage(), (tr '~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')
 
   handleUrlParams: ->
     if @urlParams.recordid
@@ -383,7 +376,7 @@ class DocumentStoreProvider extends ProviderInterface
     return if not deprecationPhase
     @client.confirmDialog {
       title: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'
-      message: @deprecationMessage('save')
+      message: @deprecationMessage()
       yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
       noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
       callback: =>

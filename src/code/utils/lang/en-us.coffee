@@ -99,26 +99,33 @@ module.exports =
 
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE": "Concord Cloud Alert"
   "~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE": "Concord Cloud Alert"
-  "~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_1":
-    "The Concord Cloud is closing down." +
-    " On November 1st you will no longer be able to save to the Concord Cloud." +
-    " On January 1st you will not be able to open documents from the Concord Cloud." +
-    " Please save your documents to another location as soon as possible."
-  "~CONCORD_CLOUD_DEPRECATION.OPEN_PHASE_2":
-    "The Concord Cloud is closing down." +
-    " Documents can no longer be saved to the Concord Cloud." +
-    " After January 1st you will not be able to open documents from the Concord Cloud." +
-    " Please save your documents to another location as soon as possible."
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE": "Save Elsewhere"
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER": "I'll do it later"
-  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1":
-    "The Concord Cloud is closing down." +
-    " On November 1st you will no longer be able to save to the Concord Cloud." +
-    " On January 1st you will not be able to open documents from the Concord Cloud." +
-    " Please save this document to another location as soon as possible."
-  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2":
-    "The Concord Cloud is closing down." +
-    " You can no longer save this document to the Concord Cloud." +
-    " On January 1st you will not be able to open this document from the Concord Cloud." +
-    " Please save this document to another location."
-
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1": """
+      <div style="text-align: left">
+        <strong>The Concord Cloud is shutting down soon!</strong>
+        <p>
+          <ul>
+            <li>Nov. 1: Saving to the Concord Cloud will be disabled.</li>
+            <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+          </ul>
+        </p>
+        <p>
+          Please save your documents to another location as soon as possible.
+        </p>
+      </div>
+    """
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2": """
+      <div style="text-align: left">
+        <strong>The Concord Cloud is shutting down soon!</strong>
+        <p>
+          <ul>
+            <li>Nov. 1: Saving to the Concord Cloud was disabled.</li>
+            <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+          </ul>
+        </p>
+        <p>
+          Please save your documents to another location as soon as possible.
+        </p>
+      </div>
+    """
