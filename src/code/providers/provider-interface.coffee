@@ -8,7 +8,7 @@ class CloudFile
 
 class CloudMetadata
   constructor: (options) ->
-    {@name, @type, @description, @content, @url, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId, @sharedContentSecretKey} = options
+    {@name, @type, @description, @content, @url, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId, @sharedContentSecretKey, @mimeType} = options
     @_updateFilename()
 
   @Folder: 'folder'
@@ -29,6 +29,11 @@ class CloudMetadata
       name + "." + extension
     else
       name
+
+  @newExtension: (name, extension) ->
+    # drop last extension, if there is one
+    name = name.substr(0, name.lastIndexOf('.')) or name
+    name + "." + extension
 
   path: ->
     _path = []

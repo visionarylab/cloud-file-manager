@@ -18,6 +18,7 @@ class LocalStorageProvider extends ProviderInterface
         remove: true
         rename: true
         close: false
+        saveUnwrapped: true
 
   @Name: 'localStorage'
   @Available: ->
@@ -32,7 +33,7 @@ class LocalStorageProvider extends ProviderInterface
   save: (content, metadata, callback) ->
     try
       fileKey = @_getKey(metadata.filename)
-      window.localStorage.setItem fileKey, content.getContentAsJSON()
+      window.localStorage.setItem fileKey, (content.getContentAsJSON?() or content)
       callback? null
     catch e
       callback "Unable to save: #{e.message}"

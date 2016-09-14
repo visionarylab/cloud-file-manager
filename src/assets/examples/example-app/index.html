@@ -34,6 +34,10 @@
         cfmClient && cfmClient.saveFileAsDialog(getContent());
       }
 
+      function saveSecondaryFileAs() {
+        cfmClient && cfmClient.saveSecondaryFileAsDialog(getContent(), "csv");
+      }
+
       function getContent() {
         return document.getElementById("text").value;
       }
@@ -81,6 +85,7 @@
       <button onclick="openFile()">Open</button>
       <button onclick="saveFile()">Save</button>
       <button onclick="saveFileAs()">Save As</button>
+      <button onclick="saveSecondaryFileAs()">Export Separate File</button>
     </div>
     <div>
       Import Local File: <input type="file" onchange="importLocalFile(event)">

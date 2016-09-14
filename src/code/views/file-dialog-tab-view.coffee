@@ -92,7 +92,7 @@ FileDialogTab = React.createClass
     @setState list: list
 
   getStateForFolder: (folder) ->
-    metadata = if @isOpen() then @state?.metadata or null else @props.client.state.metadata
+    metadata = if @isOpen() then @state?.metadata or null else _.cloneDeep @props.client.state.metadata
     metadata?.parent = folder
 
     if @props.client.state.metadata and (@props.provider isnt @props.client.state.metadata.provider)

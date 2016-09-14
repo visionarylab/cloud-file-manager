@@ -7,6 +7,7 @@ module.exports =
   "~MENU.IMPORT_DATA": "Import data..."
   "~MENU.SAVE": "Save"
   "~MENU.SAVE_AS": "Save As ..."
+  "~MENU.EXPORT_AS": "Export File As ..."
   "~MENU.CREATE_COPY": "Create a copy"
   "~MENU.SHARE": "Share..."
   "~MENU.SHARE_GET_LINK": "Get link to shared view"
@@ -19,6 +20,7 @@ module.exports =
 
   "~DIALOG.SAVE": "Save"
   "~DIALOG.SAVE_AS": "Save As ..."
+  "~DIALOG.EXPORT_AS": "Export File As ..."
   "~DIALOG.CREATE_COPY": "Create A Copy ..."
   "~DIALOG.OPEN": "Open"
   "~DIALOG.DOWNLOAD": "Download"
