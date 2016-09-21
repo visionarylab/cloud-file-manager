@@ -33,8 +33,9 @@ class LaraProvider extends ProviderInterface
       launchFromLara: getQueryParam "launchFromLara"
     }
     @removableQueryParams = ['launchFromLara', 'runAsGuest']
-    
+
     @laraParams = if @urlParams.launchFromLara then @decodeParams(@urlParams.launchFromLara) else null
+    @openSavedParams = null
 
     @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
 
@@ -161,6 +162,8 @@ class LaraProvider extends ProviderInterface
     if typeof openSavedParams is "string"
       openSavedParams = @decodeParams openSavedParams
 
+    @openSavedParams = openSavedParams
+
     #
     # if we have a document ID we can just load the document
     #
@@ -174,7 +177,7 @@ class LaraProvider extends ProviderInterface
     #
     # Process the initial run state response
     #
-    processInitialRunState = (runStateUrl, sourceID, runState) =>
+    processInitialRunState = (runStateUrl, sourceID, readOnlyKey, runState) =>
       # Check if we have a document associated with this run state already (2a) or not (2b)
       rawData = @extractRawDataFromRunState runState
       docStoreParams = rawData.docStore
@@ -193,7 +196,11 @@ class LaraProvider extends ProviderInterface
         return
 
       # (2b) request a copy of the shared document
-      {method, url} = @docStoreUrl.v2CreateDocument({ source: sourceID })
+      createParams = { source: sourceID }
+      # add a key if given (for copying linked run states)
+      if readOnlyKey
+        createParams.accessKey = "RO::#{readOnlyKey}"
+      {method, url} = @docStoreUrl.v2CreateDocument(createParams)
       $.ajax({
         type: method
         url: url,
@@ -271,7 +278,7 @@ class LaraProvider extends ProviderInterface
           withCredentials: true
       })
       .done (data, status, jqXHR) ->
-        processInitialRunState openSavedParams.url, openSavedParams.source, data
+        processInitialRunState openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data
 
       .fail (jqXHR, status, error) ->
         callback "Could not open the specified document because an error occurred [getState]"
@@ -281,6 +288,13 @@ class LaraProvider extends ProviderInterface
     callback "Cannot open the specified document"
 
   getOpenSavedParams: (metadata) ->
-    @encodeParams @laraParams
+    params = if @openSavedParams
+      @openSavedParams
+    else if @laraParams
+      url: @laraParams.url
+      source: @laraParams.source
+    else
+      metadata
+    @encodeParams params
 
 module.exports = LaraProvider
