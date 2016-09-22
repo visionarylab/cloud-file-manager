@@ -1,6 +1,7 @@
 {div, button, span} = React.DOM
 
 getQueryParam = require '../utils/get-query-param'
+getHashParam = require '../utils/get-hash-param'
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 jiff = require 'jiff'
@@ -376,7 +377,8 @@ class DocumentStoreProvider extends ProviderInterface
 
   fileOpened: (content, metadata) ->
     deprecationPhase = @options.deprecationPhase or 0
-    return if not deprecationPhase
+    fromLara = !!getQueryParam("launchFromLara") or !!getHashParam("lara")
+    return if not deprecationPhase or fromLara
     @client.confirmDialog {
       title: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'
       message: @deprecationMessage()
