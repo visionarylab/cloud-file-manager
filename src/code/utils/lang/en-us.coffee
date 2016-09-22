@@ -105,28 +105,28 @@ module.exports =
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER": "I'll do it later"
   "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1": """
       <div style="text-align: left">
-        <strong>The Concord Cloud is shutting down soon!</strong>
-        <p>
-          <ul>
-            <li>Nov. 1: Saving to the Concord Cloud will be disabled.</li>
-            <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
-          </ul>
+        <p style="margin: 10px 0;">
+          <strong>The Concord Cloud is shutting down soon!</strong>
         </p>
-        <p>
+        <ul style="margin: 10px 20px;">
+          <li>Nov. 1: Saving to the Concord Cloud will be disabled.</li>
+          <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+        </ul>
+        <p style="margin: 10px 0;">
           Please save your documents to another location as soon as possible.
         </p>
       </div>
     """
   "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2": """
       <div style="text-align: left">
-        <strong>The Concord Cloud is shutting down soon!</strong>
-        <p>
-          <ul>
-            <li>Nov. 1: Saving to the Concord Cloud was disabled.</li>
-            <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
-          </ul>
+        <p style="margin: 10px 0;">
+          <strong>The Concord Cloud is shutting down soon!</strong>
         </p>
-        <p>
+        <ul style="margin: 10px 20px;">
+          <li>Nov. 1: Saving to the Concord Cloud was disabled.</li>
+          <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+        </ul>
+        <p style="margin: 10px 0;">
           Please save your documents to another location as soon as possible.
         </p>
       </div>
