@@ -15,7 +15,7 @@ module.exports = React.createClass
   render: ->
     (ModalDialog {title: @props.title or (tr '~ALERT_DIALOG.TITLE'), close: @close, zIndex: 500},
       (div {className: 'alert-dialog'},
-        (div {className: 'alert-dialog-message'}, @props.message)
+        (div {className: 'alert-dialog-message', dangerouslySetInnerHTML: {__html: @props.message}})
         (div {className: 'buttons'},
           (button {onClick: @close}, tr '~ALERT_DIALOG.CLOSE')
         )
