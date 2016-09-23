@@ -117,7 +117,10 @@ FileDialogTab = React.createClass
     confirmed = (metadata) =>
       # ensure the metadata provider is the currently-showing tab
       @state.metadata = metadata
-      @state.metadata.provider = @props.provider
+      if @state.metadata.provider isnt @props.provider
+        @state.metadata.provider = @props.provider
+        # if switching provider, then clear providerData
+        @state.metadata.providerData = {}
       @props.dialog.callback? @state.metadata
       @props.close()
 
