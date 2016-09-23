@@ -168,7 +168,6 @@ class DocumentStoreProvider extends ProviderInterface
   filterTabComponent: (capability, defaultComponent) ->
     # allow the save elsewhere button to hide the document provider tab in save
     if capability is 'save' and @disableForNextSave
-      @disableForNextSave = false
       null
     else
       defaultComponent
@@ -386,7 +385,7 @@ class DocumentStoreProvider extends ProviderInterface
       noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
       callback: =>
         @disableForNextSave = true
-        @client.saveFileAsDialog content
+        @client.saveFileAsDialog()
       rejectCallback: =>
         if deprecationPhase > 1
           @client.appOptions.autoSaveInterval = null
