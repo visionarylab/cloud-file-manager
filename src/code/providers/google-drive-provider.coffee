@@ -132,7 +132,7 @@ class GoogleDriveProvider extends ProviderInterface
       request = gapi.client.drive.files.list
         q: query = "trashed = false and (#{mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '#{if metadata then metadata.providerData.id else 'root'}' in parents"
       request.execute (result) =>
-        return callback('Unable to list files') if not result
+        return callback(@_apiError(result, 'Unable to list files')) if not result or result.error
         list = []
         for item in result?.items
           type = if item.mimeType is 'application/vnd.google-apps.folder' then CloudMetadata.Folder else CloudMetadata.File
