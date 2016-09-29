@@ -168,6 +168,7 @@ class DocumentStoreProvider extends ProviderInterface
   filterTabComponent: (capability, defaultComponent) ->
     # allow the save elsewhere button to hide the document provider tab in save
     if capability is 'save' and @disableForNextSave
+      @disableForNextSave = false
       null
     else
       defaultComponent
