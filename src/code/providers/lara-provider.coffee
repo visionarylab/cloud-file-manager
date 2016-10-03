@@ -104,11 +104,12 @@ class LaraProvider extends ProviderInterface
       error: (jqXHR) ->
         callback "Unable to load #{metadata.name or metadata.providerData?.recordid or 'file'}"
 
-  save: (cloudContent, metadata, callback) ->
+  save: (cloudContent, metadata, callback, disablePatch) ->
     content = cloudContent.getContent()
 
     # See if we can patch
-    patchResults = @savedContent.createPatch(content, @options.patch and metadata.overwritable)
+    canPatch = @options.patch and metadata.overwritable and not disablePatch
+    patchResults = @savedContent.createPatch(content, canPatch)
 
     if patchResults.shouldPatch and not patchResults.diffLength
       # no reason to patch if there are no diffs
@@ -143,14 +144,19 @@ class LaraProvider extends ProviderInterface
         callback null, data
 
       error: (jqXHR) ->
-        try
-          responseJson = JSON.parse jqXHR.responseText
-          if responseJson.message is 'error.duplicate'
-            callback "Unable to create #{metadata.name}. File already exists."
-          else
-            callback "Unable to save #{metadata.name}: [#{responseJson.message}]"
-        catch
-          callback "Unable to save #{metadata.name}"
+        # if patch fails, try a full save
+        if patchResults.shouldPatch
+          @save(cloudContent, metadata, callback, true)
+        # if full save fails, return error message
+        else
+          try
+            responseJson = JSON.parse jqXHR.responseText
+            if responseJson.message is 'error.duplicate'
+              callback "Unable to create #{metadata.name}. File already exists."
+            else
+              callback "Unable to save #{metadata.name}: [#{responseJson.message}]"
+          catch
+            callback "Unable to save #{metadata.name}"
 
   canOpenSaved: -> true
 
