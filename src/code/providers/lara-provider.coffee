@@ -228,7 +228,9 @@ class LaraProvider extends ProviderInterface
         metadata.providerData = _.merge({}, docStoreMetadata, { url: runStateUrl })
 
         # build the reporting_url
-        codapUrl = window.location.origin or "${window.location.protocol}//${window.location.host}"
+        codapUrl = if window.location.origin \
+                    then "#{window.location.origin}#{window.location.pathname}" \
+                    else "#{window.location.protocol}//#{window.location.host}#{window.location.pathname}"
         reportUrlLaraParams =
           recordid: createResponse.id
           accessKeys:
