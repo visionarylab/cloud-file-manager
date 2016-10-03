@@ -91,8 +91,21 @@ FileDialogTab = React.createClass
   listLoaded: (list) ->
     @setState list: list
 
+  getSaveMetadata: ->
+    # The save metadata for a file that may have been opened from another
+    # provider must be cloned, but without cloning the provider field.
+    # Furthermore, if the provider has changed, the provider and providerData
+    # fields should be cleared.
+    saveMetadata = _.clone @props.client.state.metadata
+    if @props.provider is saveMetadata.provider
+      saveMetadata.providerData = _.cloneDeep saveMetadata.providerData
+    else
+      saveMetadata.provider = null
+      saveMetadata.providerData = null
+    saveMetadata
+
   getStateForFolder: (folder) ->
-    metadata = if @isOpen() then @state?.metadata or null else _.cloneDeep @props.client.state.metadata
+    metadata = if @isOpen() then @state?.metadata or null else @getSaveMetadata()
     metadata?.parent = folder
 
     if @props.client.state.metadata and (@props.provider isnt @props.client.state.metadata.provider)
