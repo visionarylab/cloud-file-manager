@@ -108,7 +108,7 @@ FileDialogTab = React.createClass
     metadata = if @isOpen() then @state?.metadata or null else @getSaveMetadata()
     metadata?.parent = folder
 
-    if @props.client.state.metadata and (@props.provider isnt @props.client.state.metadata.provider)
+    if @props.client.state.metadata?.provider and (@props.provider isnt @props.client.state.metadata.provider)
       folder = null
 
     folder: folder
@@ -117,8 +117,7 @@ FileDialogTab = React.createClass
 
   fileSelected: (metadata) ->
     if metadata?.type is CloudMetadata.Folder
-      @setState
-        folder: metadata
+      @setState @getStateForFolder metadata
     else if metadata?.type is CloudMetadata.File
       @setState
         filename: metadata.name
