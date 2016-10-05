@@ -96,12 +96,13 @@ FileDialogTab = React.createClass
     # provider must be cloned, but without cloning the provider field.
     # Furthermore, if the provider has changed, the provider and providerData
     # fields should be cleared.
-    saveMetadata = _.clone @props.client.state.metadata
-    if @props.provider is saveMetadata.provider
-      saveMetadata.providerData = _.cloneDeep saveMetadata.providerData
-    else
-      saveMetadata.provider = null
-      saveMetadata.providerData = null
+    saveMetadata = if @props.client.state.metadata then _.clone @props.client.state.metadata else null
+    if saveMetadata
+      if @props.provider is saveMetadata.provider
+        saveMetadata.providerData = _.cloneDeep saveMetadata.providerData
+      else
+        saveMetadata.provider = null
+        saveMetadata.providerData = null
     saveMetadata
 
   getStateForFolder: (folder) ->
