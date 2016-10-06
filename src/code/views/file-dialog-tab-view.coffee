@@ -56,7 +56,7 @@ FileList = React.createFactory React.createClass
 
   render: ->
     list = []
-    isSubFolder = @props.folder isnt null
+    isSubFolder = @props.folder?
     if isSubFolder
       list.push (div {key: 'parent', className: 'selectable', onClick: @parentSelected}, (React.DOM.i {className: 'icon-paletteArrow-collapse'}), @props.folder.name)
     for metadata, i in @props.list
@@ -75,7 +75,7 @@ FileDialogTab = React.createClass
   mixins: [AuthorizeMixin]
 
   getInitialState: ->
-    initialState = @getStateForFolder @props.client.state.metadata?.parent or null
+    initialState = @getStateForFolder(@props.client.state.metadata?.parent, true) or null
     initialState.filename = initialState.metadata?.name or ''
     initialState
 
@@ -105,12 +105,13 @@ FileDialogTab = React.createClass
         saveMetadata.providerData = null
     saveMetadata
 
-  getStateForFolder: (folder) ->
+  getStateForFolder: (folder, initialFolder) ->
     metadata = if @isOpen() then @state?.metadata or null else @getSaveMetadata()
-    metadata?.parent = folder
 
-    if @props.client.state.metadata?.provider and (@props.provider isnt @props.client.state.metadata.provider)
+    if initialFolder and (@props.client.state.metadata?.provider isnt @props.provider)
       folder = null
+    else
+      metadata?.parent = folder
 
     folder: folder
     metadata: metadata
