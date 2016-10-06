@@ -183,6 +183,7 @@ class DocumentStoreProvider extends ProviderInterface
     messages = [
       tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_1'
       tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_2'
+      tr '~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_3'
     ]
     if @options.deprecationPhase > 0 and @options.deprecationPhase <= messages.length
       messages[@options.deprecationPhase - 1]
@@ -384,6 +385,7 @@ class DocumentStoreProvider extends ProviderInterface
       message: @deprecationMessage()
       yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
       noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
+      hideNoButton: deprecationPhase >= 3
       callback: =>
         @disableForNextSave = true
         @client.saveFileAsDialog()

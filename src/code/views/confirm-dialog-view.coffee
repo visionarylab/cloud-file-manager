@@ -22,7 +22,7 @@ module.exports = React.createClass
         (div {className: 'confirm-dialog-message', dangerouslySetInnerHTML: {__html: @props.message}})
         (div {className: 'buttons'},
           (button {onClick: @confirm}, @props.yesTitle or tr '~CONFIRM_DIALOG.YES')
-          (button {onClick: @reject}, @props.noTitle or tr '~CONFIRM_DIALOG.NO')
+          ((button {onClick: @reject}, @props.noTitle or tr '~CONFIRM_DIALOG.NO') if not @props.hideNoButton)
         )
       )
     )

@@ -109,8 +109,8 @@ module.exports =
           <strong>The Concord Cloud is shutting down soon!</strong>
         </p>
         <ul style="margin: 10px 20px;">
-          <li>Nov. 1: Saving to the Concord Cloud will be disabled.</li>
-          <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+          <li>Nov 15, 2016: Saving to the Concord Cloud will be disabled.</li>
+          <li>Jan 1, 2017: Opening from the Concord Cloud will be disabled.</li>
         </ul>
         <p style="margin: 10px 0;">
           Please save your documents to another location as soon as possible.
@@ -123,11 +123,25 @@ module.exports =
           <strong>The Concord Cloud is shutting down soon!</strong>
         </p>
         <ul style="margin: 10px 20px;">
-          <li>Nov. 1: Saving to the Concord Cloud was disabled.</li>
-          <li>Jan. 1: Opening from the Concord Cloud will be disabled.</li>
+          <li>Nov 15, 2016: Saving to the Concord Cloud was disabled.</li>
+          <li>Jan 1, 2017: Opening from the Concord Cloud will be disabled.</li>
         </ul>
         <p style="margin: 10px 0;">
           Please save your documents to another location as soon as possible.
+        </p>
+      </div>
+    """
+  "~CONCORD_CLOUD_DEPRECATION.SAVE_PHASE_3": """
+      <div style="text-align: left">
+        <p style="margin: 10px 0;">
+          <strong>The Concord Cloud has been shut down!</strong>
+        </p>
+        <ul style="margin: 10px 20px;">
+          <li>Nov 15, 2016: Saving to the Concord Cloud was disabled.</li>
+          <li>Jan 1, 2017: Opening from the Concord Cloud was disabled.</li>
+        </ul>
+        <p style="margin: 10px 0;">
+          Please save your documents to another location.
         </p>
       </div>
     """
