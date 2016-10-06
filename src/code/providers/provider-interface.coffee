@@ -25,8 +25,8 @@ class CloudMetadata
     if keepOriginalExtension and ~name.indexOf(".")
       return name
     extension = CloudMetadata.Extension or defaultExtension
-    if extension? and name.substr(-extension.length+1) isnt ".#{extension}"
-      name + "." + extension
+    if extension
+      @newExtension name, extension
     else
       name
 
