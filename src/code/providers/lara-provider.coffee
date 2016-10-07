@@ -71,6 +71,12 @@ class LaraProvider extends ProviderInterface
         rawData = {}
     rawData
 
+  can: (capability, metadata) ->
+    hasReadOnlyAccess = metadata?.providerData?.accessKeys?.readOnly? and
+                        not metadata?.providerData?.accessKeys?.readWrite?
+    requiresWriteAccess = ['save', 'remove', 'rename'].indexOf(capability) >= 0
+    super(capability, metadata) and not (requiresWriteAccess and hasReadOnlyAccess)
+
   load: (metadata, callback) ->
     {method, url} = @docStoreUrl.v2LoadDocument(metadata.providerData?.recordid)
 

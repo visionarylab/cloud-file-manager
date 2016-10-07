@@ -185,7 +185,7 @@ class CloudFileManagerClient
       @newFile()
 
   openFile: (metadata, callback = null) ->
-    if metadata?.provider?.can 'load'
+    if metadata?.provider?.can 'load', metadata
       metadata.provider.load metadata, (err, content) =>
         return @alert(err, => @ready()) if err
         # should wait to close current file until client signals open is complete
@@ -290,7 +290,7 @@ class CloudFileManagerClient
 
   createNewInFolder: (providerName, folder) ->
     provider = @providers[providerName]
-    if provider and provider.can 'setFolder'
+    if provider and provider.can 'setFolder', @state.metadata
       if not @state.metadata?
         @state.metadata = new CloudMetadata
           type: CloudMetadata.File
@@ -334,7 +334,7 @@ class CloudFileManagerClient
       @saveFileDialog stringContent, callback
 
   saveFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can 'save'
+    if metadata?.provider?.can 'save', metadata
       @_setState
         saving: metadata
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
@@ -487,7 +487,7 @@ class CloudFileManagerClient
       @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}, @_getHashParams metadata
       callback? newName
     if newName isnt @state.metadata?.name
-      if @state.metadata?.provider?.can 'rename'
+      if @state.metadata?.provider?.can 'rename', metadata
         @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
           return @alert(err) if err
           _rename metadata
@@ -528,7 +528,7 @@ class CloudFileManagerClient
   # Saves a file to backend, but does not update current metadata.
   # Used e.g. when exporting .csv files from CODAP
   saveSecondaryFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can 'save'
+    if metadata?.provider?.can 'save', metadata
       @_setState
         saving: metadata
       metadata.provider.save stringContent, metadata, (err, statusCode) =>
@@ -551,7 +551,7 @@ class CloudFileManagerClient
       @state.dirty and
         not @state.metadata?.autoSaveDisabled and
         not @isSaveInProgress() and
-        @state.metadata?.provider?.can 'save'
+        @state.metadata?.provider?.can 'save', @state.metadata
 
     # in case the caller uses milliseconds
     if interval > 1000
@@ -660,7 +660,7 @@ class CloudFileManagerClient
       saved: false
 
   _closeCurrentFile: ->
-    if @state.metadata?.provider?.can 'close'
+    if @state.metadata?.provider?.can 'close', @state.metadata
       @state.metadata.provider.close @state.metadata
 
   _createOrUpdateCurrentContent: (stringContent, metadata = null) ->
