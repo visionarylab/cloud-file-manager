@@ -36,6 +36,7 @@ class LaraProvider extends ProviderInterface
 
     @laraParams = if @urlParams.launchFromLara then @decodeParams(@urlParams.launchFromLara) else null
     @openSavedParams = null
+    @collaboratorUrls = []
 
     @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
 
@@ -169,32 +170,154 @@ class LaraProvider extends ProviderInterface
       openSavedParams = @decodeParams openSavedParams
 
     @openSavedParams = openSavedParams
+    @collaboratorUrls = if openSavedParams?.collaboratorUrls?.length > 0 then openSavedParams.collaboratorUrls else []
+
+    loadProviderFile = (providerData, callback) =>
+      metadata.providerData = providerData
+      @load metadata, (err, content) =>
+        @client.removeQueryParams @removableQueryParams
+        callback err, content, metadata
 
     #
     # if we have a document ID we can just load the document
     #
-    if openSavedParams and openSavedParams.recordid
-      metadata.providerData = openSavedParams
-      @load metadata, (err, content) =>
-        @client.removeQueryParams @removableQueryParams
-        callback err, content, metadata
-      return
+    return loadProviderFile openSavedParams if openSavedParams?.recordid
 
     #
     # Process the initial run state response
     #
     processInitialRunState = (runStateUrl, sourceID, readOnlyKey, runState) =>
+      existingRunState = @extractRawDataFromRunState runState
+      docStore = existingRunState.docStore
+
+      haveCollaborators = @collaboratorUrls.length > 0
+
+      updateInteractiveRunStates = (urls, newDocStore, callback) ->
+
+        newRunState = _.cloneDeep existingRunState
+        newRunState.docStore = newDocStore
+
+        rawData = JSON.stringify(newRunState)
+        learnerUrl = if newRunState.learner_url? and typeof newRunState.learner_url is "string" then newRunState.learner_url else null
+        learnerParam = if learnerUrl then "&learner_url=#{encodeURIComponent(learnerUrl)}" else ""
+
+        updateRunState = (url, done) ->
+          $.ajax({
+            type: 'PUT'
+            url: "#{url}?raw_data=#{encodeURIComponent(rawData)}#{learnerParam}"
+            dataType: 'json'
+            xhrFields:
+              withCredentials: true
+          })
+          .done (data, status, jqXHR) ->
+            if data?.success is false
+              done("Could not open the specified document because an error occurred [updateState] (#{data.message})")
+            else
+              done(null)
+          .fail (jqXHR, status, error) ->
+            done("Could not open the specified document because an error occurred [updateState]")
+
+        urlQueue = urls.slice()
+        processQueue = ->
+          if urlQueue.length is 0
+            callback null
+          else
+            url = urlQueue.shift()
+            updateRunState url, (err) ->
+              if err
+                callback err
+              else
+                processQueue()
+        processQueue()
+
+      processCreateResponse = (createResponse) =>
+        docStore =
+          recordid: createResponse.id
+          accessKeys:
+            readOnly: createResponse.readAccessKey
+            readWrite: createResponse.readWriteAccessKey
+
+        codapUrl = if window.location.origin \
+                    then "#{window.location.origin}#{window.location.pathname}" \
+                    else "#{window.location.protocol}//#{window.location.host}#{window.location.pathname}"
+        reportUrlLaraParams =
+          recordid: createResponse.id
+          accessKeys:
+            readOnly: createResponse.readAccessKey
+        encodedLaraParams = @encodeParams reportUrlLaraParams
+        existingRunState.lara_options ?= {}
+        existingRunState.lara_options.reporting_url = "#{codapUrl}?launchFromLara=#{encodedLaraParams}"
+
       # Check if we have a document associated with this run state already (2a) or not (2b)
-      rawData = @extractRawDataFromRunState runState
-      docStoreParams = rawData.docStore
-      if docStoreParams? and docStoreParams.recordid? and
-          (docStoreParams.accessKeys?.readOnly? or docStoreParams.accessKeys?.readWrite?)
-        # (2a) load the document associated with this run state
-        metadata.providerData = _.cloneDeep docStoreParams
-        @load metadata, (err, content) =>
-          @client.removeQueryParams @removableQueryParams
-          callback err, content, metadata
-        return
+      if docStore?.recordid? and (docStore.accessKeys?.readOnly? or docStore.accessKeys?.readWrite?)
+
+        cloneDoc = (callback) =>
+          createParams =
+            source: docStore.recordid
+            accessKey: "RO::#{docStore.accessKeys.readOnly}"
+          {method, url} = @docStoreUrl.v2CreateDocument(createParams)
+          $.ajax({
+            type: method
+            url: url,
+            dataType: 'json'
+          })
+          .done (createResponse, status, jqXHR) ->
+            processCreateResponse createResponse
+            callback null
+          .fail (jqXHR, status, error) ->
+            callback "Could not open the specified document because an error occurred [createCopy]"
+
+        setFollowers = (err, callback) =>
+          if err
+            callback err
+          else
+            collaboratorParams = _.cloneDeep docStore
+            collaboratorParams.collaborator = 'follower'
+            updateInteractiveRunStates @collaboratorUrls, collaboratorParams, callback
+
+        becomeLeader = (err, callback) ->
+          if err
+            callback err
+          else
+            docStore.collaborator = 'leader'
+            updateInteractiveRunStates [runStateUrl], docStore, callback
+
+        removeCollaborator = (err, callback) ->
+          if err
+            callback err
+          else
+            delete docStore.collaborator
+            updateInteractiveRunStates [runStateUrl], docStore, callback
+
+        finished = (err) ->
+          if err
+            callback err
+          else
+            loadProviderFile _.cloneDeep(docStore), callback
+
+        # is this an existing collaborated document?
+        if docStore.collaborator
+          if docStore.collaborator is 'leader'
+            if haveCollaborators
+              # the current user is still the leader so update the collaborator states to follow the leader (in case there are new collaborators) and load the existing document
+              return setFollowers null, finished
+            else
+              # the current user has gone from leader to solo mode so update run state to remove collaborator and load the existing document
+              return removeCollaborator null, finished
+          else
+            if haveCollaborators
+              # the current user has switched from follower to leader so clone the existing leader document, become the new leader and update the followers and load the new document
+              return cloneDoc (err) -> becomeLeader(err, ((err) -> setFollowers(err, finished)))
+            else
+              # the current user has switched from follower to solo mode so clone the existing leader document, update the run state to remove the collaborator and load the new document
+              return cloneDoc (err) -> removeCollaborator(err, finished)
+        else
+          if haveCollaborators
+            # the current user has switched from solo mode to leader so update both the user's and the collaborators run states using the existing document
+            return becomeLeader null, (err) -> setFollowers(err, finished)
+          else
+            # the current user has opened an existing solo mode file so just open it
+            return finished()
 
       # we need a sourceID to be able to create a copy
       if not sourceID
@@ -212,65 +335,31 @@ class LaraProvider extends ProviderInterface
         url: url,
         dataType: 'json'
       })
-      .done (data, status, jqXHR) ->
-        updateInteractiveRunStateAndLoad runStateUrl, runState, data
+      .done (createResponse, status, jqXHR) =>
+
+        processCreateResponse createResponse
+        if haveCollaborators
+          docStore.collaborator = 'leader'
+
+        providerData = _.merge({}, docStore, { url: runStateUrl })
+        updateFinished = -> loadProviderFile providerData, callback
+
+        # update the owners interactive run state
+        updateInteractiveRunStates [runStateUrl], docStore, (err) =>
+          if err
+            callback err
+          else if haveCollaborators
+            docStore.collaborator = 'follower'
+            updateInteractiveRunStates @collaboratorUrls, docStore, (err) ->
+              if err
+                callback err
+              else
+                updateFinished()
+          else
+            updateFinished()
+
       .fail (jqXHR, status, error) ->
         callback "Could not open the specified document because an error occurred [createCopy]"
-
-    #
-    # Utility function used when opening an unshared copy of a shared document.
-    # Updates the run state and then loads the newly created copy.
-    #
-    updateInteractiveRunStateAndLoad = (runStateUrl, runState, createResponse) =>
-      if runState? and createResponse.id? and
-          (createResponse.readAccessKey? or createResponse.readWriteAccessKey?)
-
-        # metadata for loading the file
-        docStoreMetadata =
-          recordid: createResponse.id
-          accessKeys:
-            readOnly: createResponse.readAccessKey
-            readWrite: createResponse.readWriteAccessKey
-        metadata.providerData = _.merge({}, docStoreMetadata, { url: runStateUrl })
-
-        # build the reporting_url
-        codapUrl = if window.location.origin \
-                    then "#{window.location.origin}#{window.location.pathname}" \
-                    else "#{window.location.protocol}//#{window.location.host}#{window.location.pathname}"
-        reportUrlLaraParams =
-          recordid: createResponse.id
-          accessKeys:
-            readOnly: createResponse.readAccessKey
-        encodedLaraParams = @encodeParams reportUrlLaraParams
-
-        # (3) update the interactive run state
-        rawData = @extractRawDataFromRunState runState
-        rawData.docStore = docStoreMetadata
-        rawData.lara_options ?= {}
-        rawData.lara_options.reporting_url = "#{codapUrl}?launchFromLara=#{encodedLaraParams}"
-        rawData = JSON.stringify(rawData)
-        learnerUrl = if runState.learner_url? and typeof runState.learner_url is "string" \
-                      then runState.learner_url \
-                      else null
-
-        putUrl = "#{openSavedParams.url}" +
-                    "?raw_data=#{encodeURIComponent(rawData)}" +
-                    if learnerUrl then "&learner_url=#{encodeURIComponent(learnerUrl)}" else ""
-        $.ajax({
-          type: 'PUT'
-          url: putUrl
-          dataType: 'json'
-          xhrFields:
-            withCredentials: true
-        })
-        # (4) success - load the document
-        .done (data, status, jqXHR) =>
-          @load metadata, (err, content) =>
-            @client.removeQueryParams @removableQueryParams
-            callback err, content, metadata
-        # failure - report back to user
-        .fail (jqXHR, status, error) ->
-          callback "Could not open the specified document because an error occurred [updateState]"
 
     #
     # We have a run state URL and a source document. We must copy the source
@@ -287,7 +376,6 @@ class LaraProvider extends ProviderInterface
       })
       .done (data, status, jqXHR) ->
         processInitialRunState openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data
-
       .fail (jqXHR, status, error) ->
         callback "Could not open the specified document because an error occurred [getState]"
 
