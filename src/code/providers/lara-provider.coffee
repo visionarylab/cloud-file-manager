@@ -181,7 +181,7 @@ class LaraProvider extends ProviderInterface
     #
     # if we have a document ID we can just load the document
     #
-    return loadProviderFile openSavedParams if openSavedParams?.recordid
+    return loadProviderFile openSavedParams, callback if openSavedParams?.recordid
 
     #
     # Process the initial run state response
