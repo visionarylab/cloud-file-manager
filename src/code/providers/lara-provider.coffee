@@ -302,8 +302,8 @@ class LaraProvider extends ProviderInterface
               # the current user is still the leader so update the collaborator states to follow the leader (in case there are new collaborators) and load the existing document
               return setFollowers null, finished
             else
-              # the current user has gone from leader to solo mode so update run state to remove collaborator and load the existing document
-              return removeCollaborator null, finished
+              # the current user has gone from leader to solo mode so clone the document to preserve the collaborated document and update the run state to remove collaborator
+              return cloneDoc (err) -> removeCollaborator(err, finished)
           else
             if haveCollaborators
               # the current user has switched from follower to leader so clone the existing leader document, become the new leader and update the followers and load the new document
