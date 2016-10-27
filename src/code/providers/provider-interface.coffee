@@ -140,6 +140,7 @@ class CloudContent
     shared._permissions = @_._permissions if @_._permissions?
     shared.shareEditKey = @_.shareEditKey if @_.shareEditKey?
     shared.sharedDocumentId = @_.sharedDocumentId if @_.sharedDocumentId?
+    shared.accessKeys = @_.accessKeys if @_.accessKeys?
     shared
 
   copyMetadataTo: (to) ->

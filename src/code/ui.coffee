@@ -7,7 +7,7 @@ class CloudFileManagerUIEvent
 
 class CloudFileManagerUIMenu
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'downloadDialog', 'renameDialog']
+  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog']
 
   constructor: (options, client) ->
     @options = options
@@ -30,7 +30,7 @@ class CloudFileManagerUIMenu
           # revert to shared menu item state depends on sharedDocumentId
           -> client.isShared()
         when 'shareUpdate'
-          # shareUpdate menu item state depends on presence of shareEditKey
+          # shareUpdate menu item state depends on presence of shareEditKey or readWrite accessKey
           -> client.canEditShared()
         else
           true

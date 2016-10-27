@@ -49,6 +49,9 @@ module.exports =
   "~FILE_DIALOG.REMOVED_MESSAGE": "%{filename} was deleted"
   "~FILE_DIALOG.LOADING": "Loading..."
   "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error loading folder contents ***"
+  "~FILE_DIALOG.DOWNLOAD": "Download"
+  "~FILE_DIALOG.DOWNLOAD_NOTE": "NOTE: Mac Safari users may need to control-click the %{download} button"
+
 
   "~DOWNLOAD_DIALOG.DOWNLOAD": "Download"
   "~DOWNLOAD_DIALOG.CANCEL": "Cancel"
