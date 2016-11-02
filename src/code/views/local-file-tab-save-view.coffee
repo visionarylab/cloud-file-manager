@@ -19,7 +19,6 @@ module.exports = React.createClass
 
   componentDidMount: ->
     @props.client._event 'getContent', { shared: @props.client._sharedMetadata() }, (content) =>
-      debugger
       envelopedContent = cloudContentFactory.createEnvelopedCloudContent content
       @props.client.state?.currentContent?.copyMetadataTo envelopedContent
       @setState

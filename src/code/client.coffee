@@ -334,7 +334,7 @@ class CloudFileManagerClient
       @saveFileDialog stringContent, callback
 
   saveFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can('save') and not metadata.forceSaveDialog
+    if metadata?.provider?.can('save', metadata) and not metadata.forceSaveDialog
       @_setState
         saving: metadata
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
