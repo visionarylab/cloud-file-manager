@@ -1,6 +1,6 @@
 ModalTabbedDialog = React.createFactory require './modal-tabbed-dialog-view'
 TabbedPanel = require './tabbed-panel-view'
-LocalFileTab = React.createFactory require './local-file-tab-view'
+LocalFileTab = React.createFactory require './local-file-tab-list-view'
 UrlTab = React.createFactory require './url-tab-view'
 
 tr = require '../utils/translate'

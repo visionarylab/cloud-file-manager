@@ -334,11 +334,15 @@ class CloudFileManagerClient
       @saveFileDialog stringContent, callback
 
   saveFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can 'save', metadata
+    if metadata?.provider?.can('save', metadata) and not metadata.forceSaveDialog
       @_setState
         saving: metadata
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
       metadata.provider.save currentContent, metadata, (err, statusCode) =>
+        isLocalFile = metadata.provider instanceof LocalFileProvider
+        # force the save dialog to show on the next save for local files
+        metadata.forceSaveDialog = isLocalFile
+
         if err
           # disable autosave on save failure; clear "Saving..." message
           metadata.autoSaveDisabled = true
@@ -349,8 +353,8 @@ class CloudFileManagerClient
             return @alert(err)
         if @state.metadata isnt metadata
           @_closeCurrentFile()
-        # reenable autosave on save success
-        metadata.autoSaveDisabled = false
+        # reenable autosave on save success if this isn't a local file save
+        metadata.autoSaveDisabled = !!isLocalFile
         @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
         callback? currentContent, metadata
     else
@@ -426,7 +430,9 @@ class CloudFileManagerClient
     @state.currentContent?.get("sharedDocumentId") and not @state.currentContent?.get("isUnshared")
 
   canEditShared: ->
-    @state.currentContent?.get("shareEditKey") and not @state.currentContent?.get("isUnshared")
+    accessKeys = @state.currentContent?.get("accessKeys") or {}
+    shareEditKey = @state.currentContent?.get("shareEditKey")
+    (shareEditKey or accessKeys.readWrite) and not @state.currentContent?.get("isUnshared")
 
   setShareState: (shared, callback) ->
     if @state.shareProvider
@@ -479,6 +485,25 @@ class CloudFileManagerClient
       envelopedContent = cloudContentFactory.createEnvelopedCloudContent content
       @state.currentContent?.copyMetadataTo envelopedContent
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
+
+  getDownloadUrl: (content, includeShareInfo) ->
+    # clone the document so we can delete the share info if needed and not effect the original
+    json = content.clone().getContent()
+    if not includeShareInfo
+      delete json.sharedDocumentId
+      delete json.shareEditKey
+      delete json.isUnshared
+      delete json.accessKeys
+      # CODAP moves the keys into its own namespace
+      delete json.metadata.shared if json.metadata?.shared?
+
+    wURL = window.URL or window.webkitURL
+    downloadUrl = if wURL
+      blob = new Blob([JSON.stringify(json)], {type: 'text/plain'})
+      wURL.createObjectURL blob
+    else
+      null
+    downloadUrl
 
   rename: (metadata, newName, callback) ->
     dirty = @state.dirty

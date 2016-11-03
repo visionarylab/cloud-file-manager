@@ -50,7 +50,7 @@ App = React.createClass
       fileStatus = if event.state.saving
         {message: tr('~FILE_STATUS.SAVING'), type: 'info'}
       else if event.state.saved
-        providerName = event.state.metadata.provider.displayName
+        providerName = event.state.metadata.provider?.displayName
         message = if providerName \
                     then tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName: providerName }) \
                     else tr('~FILE_STATUS.SAVED')
@@ -152,7 +152,7 @@ App = React.createClass
       else if @state.providerDialog
         (ProviderTabbedDialog {client: @props.client, dialog: @state.providerDialog, close: @closeDialogs})
       else if @state.downloadDialog
-        (DownloadDialog {filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})
+        (DownloadDialog {client: @props.client, filename: @state.downloadDialog.filename, mimeType: @state.downloadDialog.mimeType, content: @state.downloadDialog.content, close: @closeDialogs})
       else if @state.renameDialog
         (RenameDialog {filename: @state.renameDialog.filename, callback: @state.renameDialog.callback, close: @closeDialogs})
       else if @state.importDialog

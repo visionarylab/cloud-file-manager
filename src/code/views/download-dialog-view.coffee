@@ -11,59 +11,56 @@ module.exports = React.createClass
 
   getInitialState: ->
     filename = CloudMetadata.withExtension(@props.filename or (tr "~MENUBAR.UNTITLED_DOCUMENT"), 'json')
-    includeShareInfo = false
     state =
       filename: filename
       trimmedFilename: @trim filename
+      includeShareInfo: false
+      shared: @props.client.isShared()
 
   componentDidMount: ->
-    @filename = ReactDOM.findDOMNode @refs.filename
-    @filename.focus()
-    @includeShareInfo = ReactDOM.findDOMNode @refs.includeShareInfo
+    @refs.filename.focus()
 
   updateFilename: ->
-    filename = @filename.value
+    filename = @refs.filename.value
     @setState
       filename: filename
       trimmedFilename: @trim filename
 
   updateIncludeShareInfo: ->
-    @setState includeShareInfo: @includeShareInfo.checked
+    @setState includeShareInfo: @refs.includeShareInfo.checked
 
   trim: (s) ->
     s.replace /^\s+|\s+$/, ''
 
-  download: (e) ->
-    makeBlobURL = (msg) ->
-      wURL = window.URL or window.webkitURL
-      blob = new Blob([msg], {type: 'text/plain'})
-      if (wURL)
-        wURL.createObjectURL(blob)
-
-    if @state.trimmedFilename.length > 0
-      json = @props.content.getContent()
-      if json and not @state.includeShareInfo
-        delete json.sharedDocumentId
-        delete json.shareEditKey
-        delete json.isUnshared
-        # CODAP moves the keys into its own namespace
-        delete json.metadata.shared if json.metadata?.shared?
-      e.target.setAttribute 'href', makeBlobURL(JSON.stringify(json))
+  download: (e, simulateClick) ->
+    if not @downloadDisabled()
+      @refs.download.setAttribute 'href', @props.client.getDownloadUrl(@props.content, @state.includeShareInfo)
+      @refs.download.click() if simulateClick
       @props.close()
     else
+      e?.preventDefault()
+      @refs.filename.focus()
+
+  downloadDisabled: ->
+    @state.trimmedFilename.length is 0
+
+  watchForEnter: (e) ->
+    if e.keyCode is 13 and not @downloadDisabled()
       e.preventDefault()
-      @filename.focus()
+      e.stopPropagation()
+      @download(null, true)
 
   render: ->
     (ModalDialog {title: (tr '~DIALOG.DOWNLOAD'), close: @props.close},
       (div {className: 'download-dialog'},
-        (input {type: 'text', ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
-        if @props.shared
+        (input {type: 'text', ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename, onKeyDown: @watchForEnter})
+        if @state.shared
           (div {className: 'download-share'},
-            (input {type: 'checkbox', ref: 'includeShareInfo', value: @state.includeShareInfo, onChange: @updateIncludeShareInfo}, tr '~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')
+            (input {type: 'checkbox', ref: 'includeShareInfo', value: @state.includeShareInfo, onChange: @updateIncludeShareInfo})
+            (tr '~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')
           )
         (div {className: 'buttons'},
-          (a {href: '#', className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), download: @state.trimmedFilename, onClick: @download}, tr '~DOWNLOAD_DIALOG.DOWNLOAD')
+          (a {href: '#', ref: 'download', className: (if @downloadDisabled() then 'disabled' else ''), download: @state.trimmedFilename, onClick: @download}, tr '~DOWNLOAD_DIALOG.DOWNLOAD')
           (button {onClick: @props.close}, tr '~DOWNLOAD_DIALOG.CANCEL')
         )
       )
