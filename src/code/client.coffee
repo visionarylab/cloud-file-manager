@@ -487,10 +487,14 @@ class CloudFileManagerClient
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
 
   getDownloadUrl: (content, includeShareInfo) ->
-    contentToSave = content
+    if typeof content is "string"
+      contentToSave = content
 
-    if not includeShareInfo
-      # clone the document so we can delete the share info if needed and not effect the original
+    else if includeShareInfo
+      contentToSave = JSON.stringify(content.getContent())
+
+    else # not includeShareInfo
+      # clone the document so we can delete the share info and not affect the original
       json = content.clone().getContent()
       delete json.sharedDocumentId
       delete json.shareEditKey
