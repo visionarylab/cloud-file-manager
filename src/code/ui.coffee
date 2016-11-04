@@ -140,8 +140,8 @@ class CloudFileManagerUI
   saveFileAsDialog: (callback) ->
     @_showProviderDialog 'saveFileAs', (tr '~DIALOG.SAVE_AS'), callback
 
-  saveSecondaryFileAsDialog: (callback) ->
-    @_showProviderDialog 'saveSecondaryFileAs', (tr '~DIALOG.EXPORT_AS'), callback
+  saveSecondaryFileAsDialog: (data, callback) ->
+    @_showProviderDialog 'saveSecondaryFileAs', (tr '~DIALOG.EXPORT_AS'), callback, data
 
   openFileDialog: (callback) ->
     @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
@@ -184,11 +184,12 @@ class CloudFileManagerUI
   confirmDialog: (params) ->
     @listenerCallback new CloudFileManagerUIEvent 'showConfirmDialog', params
 
-  _showProviderDialog: (action, title, callback) ->
+  _showProviderDialog: (action, title, callback, data) ->
     @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
       action: action
       title: title
       callback: callback
+      data: data
 
 module.exports =
   CloudFileManagerUIEvent: CloudFileManagerUIEvent

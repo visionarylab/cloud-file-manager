@@ -487,19 +487,22 @@ class CloudFileManagerClient
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
 
   getDownloadUrl: (content, includeShareInfo) ->
-    # clone the document so we can delete the share info if needed and not effect the original
-    json = content.clone().getContent()
+    contentToSave = content
+
     if not includeShareInfo
+      # clone the document so we can delete the share info if needed and not effect the original
+      json = content.clone().getContent()
       delete json.sharedDocumentId
       delete json.shareEditKey
       delete json.isUnshared
       delete json.accessKeys
       # CODAP moves the keys into its own namespace
       delete json.metadata.shared if json.metadata?.shared?
+      contentToSave = JSON.stringify(json)
 
     wURL = window.URL or window.webkitURL
     downloadUrl = if wURL
-      blob = new Blob([JSON.stringify(json)], {type: 'text/plain'})
+      blob = new Blob([contentToSave], {type: 'text/plain'})
       wURL.createObjectURL blob
     else
       null
@@ -541,7 +544,8 @@ class CloudFileManagerClient
       callback? 'No initial opened version was found for the currently active file'
 
   saveSecondaryFileAsDialog: (stringContent, extension, mimeType, callback) ->
-    @_ui.saveSecondaryFileAsDialog (metadata) =>
+    data = { content: stringContent, extension, mimeType }
+    @_ui.saveSecondaryFileAsDialog data, (metadata) =>
       # replace defaults
       if extension
         metadata.filename = CloudMetadata.newExtension metadata.filename, extension

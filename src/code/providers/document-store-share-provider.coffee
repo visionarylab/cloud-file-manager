@@ -84,7 +84,7 @@ class DocumentStoreShareProvider
         xhrFields:
           withCredentials: true
         success: (data) ->
-          # on successful share/save, capture the sharedDocumentId and accesKeys
+          # on successful share/save, capture the sharedDocumentId and accessKeys
           masterContent.addMetadata
             sharedDocumentId: data.id
             accessKeys: { readOnly: data.readAccessKey, readWrite: data.readWriteAccessKey }
