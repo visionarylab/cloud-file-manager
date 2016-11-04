@@ -20,22 +20,23 @@ class LocalFileProvider extends ProviderInterface
         rename: false
         close: false
         autoSave: false
+        saveUnwrapped: true
 
   @Name: 'localFile'
 
   filterTabComponent: (capability, defaultComponent) ->
     if capability is 'list'
       LocalFileListTab
-    else if capability is 'save'
+    else if (capability is 'save') or (capability is 'saveUnwrapped')
       LocalFileSaveTab
     else
       defaultComponent
 
   list: (metadata, callback) ->
-    # no really implemented - we flag it as implemented so we show in the list dialog
+    # not really implemented - we flag it as implemented so we show in the list dialog
 
   save: (content, metadata, callback) ->
-    # no really implemented - we flag it as implemented so we can add the download button to the save dialog
+    # not really implemented - we flag it as implemented so we can add the download button to the save dialog
     callback? null
 
   load: (metadata, callback) ->
