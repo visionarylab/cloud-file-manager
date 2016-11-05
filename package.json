@@ -8,6 +8,7 @@
     "url": "https://github.com/concord-consortium/cloud-file-manger"
   },
   "dependencies": {
+    "base64-js": "^1.2.0",
     "diff": "^2.2.1",
     "es6-promise": "^3.1.2",
     "jiff": "^0.7.3",

@@ -1,5 +1,6 @@
 tr = require './utils/translate'
 isString = require './utils/is-string'
+base64Array = require 'base64-js' # https://github.com/beatgammit/base64-js
 
 CloudFileManagerUI = (require './ui').CloudFileManagerUI
 
@@ -486,9 +487,12 @@ class CloudFileManagerClient
       @state.currentContent?.copyMetadataTo envelopedContent
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
 
-  getDownloadUrl: (content, includeShareInfo) ->
+  getDownloadUrl: (content, includeShareInfo, mimeType='text/plain') ->
     if typeof content is "string"
-      contentToSave = content
+      if mimeType.indexOf("image") >= 0
+        contentToSave = base64Array.toByteArray(content)
+      else
+        contentToSave = content
 
     else if includeShareInfo
       contentToSave = JSON.stringify(content.getContent())
@@ -506,7 +510,7 @@ class CloudFileManagerClient
 
     wURL = window.URL or window.webkitURL
     downloadUrl = if wURL
-      blob = new Blob([contentToSave], {type: 'text/plain'})
+      blob = new Blob([contentToSave], {type: mimeType})
       wURL.createObjectURL blob
     else
       null
