@@ -487,7 +487,7 @@ class CloudFileManagerClient
       @state.currentContent?.copyMetadataTo envelopedContent
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
 
-  getDownloadUrl: (content, includeShareInfo, mimeType) ->
+  getDownloadUrl: (content, includeShareInfo, mimeType='text/plain') ->
     if typeof content is "string"
       if mimeType.indexOf("image") >= 0
         contentToSave = base64Array.toByteArray(content)
@@ -510,7 +510,7 @@ class CloudFileManagerClient
 
     wURL = window.URL or window.webkitURL
     downloadUrl = if wURL
-      blob = new Blob([contentToSave], {type: mimeType or 'text/plain'})
+      blob = new Blob([contentToSave], {type: mimeType})
       wURL.createObjectURL blob
     else
       null
