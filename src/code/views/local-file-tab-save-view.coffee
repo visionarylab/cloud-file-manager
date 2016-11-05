@@ -16,12 +16,13 @@ module.exports = React.createClass
     hasPropsContent = @props.dialog.data?.content?
     filename = @props.client.state.metadata?.name or (tr "~MENUBAR.UNTITLED_DOCUMENT")
     extension = if hasPropsContent and @props.dialog.data.extension \
-                  then @props.dialog.data.extension \
-                  else 'json'
+                  then @props.dialog.data.extension else 'json'
     state =
       filename: filename
       downloadFilename: @getDownloadFilename hasPropsContent, filename, extension
       extension: extension
+      mimeType: if hasPropsContent and @props.dialog.data.mimeType? \
+                  then @props.dialog.data.mimeType else 'text/plain',
       shared: @props.client.isShared()
       hasPropsContent: hasPropsContent
       includeShareInfo: hasPropsContent
@@ -54,7 +55,7 @@ module.exports = React.createClass
 
   confirm: (e, simulateClick) ->
     if not @confirmDisabled()
-      @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo)
+      @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
       @refs.download.click() if simulateClick
       metadata = new CloudMetadata
         name: @state.downloadFilename.split('.')[0]
