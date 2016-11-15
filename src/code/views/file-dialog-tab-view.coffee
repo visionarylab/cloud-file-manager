@@ -103,6 +103,7 @@ FileDialogTab = React.createClass
       else
         saveMetadata.provider = null
         saveMetadata.providerData = null
+        saveMetadata.forceSaveDialog = false
     saveMetadata
 
   getStateForFolder: (folder, initialFolder) ->

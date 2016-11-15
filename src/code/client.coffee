@@ -715,8 +715,8 @@ class CloudFileManagerClient
       document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
   _getHashParams: (metadata) ->
-    if metadata?.provider?.canOpenSaved()
-      "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent metadata.provider.getOpenSavedParams metadata}"
+    if metadata?.provider?.canOpenSaved() and (openSavedParams = metadata?.provider?.getOpenSavedParams metadata)?
+      "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent openSavedParams}"
     else if metadata?.provider instanceof URLProvider and
         window.location.hash.indexOf("#file=http") is 0
       window.location.hash    # leave it alone

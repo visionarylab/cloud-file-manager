@@ -58,9 +58,11 @@ class DocumentStoreProvider extends ProviderInterface
       documentServer: getQueryParam "documentServer"
       recordid: getQueryParam "recordid"
       runKey: getQueryParam "runKey"
+      docName: getQueryParam "doc"
+      docOwner: getQueryParam "owner"
     }
     # query params that can be removed after initial processing
-    @removableQueryParams = ['recordid']
+    @removableQueryParams = ['recordid', 'doc', 'owner']
 
     @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
 
@@ -70,9 +72,14 @@ class DocumentStoreProvider extends ProviderInterface
 
   @Name: 'documentStore'
 
+  can: (capability, metadata) ->
+    # legacy sharing support - can't save to old-style shared documents
+    return false if capability is 'save' and metadata?.providerData?.owner
+    super(capability, metadata)
+
   # if a runKey is specified, we don't need to authenticate at all
   isAuthorizationRequired: ->
-    not @urlParams.runKey
+    not (@urlParams.runKey or (@urlParams.docName and @urlParams.docOwner))
 
   authorized: (@authCallback) ->
     if @authCallback
@@ -196,7 +203,10 @@ class DocumentStoreProvider extends ProviderInterface
 
   handleUrlParams: ->
     if @urlParams.recordid
-      @client.openProviderFile @name, @urlParams.recordid
+      @client.openProviderFile @name, { id: @urlParams.recordid }
+      true # signal that the provider is handling the params
+    else if @urlParams.docName and @urlParams.docOwner
+      @client.openProviderFile @name, { name: @urlParams.docName, owner: @urlParams.docOwner }
       true # signal that the provider is handling the params
     else
       false
@@ -227,12 +237,17 @@ class DocumentStoreProvider extends ProviderInterface
 
   load: (metadata, callback) ->
     withCredentials = unless metadata.sharedContentId then true else false
+    recordid = metadata.providerData?.id or metadata.sharedContentId
+    requestData = {}
+    requestData.recordid = recordid if recordid
+    requestData.runKey = @urlParams.runKey if @urlParams.runKey
+    if not recordid
+      requestData.recordname = metadata.providerData?.name if metadata.providerData?.name
+      requestData.owner = metadata.providerData?.owner if metadata.providerData?.owner
     $.ajax
       url: @docStoreUrl.loadDocument()
       dataType: 'json'
-      data:
-        recordid: metadata.providerData?.id or metadata.sharedContentId
-        runKey: if @urlParams.runKey then @urlParams.runKey else undefined
+      data: requestData
       context: @
       xhrFields:
         {withCredentials}
@@ -244,7 +259,8 @@ class DocumentStoreProvider extends ProviderInterface
         # 'docName' at the top level for CFM-wrapped documents
         # 'name' at the top level for unwrapped documents (e.g. CODAP)
         # 'name' at the top level of 'content' for wrapped CODAP documents
-        metadata.rename metadata.name or data.docName or data.name or data.content?.name
+        metadata.rename metadata.name or metadata.providerData.name or
+                        data.docName or data.name or data.content?.name
         if metadata.name
           content.addMetadata docName: metadata.filename
 
@@ -363,11 +379,13 @@ class DocumentStoreProvider extends ProviderInterface
   canOpenSaved: -> true
 
   openSaved: (openSavedParams, callback) ->
+    providerData = if typeof openSavedParams is "object" \
+                      then openSavedParams \
+                      else { id: openSavedParams }
     metadata = new CloudMetadata
       type: CloudMetadata.File
       provider: @
-      providerData:
-        id: openSavedParams
+      providerData: providerData
 
     @load metadata, (err, content) =>
       @client.removeQueryParams @removableQueryParams
