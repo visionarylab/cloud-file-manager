@@ -84,7 +84,7 @@ class CloudFileManagerUIMenu
           menuItem.action = setAction item.action
         else
           menuItem.enabled or= true
-        menuItem.items = getItems(item.items) if items.items
+        menuItem.items = getItems(item.items) if item.items
       items.push menuItem
     items
 
