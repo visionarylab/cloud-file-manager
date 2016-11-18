@@ -14,20 +14,20 @@ class LocalFileProvider extends ProviderInterface
       displayName: @options.displayName or (tr '~PROVIDER.LOCAL_FILE')
       capabilities:
         save: true
+        resave: false
+        export: true
         load: true
         list: true
         remove: false
         rename: false
         close: false
-        autoSave: false
-        saveUnwrapped: true
 
   @Name: 'localFile'
 
   filterTabComponent: (capability, defaultComponent) ->
     if capability is 'list'
       LocalFileListTab
-    else if (capability is 'save') or (capability is 'saveUnwrapped')
+    else if (capability is 'save') or (capability is 'export')
       LocalFileSaveTab
     else
       defaultComponent

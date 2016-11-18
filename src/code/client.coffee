@@ -335,15 +335,12 @@ class CloudFileManagerClient
       @saveFileDialog stringContent, callback
 
   saveFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can('save', metadata) and not metadata.forceSaveDialog
+    # must be able to 'resave' to save silently, i.e. without save dialog
+    if metadata?.provider?.can('resave', metadata)
       @_setState
         saving: metadata
       currentContent = @_createOrUpdateCurrentContent stringContent, metadata
       metadata.provider.save currentContent, metadata, (err, statusCode) =>
-        isLocalFile = metadata.provider instanceof LocalFileProvider
-        # force the save dialog to show on the next save for local files
-        metadata.forceSaveDialog = isLocalFile
-
         if err
           # disable autosave on save failure; clear "Saving..." message
           metadata.autoSaveDisabled = true
@@ -355,7 +352,7 @@ class CloudFileManagerClient
         if @state.metadata isnt metadata
           @_closeCurrentFile()
         # reenable autosave on save success if this isn't a local file save
-        metadata.autoSaveDisabled = !!isLocalFile
+        delete metadata.autoSaveDisabled if metadata.autoSaveDisabled?
         @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
         callback? currentContent, metadata
     else
@@ -588,7 +585,7 @@ class CloudFileManagerClient
       @state.dirty and
         not @state.metadata?.autoSaveDisabled and
         not @isSaveInProgress() and
-        @state.metadata?.provider?.can 'save', @state.metadata
+        @state.metadata?.provider?.can 'resave', @state.metadata
 
     # in case the caller uses milliseconds
     if interval > 1000

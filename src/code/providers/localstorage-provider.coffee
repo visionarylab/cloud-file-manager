@@ -13,12 +13,13 @@ class LocalStorageProvider extends ProviderInterface
       urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
+        resave: true
+        export: true
         load: true
         list: true
         remove: true
         rename: true
         close: false
-        saveUnwrapped: true
 
   @Name: 'localStorage'
   @Available: ->

@@ -41,13 +41,14 @@ class GoogleDriveProvider extends ProviderInterface
       urlDisplayName: @options.urlDisplayName
       capabilities:
         save: true
+        resave: true
+        export: true
         load: true
         list: true
         remove: false
         rename: true
         close: true
         setFolder: true
-        saveUnwrapped: true
 
     @authToken = null
     @user = null
