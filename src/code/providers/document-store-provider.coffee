@@ -48,6 +48,8 @@ class DocumentStoreProvider extends ProviderInterface
       urlDisplayName: @options.urlDisplayName
       capabilities:
         save: @isNotDeprecated('save')
+        resave: @isNotDeprecated('save')
+        export: false
         load: @isNotDeprecated('load')
         list: @isNotDeprecated('list')
         remove: @isNotDeprecated('remove')
@@ -74,7 +76,7 @@ class DocumentStoreProvider extends ProviderInterface
 
   can: (capability, metadata) ->
     # legacy sharing support - can't save to old-style shared documents
-    return false if capability is 'save' and metadata?.providerData?.owner
+    return false if ((capability is 'save') or (capability is 'resave')) and metadata?.providerData?.owner
     super(capability, metadata)
 
   # if a runKey is specified, we don't need to authenticate at all

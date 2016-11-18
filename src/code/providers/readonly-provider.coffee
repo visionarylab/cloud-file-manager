@@ -15,6 +15,8 @@ class ReadOnlyProvider extends ProviderInterface
       urlDisplayName: @options.urlDisplayName
       capabilities:
         save: false
+        resave: false
+        export: false
         load: true
         list: true
         remove: false

@@ -22,6 +22,8 @@ class LaraProvider extends ProviderInterface
       name: LaraProvider.Name
       capabilities:
         save: true
+        resave: true
+        export: false
         load: true
         list: false
         remove: false

@@ -11,6 +11,8 @@ class URLProvider extends ProviderInterface
     super
       capabilities:
         save: false
+        resave: false
+        export: false
         load: false
         list: false
         remove: false

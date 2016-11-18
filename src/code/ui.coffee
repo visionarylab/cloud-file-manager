@@ -77,14 +77,14 @@ class CloudFileManagerUIMenu
           action: setAction item
       else
         menuItem = item
-          # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
+        # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
         if isString item.action
           menuItem.key = item.action
           menuItem.enabled = setEnabled item.action
           menuItem.action = setAction item.action
         else
           menuItem.enabled or= true
-        menuItem.items = item.items or getItems item.name
+        menuItem.items = getItems(item.items) if items.items
       items.push menuItem
     items
 
