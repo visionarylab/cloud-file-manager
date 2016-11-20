@@ -337,26 +337,29 @@ class CloudFileManagerClient
   saveFile: (stringContent, metadata, callback = null) ->
     # must be able to 'resave' to save silently, i.e. without save dialog
     if metadata?.provider?.can('resave', metadata)
-      @_setState
-        saving: metadata
-      currentContent = @_createOrUpdateCurrentContent stringContent, metadata
-      metadata.provider.save currentContent, metadata, (err, statusCode) =>
-        if err
-          # disable autosave on save failure; clear "Saving..." message
-          metadata.autoSaveDisabled = true
-          @_setState { metadata: metadata, saving: null }
-          if statusCode is 403
-            return @confirmAuthorizeAndSave stringContent, callback
-          else
-            return @alert(err)
-        if @state.metadata isnt metadata
-          @_closeCurrentFile()
-        # reenable autosave on save success if this isn't a local file save
-        delete metadata.autoSaveDisabled if metadata.autoSaveDisabled?
-        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
-        callback? currentContent, metadata
+      @saveFileNoDialog stringContent, metadata, callback
     else
       @saveFileDialog stringContent, callback
+
+  saveFileNoDialog: (stringContent, metadata, callback = null) ->
+    @_setState
+      saving: metadata
+    currentContent = @_createOrUpdateCurrentContent stringContent, metadata
+    metadata.provider.save currentContent, metadata, (err, statusCode) =>
+      if err
+        # disable autosave on save failure; clear "Saving..." message
+        metadata.autoSaveDisabled = true
+        @_setState { metadata: metadata, saving: null }
+        if statusCode is 403
+          return @confirmAuthorizeAndSave stringContent, callback
+        else
+          return @alert(err)
+      if @state.metadata isnt metadata
+        @_closeCurrentFile()
+      # reenable autosave on save success if this isn't a local file save
+      delete metadata.autoSaveDisabled if metadata.autoSaveDisabled?
+      @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
+      callback? currentContent, metadata
 
   saveFileDialog: (stringContent = null, callback = null) ->
     @_ui.saveFileDialog (metadata) =>
@@ -640,10 +643,10 @@ class CloudFileManagerClient
 
   _dialogSave: (stringContent, metadata, callback) ->
     if stringContent isnt null
-      @saveFile stringContent, metadata, callback
+      @saveFileNoDialog stringContent, metadata, callback
     else
       @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
-        @saveFile stringContent, metadata, callback
+        @saveFileNoDialog stringContent, metadata, callback
 
   _fileChanged: (type, content, metadata, additionalState={}, hashParams=null) ->
     metadata?.overwritable ?= true
