@@ -444,6 +444,7 @@ class CloudFileManagerClient
         sharedContent = cloudContentFactory.createEnvelopedCloudContent stringContent
         sharedContent.addMetadata sharingMetadata
         currentContent = @_createOrUpdateCurrentContent stringContent, @state.metadata
+        sharedContent.set('docName', currentContent.get('docName'))
         if shared
           currentContent.remove 'isUnshared'
         else
