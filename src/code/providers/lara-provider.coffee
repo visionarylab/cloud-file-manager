@@ -5,6 +5,7 @@ DocumentStoreUrl = require './document-store-url'
 PatchableContent = require './patchable-content'
 getQueryParam = require '../utils/get-query-param'
 base64 = (require 'js-base64').Base64
+pako = require 'pako'
 
 # This provider supports the lara:... protocol used for documents launched
 # from LARA. It looks up the document ID and access keys from the LARA
