@@ -449,12 +449,9 @@ class CloudFileManagerClient
           currentContent.remove 'isUnshared'
         else
           currentContent.set 'isUnshared', true
-        if shared
-          @state.shareProvider.share currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
-            return @alert(err) if err
-            callback? null, sharedContentId, currentContent
-        else
-          callback? null
+        @state.shareProvider.share shared, currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
+          return @alert(err) if err
+          callback? null, sharedContentId, currentContent
 
   share: (callback) ->
     @setShareState true, (err, sharedContentId, currentContent) =>

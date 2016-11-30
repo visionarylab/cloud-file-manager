@@ -24,7 +24,7 @@ class DocumentStoreShareProvider
   getSharingMetadata: (shared) ->
     { _permissions: if shared then 1 else 0 }
 
-  share: (masterContent, sharedContent, metadata, callback) ->
+  share: (shared, masterContent, sharedContent, metadata, callback) ->
 
     # document ID is stored in masterContent
     documentID = masterContent.get('sharedDocumentId')
@@ -36,7 +36,7 @@ class DocumentStoreShareProvider
 
     accessKey = accessKeys?.readWrite or runKey
 
-    params = {}
+    params = {shared: shared}
     if accessKey
       params.accessKey = 'RW::' + accessKey
 
@@ -67,8 +67,8 @@ class DocumentStoreShareProvider
           callback "Unable to update shared '#{docName}'"
 
     # if we don't have a document ID and some form of accessKey,
-    # then we must create a new shared document
-    else
+    # then we must create a new shared document when sharing is being enabled
+    else if shared
       params.shared = true
       {method, url} = @docStoreUrl.v2CreateDocument(params)
       $.ajax
@@ -92,5 +92,7 @@ class DocumentStoreShareProvider
         error: (jqXHR) ->
           docName = metadata?.filename or 'document'
           callback "Unable to share '#{docName}'"
+    else
+      callback "Unable to unshare '#{docName}'"
 
 module.exports = DocumentStoreShareProvider
