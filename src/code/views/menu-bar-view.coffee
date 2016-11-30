@@ -8,6 +8,10 @@ module.exports = React.createClass
   displayName: 'MenuBar'
 
   componentWillMount: ->
+    # need to use direct DOM events because the event needs to be captured
+    if window.addEventListener
+      window.addEventListener 'click', @checkBlur, true
+
     @props.client._ui.listen (event) =>
       switch event.type
         when 'editInitialFilename'
@@ -15,6 +19,10 @@ module.exports = React.createClass
             editingFilename: true
             editingInitialFilename: true
           setTimeout (=> @focusFilename()), 10
+
+  componentWillUnmount: ->
+    if window.removeEventListener
+      window.removeEventListener 'click', @checkBlur, true
 
   getFilename: (props) ->
     if props.filename?.length > 0 then props.filename else (tr "~MENUBAR.UNTITLED_DOCUMENT")
@@ -87,13 +95,17 @@ module.exports = React.createClass
   help: ->
     window.open @props.options.help, '_blank'
 
+  # CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
+  checkBlur: (e) ->
+    @filenameBlurred() if @state.editingFilename and e.target isnt @filename()
+
   render: ->
     (div {className: 'menu-bar'},
       (div {className: 'menu-bar-left'},
         (Dropdown {items: @props.items})
         if @state.editingFilename
           (div {className:'menu-bar-content-filename'},
-            (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onBlur: @filenameBlurred, onKeyDown: @watchForEnter})
+            (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
           )
         else
           (div {className:'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
