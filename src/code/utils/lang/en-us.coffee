@@ -103,6 +103,18 @@ module.exports =
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
 
+  "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared."
+  "~DOCSTORE.LOAD_SHARED_404_ERROR": "Unable to load the requested shared document.<br><br>Perhaps the file was not shared?"
+  "~DOCSTORE.LOAD_404_ERROR": "Unable to load %{filename}"
+  "~DOCSTORE.SAVE_403_ERROR": "You don't have permission to save '%{filename}'.<br><br>You may need to log in again."
+  "~DOCSTORE.SAVE_DUPLICATE_ERROR": "Unable to create %{filename}.  File already exists."
+  "~DOCSTORE.SAVE_ERROR_WITH_MESSAGE": "Unable to save %{filename}: [%{message}]"
+  "~DOCSTORE.SAVE_ERROR": "Unable to save %{filename}"
+  "~DOCSTORE.REMOVE_403_ERROR": "You don't have permission to remove %{filename}.<br><br>You may need to log in again."
+  "~DOCSTORE.REMOVE_ERROR": "Unable to remove %{filename}"
+  "~DOCSTORE.RENAME_403_ERROR": "You don't have permission to rename %{filename}.<br><br>You may need to log in again."
+  "~DOCSTORE.RENAME_ERROR": "Unable to rename %{filename}"
+
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE": "Concord Cloud Alert"
   "~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE": "Concord Cloud Alert"
   "~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE": "Save Elsewhere"

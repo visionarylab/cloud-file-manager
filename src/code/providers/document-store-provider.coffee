@@ -270,13 +270,14 @@ class DocumentStoreProvider extends ProviderInterface
       statusCode:
         403: =>
           @user = null
-          callback "Unable to load #{metadata.name or 'file'} due to a permissions error.\nYou may need to log in again.", 403
+          callback tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name or 'the file'}), 403
+
       error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         message = if metadata.sharedContentId
-          "Unable to load document '#{metadata.sharedContentId}'. Perhaps the file was not shared?"
+          tr "~DOCSTORE.LOAD_SHARED_404_ERROR"
         else
-          "Unable to load #{metadata.name or metadata.providerData?.id or 'file'}"
+          tr "~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name or metadata.providerData?.id or 'the file'}
         callback message
 
   save: (cloudContent, metadata, callback) ->
@@ -328,17 +329,17 @@ class DocumentStoreProvider extends ProviderInterface
       statusCode:
         403: =>
           @user = null
-          callback "Unable to save '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
+          callback tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403
       error: (jqXHR) ->
         try
           return if jqXHR.status is 403 # let statusCode handler deal with it
           responseJson = JSON.parse jqXHR.responseText
           if responseJson.message is 'error.duplicate'
-            callback "Unable to create #{metadata.name}.  File already exists."
+            callback tr "~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}
           else
-            callback "Unable to save #{metadata.name}: [#{responseJson.message}]"
+            callback tr "~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}
         catch
-          callback "Unable to save #{metadata.name}"
+          callback tr "~DOCSTORE.SAVE_ERROR", {filename: metadata.name}
 
   remove: (metadata, callback) ->
     $.ajax
@@ -353,10 +354,10 @@ class DocumentStoreProvider extends ProviderInterface
       statusCode:
         403: =>
           @user = null
-          callback "Unable to remove '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
+          callback tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403
       error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
-        callback "Unable to remove #{metadata.name}"
+        callback tr "~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}
 
   rename: (metadata, newName, callback) ->
     $.ajax
@@ -373,10 +374,10 @@ class DocumentStoreProvider extends ProviderInterface
       statusCode:
         403: =>
           @user = null
-          callback "Unable to rename '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
+          callback tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403
       error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
-        callback "Unable to rename #{metadata.name}"
+        callback tr "~DOCSTORE.RENAME_ERROR", {filename: metadata.name}
 
   canOpenSaved: -> true
 
