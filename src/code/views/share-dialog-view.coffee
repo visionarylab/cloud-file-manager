@@ -1,5 +1,7 @@
 {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = React.DOM
 
+SHOW_LONGEVITY_WARNING = false
+
 ModalDialog = React.createFactory require './modal-dialog-view'
 getQueryParam = require '../utils/get-query-param'
 
@@ -237,5 +239,6 @@ module.exports = React.createClass
         (div {className: 'buttons'},
           (button {onClick: @props.close}, tr '~SHARE_DIALOG.CLOSE')
         )
+        (div {className: 'longevity-warning'}, tr '~SHARE_DIALOG.LONGEVITY_WARNING') if SHOW_LONGEVITY_WARNING
       )
     )

@@ -66,6 +66,7 @@ module.exports =
   "~SHARE_DIALOG.COPY_SUCCESS": "The info has been copied to the clipboard."
   "~SHARE_DIALOG.COPY_ERROR": "Sorry, the info was not able to be copied to the clipboard."
   "~SHARE_DIALOG.COPY_TITLE": "Copy Result"
+  "~SHARE_DIALOG.LONGEVITY_WARNING": "The shared copy of this document will be retained until it has not been accessed for over a year."
 
   "~SHARE_UPDATE.TITLE": "Shared View Updated"
   "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully."

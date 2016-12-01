@@ -270,7 +270,7 @@ class DocumentStoreProvider extends ProviderInterface
       statusCode:
         403: =>
           @user = null
-          callback "Unable to load '#{metadata.name}' due to a permissions error.\nYou may need to log in again.", 403
+          callback "Unable to load #{metadata.name or 'file'} due to a permissions error.\nYou may need to log in again.", 403
       error: (jqXHR) ->
         return if jqXHR.status is 403 # let statusCode handler deal with it
         message = if metadata.sharedContentId

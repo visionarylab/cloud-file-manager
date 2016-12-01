@@ -31,6 +31,12 @@ module.exports = React.createClass
     else
       dimensions
 
+  updateStyles: ->
+    dimensions = @getDimensions()
+    @setState
+      backgroundStyle: @getBackgroundStyle dimensions
+      contentStyle: @getContentStyle dimensions
+
   # use bind/unbind for clients using older versions of jQuery
   componentDidMount: ->
     $(window).bind 'keyup', @watchForEscape
