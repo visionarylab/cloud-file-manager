@@ -2,6 +2,7 @@
 tr = require '../utils/translate'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 cloudContentFactory = (require '../providers/provider-interface').cloudContentFactory
+FileSaver = require('../lib/file-saver')
 
 module.exports = React.createClass
 
@@ -19,6 +20,7 @@ module.exports = React.createClass
                   then @props.dialog.data.extension else 'json'
     state =
       filename: filename
+      supportsDownloadAttribute: document.createElement('a').download isnt undefined
       downloadFilename: @getDownloadFilename hasPropsContent, filename, extension
       extension: extension
       mimeType: if hasPropsContent and @props.dialog.data.mimeType? \
@@ -55,8 +57,14 @@ module.exports = React.createClass
 
   confirm: (e, simulateClick) ->
     if not @confirmDisabled()
-      @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
-      @refs.download.click() if simulateClick
+      if @state.supportsDownloadAttribute
+        @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
+        @refs.download.click() if simulateClick
+      else
+        blob = @props.client.getDownloadBlob(@state.content, @state.includeShareInfo, @state.mimeType)
+        FileSaver.saveAs(blob, @state.downloadFilename, true)
+        e?.preventDefault()
+
       metadata = new CloudMetadata
         name: @state.downloadFilename.split('.')[0]
         type: CloudMetadata.File
@@ -66,15 +74,22 @@ module.exports = React.createClass
       @props.close()
     else
       e?.preventDefault()
+    return
+
+  contextMenu: (e) ->
+    @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
+    return
 
   cancel: ->
     @props.close()
+    return
 
   watchForEnter: (e) ->
     if e.keyCode is 13 and not @confirmDisabled()
       e.preventDefault()
       e.stopPropagation()
       @confirm(null, true)
+    return
 
   confirmDisabled: ->
     (@state.downloadFilename.length is 0) or not @state.gotContent
@@ -93,7 +108,14 @@ module.exports = React.createClass
       )
       div({className: 'note'}, tr('~FILE_DIALOG.DOWNLOAD_NOTE', {download: tr('~FILE_DIALOG.DOWNLOAD')}))
       (div {className: 'buttons'},
-        (a {href: '#', ref: 'download', className: (if confirmDisabled then 'disabled' else ''), download: @state.downloadFilename, onClick: @confirm}, tr '~FILE_DIALOG.DOWNLOAD')
+        (a {
+          href: '#'
+          ref: 'download'
+          className: (if confirmDisabled then 'disabled' else '')
+          download: @state.downloadFilename
+          onClick: @confirm
+          onContextMenu: @contextMenu
+        }, tr '~FILE_DIALOG.DOWNLOAD')
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
       )
     )
