@@ -485,7 +485,7 @@ class CloudFileManagerClient
       @state.currentContent?.copyMetadataTo envelopedContent
       @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
 
-  getDownloadUrl: (content, includeShareInfo, mimeType='text/plain') ->
+  getDownloadBlob: (content, includeShareInfo, mimeType='text/plain') ->
     if typeof content is "string"
       if mimeType.indexOf("image") >= 0
         contentToSave = base64Array.toByteArray(content)
@@ -506,13 +506,11 @@ class CloudFileManagerClient
       delete json.metadata.shared if json.metadata?.shared?
       contentToSave = JSON.stringify(json)
 
+    new Blob([contentToSave], {type: mimeType})
+
+  getDownloadUrl: (content, includeShareInfo, mimeType='text/plain') ->
     wURL = window.URL or window.webkitURL
-    downloadUrl = if wURL
-      blob = new Blob([contentToSave], {type: mimeType})
-      wURL.createObjectURL blob
-    else
-      null
-    downloadUrl
+    wURL.createObjectURL(@getDownloadBlob content, includeShareInfo, mimeType) if wURL
 
   rename: (metadata, newName, callback) ->
     dirty = @state.dirty
