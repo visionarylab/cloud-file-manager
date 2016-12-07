@@ -6,6 +6,16 @@ module.exports = React.createClass
 
   displayName: 'LocalFileListTab'
 
+  # Standard React 'drop' event handlers are triggered after client 'drop' event handlers.
+  # By explicitly installing DOM event handlers we get first crack at the 'drop' event.
+  componentDidMount: ->
+    @refs.dropZone.addEventListener 'drop', @drop
+    return
+
+  componentWillUnmount: ->
+    @refs.dropZone.removeEventListener 'drop', @drop
+    return
+
   getInitialState: ->
     hover: false
 
@@ -40,16 +50,19 @@ module.exports = React.createClass
 
   drop: (e) ->
     e.preventDefault()
+    e.stopPropagation()
     droppedFiles = if e.dataTransfer then e.dataTransfer.files else e.target.files
     if droppedFiles.length > 1
       @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"
     else if droppedFiles.length is 1
       @openFile droppedFiles[0], 'drop'
+    return
 
   render: ->
     dropClass = "dropArea#{if @state.hover then ' dropHover' else ''}"
     (div {className: 'dialogTab localFileLoad'},
-      (div {className: dropClass, onDragEnter: @dragEnter, onDragLeave: @dragLeave, onDrop: @drop},
+      # 'drop' event handler installed as DOM event handler in componentDidMount()
+      (div {ref: 'dropZone', className: dropClass, onDragEnter: @dragEnter, onDragLeave: @dragLeave},
         (tr "~LOCAL_FILE_DIALOG.DROP_FILE_HERE")
         (input {type: 'file', onChange: @changed})
       )
