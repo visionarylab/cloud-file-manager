@@ -96,7 +96,7 @@ class GoogleDriveProvider extends ProviderInterface
         if @authToken
           gapi.client.oauth2.userinfo.get().execute (user) =>
             @user = user
-        @authCallback @authToken isnt null
+        @authCallback? @authToken isnt null
 
   autoRenewToken: (authToken) ->
     if @_autoRenewTimeout
