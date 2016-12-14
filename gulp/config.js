@@ -6,6 +6,7 @@ var argv = require('yargs').argv,
     dest  = argv.dest ? argv.dest : './dist', // configure destination folder
     noMap = !!argv.noMap,       // don't generate .map files
     nojQuery = !!argv.nojQuery, // don't include jQuery
+    noReact = !!argv.noReact, // don't include React
     codap = !!argv.codap,       // include CODAP-specific modifications
     assetsSrc = codap ? src + '/assets/img/*.*' : src + '/assets/**/*.*',
     assetsDst = codap ? dest + '/img/' : dest;
@@ -14,6 +15,7 @@ module.exports = {
   flags: {
     noMap: noMap,
     nojQuery: nojQuery,
+    noReact: noReact,
     codap: codap
   },
   browserify: {
