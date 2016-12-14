@@ -14,6 +14,7 @@ var config      = require('../config').browserify;
 var flags       = require('../config').flags;
 var noMap       = flags && flags.noMap;
 var nojQuery    = flags && flags.nojQuery;
+var noReact     = flags && flags.noReact;
 var codap       = flags && flags.codap;
 var beep        = require('beepbeep');
 
@@ -51,6 +52,10 @@ gulp.task('browserify-globals', function(){
   if(nojQuery) {
     b.exclude('jquery');
   }
+  if(noReact) {
+    b.exclude('react');
+    b.exclude('react-dom');
+  }
   b.transform(coffeeify);
   b.add(config.globals.src);
   return b.bundle()
@@ -58,6 +63,10 @@ gulp.task('browserify-globals', function(){
     .pipe(source('globals.js'))
     .pipe(buffer())
     .pipe(gulpif(nojQuery, replace(/.*?(jQuery|global\.\$)\s*=.*\n?/g,
+                                    function(iMatch) {
+                                      return '//' + iMatch;
+                                    })))
+    .pipe(gulpif(noReact, replace(/.*?(React|ReactDOM)\s*=.*\n?/g,
                                     function(iMatch) {
                                       return '//' + iMatch;
                                     })))
