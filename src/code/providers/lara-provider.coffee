@@ -78,7 +78,7 @@ class LaraProvider extends ProviderInterface
   can: (capability, metadata) ->
     hasReadOnlyAccess = metadata?.providerData?.accessKeys?.readOnly? and
                         not metadata?.providerData?.accessKeys?.readWrite?
-    requiresWriteAccess = ['save', 'remove', 'rename'].indexOf(capability) >= 0
+    requiresWriteAccess = ['save', 'resave', 'remove', 'rename'].indexOf(capability) >= 0
     super(capability, metadata) and not (requiresWriteAccess and hasReadOnlyAccess)
 
   load: (metadata, callback) ->
