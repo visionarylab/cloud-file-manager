@@ -38,17 +38,23 @@ FileList = React.createFactory React.createClass
     loading: true
 
   componentDidMount: ->
+    @_isMounted = true
     @load @props.folder
 
   componentWillReceiveProps: (nextProps) ->
     if nextProps.folder isnt @props.folder
       @load nextProps.folder
 
+  componentWillUnmount: ->
+    @_isMounted = false
+
   load: (folder) ->
     @props.provider.list folder, (err, list) =>
       return @props.client.alert(err) if err
-      @setState
-        loading: false
+      # asynchronous callback may be called after dialog has been dismissed
+      if @_isMounted
+        @setState
+          loading: false
       @props.listLoaded list
 
   parentSelected: (e) ->
@@ -79,6 +85,12 @@ FileDialogTab = React.createClass
     initialState.filename = initialState.metadata?.name or ''
     initialState
 
+  componentDidMount: ->
+    @_isMounted = true
+
+  componentWillUnmount: ->
+    @_isMounted = false
+
   isOpen: ->
     @props.dialog.action is 'openFile'
 
@@ -89,7 +101,9 @@ FileDialogTab = React.createClass
       metadata: @findMetadata filename, @state.list
 
   listLoaded: (list) ->
-    @setState list: list
+    # asynchronous callback may be called after dialog has been dismissed
+    if @_isMounted
+      @setState list: list
 
   getSaveMetadata: ->
     # The save metadata for a file that may have been opened from another
