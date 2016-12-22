@@ -12,8 +12,7 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   displayName: 'GoogleDriveAuthorizationDialog'
 
   getInitialState: ->
-    @_hasLoadedGAPI = false
-    loadedGAPI: false
+    loadedGAPI: window._LoadedGAPIClients
 
   # See comments in AuthorizeMixin for detailed description of the issues here.
   # The short version is that we need to maintain synchronized instance variable
@@ -22,14 +21,13 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
 
   componentWillMount: ->
     @props.provider._loadedGAPI =>
-      @_hasLoadedGAPI = true
       if @_isMounted
         @setState loadedGAPI: true
 
   componentDidMount: ->
     @_isMounted = true
-    if @state.loadedGAPI isnt @_hasLoadedGAPI
-      @setState loadedGAPI: @_hasLoadedGAPI
+    if @state.loadedGAPI isnt window._LoadedGAPIClients
+      @setState loadedGAPI: window._LoadedGAPIClients
 
   componentWillUnmount: ->
     @_isMounted = false
@@ -41,7 +39,7 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
     (div {className: 'google-drive-auth'},
       (div {className: 'google-drive-concord-logo'}, '')
       (div {className: 'google-drive-footer'},
-        if @_hasLoadedGAPI or @state.loadedGAPI
+        if window._LoadedGAPIClients or @state.loadedGAPI
           (button {onClick: @authenticate}, (tr "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))
         else
           (tr "~GOOGLE_DRIVE.CONNECTING_MESSAGE")
