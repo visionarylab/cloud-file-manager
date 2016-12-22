@@ -42,9 +42,9 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
       (div {className: 'google-drive-concord-logo'}, '')
       (div {className: 'google-drive-footer'},
         if @_hasLoadedGAPI or @state.loadedGAPI
-          (button {onClick: @authenticate}, 'Login to Google')
+          (button {onClick: @authenticate}, (tr "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))
         else
-          'Connecting to Google...'
+          (tr "~GOOGLE_DRIVE.CONNECTING_MESSAGE")
       )
     )
 
@@ -70,7 +70,7 @@ class GoogleDriveProvider extends ProviderInterface
     @user = null
     @clientId = @options.clientId
     if not @clientId
-      throw new Error 'Missing required clientId in googleDrive provider options'
+      throw new Error (tr "~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")
     @mimeType = @options.mimeType or "text/plain"
     @readableMimetypes = @options.readableMimetypes
     @useRealTimeAPI = @options.useRealTimeAPI or false
