@@ -40,6 +40,15 @@ module.exports = React.createClass
           gotContent: true
           content: envelopedContent
 
+    # Using the React onClick handler for the download button yielded odd behaviors
+    # in which the onClick handler got triggered multiple times and the default
+    # handler could not be prevented, presumably due to React's SyntheticEvent system.
+    # The solution here is to use standard browser event handlers.
+    @refs.download.addEventListener 'click', @confirm
+
+  componentWillUnmount: ->
+    @refs.download.removeEventListener 'click', @confirm
+
   filenameChanged: ->
     filename = @refs.filename.value
     @setState
@@ -72,6 +81,9 @@ module.exports = React.createClass
         provider: @props.provider
       @props.dialog.callback metadata
       @props.close()
+
+      # return value indicates whether to trigger href
+      return @state.supportsDownloadAttribute
     else
       e?.preventDefault()
     return
@@ -97,6 +109,21 @@ module.exports = React.createClass
   render: ->
     confirmDisabled = @confirmDisabled()
 
+    # for modern browsers
+    downloadAnchor = (a {
+      href: '#'
+      ref: 'download'
+      className: (if confirmDisabled then 'disabled' else '')
+      download: @state.downloadFilename
+      onContextMenu: @contextMenu
+    }, tr '~FILE_DIALOG.DOWNLOAD')
+
+    # for Safari (or other non-modern browsers)
+    downloadButton = (button {
+      ref: 'download'
+      className: (if confirmDisabled then 'disabled' else '')
+    }, tr '~FILE_DIALOG.DOWNLOAD')
+
     (div {className: 'dialogTab localFileSave'},
       (input {type: 'text', ref: 'filename', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter}),
       (div {className: 'saveArea'},
@@ -108,14 +135,7 @@ module.exports = React.createClass
       )
       div({className: 'note'}, tr('~FILE_DIALOG.DOWNLOAD_NOTE', {download: tr('~FILE_DIALOG.DOWNLOAD')}))
       (div {className: 'buttons'},
-        (a {
-          href: '#'
-          ref: 'download'
-          className: (if confirmDisabled then 'disabled' else '')
-          download: @state.downloadFilename
-          onClick: @confirm
-          onContextMenu: @contextMenu
-        }, tr '~FILE_DIALOG.DOWNLOAD')
+        if @state.supportsDownloadAttribute then downloadAnchor else downloadButton
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
       )
     )
