@@ -1,6 +1,6 @@
 AuthorizeMixin =
   getInitialState: ->
-    _isAuthorized = false
+    @_isAuthorized = false
     authorized: false
 
   # The constraints here are somewhat subtle. We want to try to
