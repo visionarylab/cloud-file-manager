@@ -12,11 +12,25 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   displayName: 'GoogleDriveAuthorizationDialog'
 
   getInitialState: ->
-    loadedGAPI: false
+    loadedGAPI: window._LoadedGAPIClients
+
+  # See comments in AuthorizeMixin for detailed description of the issues here.
+  # The short version is that we need to maintain synchronized instance variable
+  # and state to track authorization status while avoiding calling setState on
+  # unmounted components, which doesn't work and triggers a React warning.
 
   componentWillMount: ->
     @props.provider._loadedGAPI =>
-      @setState loadedGAPI: true
+      if @_isMounted
+        @setState loadedGAPI: true
+
+  componentDidMount: ->
+    @_isMounted = true
+    if @state.loadedGAPI isnt window._LoadedGAPIClients
+      @setState loadedGAPI: window._LoadedGAPIClients
+
+  componentWillUnmount: ->
+    @_isMounted = false
 
   authenticate: ->
     @props.provider.authorize GoogleDriveProvider.SHOW_POPUP
@@ -25,10 +39,10 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
     (div {className: 'google-drive-auth'},
       (div {className: 'google-drive-concord-logo'}, '')
       (div {className: 'google-drive-footer'},
-        if @state.loadedGAPI
-          (button {onClick: @authenticate}, 'Login to Google')
+        if window._LoadedGAPIClients or @state.loadedGAPI
+          (button {onClick: @authenticate}, (tr "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))
         else
-          'Trying to log into Google...'
+          (tr "~GOOGLE_DRIVE.CONNECTING_MESSAGE")
       )
     )
 
@@ -54,7 +68,7 @@ class GoogleDriveProvider extends ProviderInterface
     @user = null
     @clientId = @options.clientId
     if not @clientId
-      throw new Error 'Missing required clientId in googleDrive provider options'
+      throw new Error (tr "~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")
     @mimeType = @options.mimeType or "text/plain"
     @readableMimetypes = @options.readableMimetypes
     @useRealTimeAPI = @options.useRealTimeAPI or false
@@ -195,8 +209,10 @@ class GoogleDriveProvider extends ProviderInterface
   _loadGAPI: ->
     if not window._LoadingGAPI
       window._LoadingGAPI = true
-      window._GAPIOnLoad = ->
-        @window._LoadedGAPI = true
+      window._GAPIOnLoad = =>
+        window._LoadedGAPI = true
+        # preload clients to avoid user delay later
+        @_loadedGAPI ->
       script = document.createElement 'script'
       script.src = 'https://apis.google.com/js/client.js?onload=_GAPIOnLoad'
       document.head.appendChild script

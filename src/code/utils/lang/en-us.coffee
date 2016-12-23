@@ -103,6 +103,10 @@ module.exports =
 
   "~ALERT.NO_PROVIDER": "Could not open the specified document because an appropriate provider is not available."
 
+  "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL": "Login to Google"
+  "~GOOGLE_DRIVE.CONNECTING_MESSAGE": "Connecting to Google..."
+  "~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID": "Missing required clientId in googleDrive provider options"
+
   "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared."
   "~DOCSTORE.LOAD_SHARED_404_ERROR": "Unable to load the requested shared document.<br><br>Perhaps the file was not shared?"
   "~DOCSTORE.LOAD_404_ERROR": "Unable to load %{filename}"
