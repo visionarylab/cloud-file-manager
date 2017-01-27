@@ -18,7 +18,7 @@ class LaraProvider extends ProviderInterface
 
   @Name: 'lara'
 
-  constructor: (@options = {}, @client) ->
+  constructor: (options = {}, client) ->
     super
       name: LaraProvider.Name
       capabilities:
@@ -30,7 +30,8 @@ class LaraProvider extends ProviderInterface
         remove: false
         rename: false
         close: false
-
+    @options = options
+    @client = client
     @urlParams = {
       documentServer: getQueryParam "documentServer"
       launchFromLara: getQueryParam "launchFromLara"

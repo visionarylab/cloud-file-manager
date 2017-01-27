@@ -40,21 +40,23 @@ DocumentStoreAuthorizationDialog = React.createFactory React.createClass
 
 class DocumentStoreProvider extends ProviderInterface
 
-  constructor: (@options = {}, @client) ->
-    @options.deprecationPhase = 0 if not @options.deprecationPhase?
+  constructor: (options = {}, client) ->
     super
       name: DocumentStoreProvider.Name
-      displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
-      urlDisplayName: @options.urlDisplayName
-      capabilities:
-        save: @isNotDeprecated('save')
-        resave: @isNotDeprecated('save')
-        export: false
-        load: @isNotDeprecated('load')
-        list: @isNotDeprecated('list')
-        remove: @isNotDeprecated('remove')
-        rename: @isNotDeprecated('rename')
-        close: false
+      displayName: options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
+      urlDisplayName: options.urlDisplayName
+    @capabilities =
+      save: @isNotDeprecated('save')
+      resave: @isNotDeprecated('save')
+      export: false
+      load: @isNotDeprecated('load')
+      list: @isNotDeprecated('list')
+      remove: @isNotDeprecated('remove')
+      rename: @isNotDeprecated('rename')
+      close: false
+    @options = options
+    @client = client
+    @options.deprecationPhase = 0 if not @options.deprecationPhase?
 
     @urlParams = {
       documentServer: getQueryParam "documentServer"

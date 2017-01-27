@@ -8,10 +8,10 @@ LocalFileSaveTab = React.createFactory require '../views/local-file-tab-save-vie
 
 class LocalFileProvider extends ProviderInterface
 
-  constructor: (@options = {}, @client) ->
+  constructor: (options = {}, client) ->
     super
       name: LocalFileProvider.Name
-      displayName: @options.displayName or (tr '~PROVIDER.LOCAL_FILE')
+      displayName: options.displayName or (tr '~PROVIDER.LOCAL_FILE')
       capabilities:
         save: true
         resave: false
@@ -21,6 +21,8 @@ class LocalFileProvider extends ProviderInterface
         remove: false
         rename: false
         close: false
+    @options = options
+    @client = client
 
   @Name: 'localFile'
 

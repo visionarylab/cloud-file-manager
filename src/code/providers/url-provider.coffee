@@ -7,7 +7,7 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 
 class URLProvider extends ProviderInterface
 
-  constructor: (@options = {}, @client) ->
+  constructor: (options = {}, client) ->
     super
       capabilities:
         save: false
@@ -18,6 +18,8 @@ class URLProvider extends ProviderInterface
         remove: false
         rename: false
         close: false
+    @options = options
+    @client = client
 
   canOpenSaved: -> false
 

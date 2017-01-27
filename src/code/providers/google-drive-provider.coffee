@@ -48,11 +48,11 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
 
 class GoogleDriveProvider extends ProviderInterface
 
-  constructor: (@options = {}, @client) ->
+  constructor: (options = {}, client) ->
     super
       name: GoogleDriveProvider.Name
-      displayName: @options.displayName or (tr '~PROVIDER.GOOGLE_DRIVE')
-      urlDisplayName: @options.urlDisplayName
+      displayName: options.displayName or (tr '~PROVIDER.GOOGLE_DRIVE')
+      urlDisplayName: options.urlDisplayName
       capabilities:
         save: true
         resave: true
@@ -63,7 +63,8 @@ class GoogleDriveProvider extends ProviderInterface
         rename: true
         close: true
         setFolder: true
-
+    @options = options
+    @client = client
     @authToken = null
     @user = null
     @clientId = @options.clientId
