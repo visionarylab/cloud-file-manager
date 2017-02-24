@@ -548,15 +548,23 @@ class CloudFileManagerClient
       callback? 'No initial opened version was found for the currently active file'
 
   saveSecondaryFileAsDialog: (stringContent, extension, mimeType, callback) ->
-    data = { content: stringContent, extension, mimeType }
-    @_ui.saveSecondaryFileAsDialog data, (metadata) =>
-      # replace defaults
-      if extension
-        metadata.filename = CloudMetadata.newExtension metadata.filename, extension
-      if mimeType
-        metadata.mimeType = mimeType
+    if window.location.search.indexOf("saveSecondaryFileViaPostMessage") isnt -1
+      window.parent.postMessage({
+        action: "saveSecondaryFile",
+        extension: extension,
+        mimeType: mimeType,
+        content: stringContent
+      }, "*")
+    else
+      data = { content: stringContent, extension, mimeType }
+      @_ui.saveSecondaryFileAsDialog data, (metadata) =>
+        # replace defaults
+        if extension
+          metadata.filename = CloudMetadata.newExtension metadata.filename, extension
+        if mimeType
+          metadata.mimeType = mimeType
 
-      @saveSecondaryFile stringContent, metadata, callback
+        @saveSecondaryFile stringContent, metadata, callback
 
   # Saves a file to backend, but does not update current metadata.
   # Used e.g. when exporting .csv files from CODAP
