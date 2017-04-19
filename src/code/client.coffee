@@ -100,6 +100,8 @@ class CloudFileManagerClient
 
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
 
+    @_startPostMessageListener()
+
   setProviderOptions: (name, newOptions) ->
     for provider in @state.availableProviders
       if provider.name is name
@@ -584,21 +586,21 @@ class CloudFileManagerClient
       dirty: isDirty
       saved: @state.saved and not isDirty
 
+  shouldAutoSave: =>
+    @state.dirty and
+      not @state.metadata?.autoSaveDisabled and
+      not @isSaveInProgress() and
+      @state.metadata?.provider?.can 'resave', @state.metadata
+
   autoSave: (interval) ->
     if @_autoSaveInterval
       clearInterval @_autoSaveInterval
-
-    shouldAutoSave = =>
-      @state.dirty and
-        not @state.metadata?.autoSaveDisabled and
-        not @isSaveInProgress() and
-        @state.metadata?.provider?.can 'resave', @state.metadata
 
     # in case the caller uses milliseconds
     if interval > 1000
       interval = Math.round(interval / 1000)
     if interval > 0
-      @_autoSaveInterval = setInterval (=> @save() if shouldAutoSave()), (interval * 1000)
+      @_autoSaveInterval = setInterval (=> @save() if @shouldAutoSave()), (interval * 1000)
 
   isAutoSaving: ->
     @_autoSaveInterval?
@@ -725,6 +727,21 @@ class CloudFileManagerClient
         window.location.hash.indexOf("#file=http") is 0
       window.location.hash    # leave it alone
     else ""
+
+  _startPostMessageListener: ->
+    $(window).on 'message', (e) =>
+      oe = e.originalEvent
+      reply = (type, params={}) ->
+        message = _.merge {}, params, {type: type}
+        oe.source.postMessage message, oe.origin
+      switch oe.data?.type
+        when 'cfm::getCommands'
+          reply 'cfm::commands', commands: ['cfm::autosave']
+        when 'cfm::autosave'
+          if @shouldAutoSave()
+            @save -> reply 'cfm::autosaved', saved: true
+          else
+            reply 'cfm::autosaved', saved: false
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
