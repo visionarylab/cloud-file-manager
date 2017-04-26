@@ -52,6 +52,20 @@ DropDown = React.createClass
     timeout: null
     subMenu: null
 
+  componentWillMount: ->
+    if window.addEventListener
+      window.addEventListener 'mousedown', @checkBlur, true
+      window.addEventListener 'touchstart', @checkBlur, true
+
+  componentWillUnmount: ->
+    if window.removeEventListener
+      window.removeEventListener 'mousedown', @checkBlur, true
+      window.removeEventListener 'touchstart', @checkBlur, true
+
+  checkBlur: ->
+    if @state.showingMenu
+      @blur()
+
   blur: ->
     @unblur()
     timeout = setTimeout ( => @setState {showingMenu: false, subMenu: false} ), 500
