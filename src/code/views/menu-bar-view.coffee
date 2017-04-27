@@ -11,6 +11,7 @@ module.exports = React.createClass
     # need to use direct DOM events because the event needs to be captured
     if window.addEventListener
       window.addEventListener 'mousedown', @checkBlur, true
+      window.addEventListener 'touchstart', @checkBlur, true
 
     @props.client._ui.listen (event) =>
       switch event.type
@@ -23,6 +24,7 @@ module.exports = React.createClass
   componentWillUnmount: ->
     if window.removeEventListener
       window.removeEventListener 'mousedown', @checkBlur, true
+      window.removeEventListener 'touchstart', @checkBlur, true
 
   getFilename: (props) ->
     if props.filename?.length > 0 then props.filename else (tr "~MENUBAR.UNTITLED_DOCUMENT")
