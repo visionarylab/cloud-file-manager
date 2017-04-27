@@ -2,18 +2,18 @@
 
 The Cloud File Manager is a Javascript library that enables applications to save and load files from various file systems using a simple consistent API.  Currently the following file system providers are supported:
 
-* [Concord Document Store](https://github.com/concord-consortium/document-store)
+* [Concord Document Store](https://github.com/concord-consortium/document-store) [DEPRECATED]
 * Google Drive (both normal files and realtime models backed by empty normal files)
 * Local and remote read-only files
 * Browser LocalStorage (used mostly for development/testing)
 
 ## Development Setup
 
-    npm install
+    npm install     # [or yarn]
     gulp default
     live-server
 
-and navigate to http://localhost:8080/dist/examples/
+and navigate to `http://localhost:8080/dist/examples/`
 
 ## Deployment
 
@@ -78,4 +78,4 @@ var options = {
 * Document using as a library
 * Draw a simple architecture diagram of how the client connects to the React UI using http://asciiflow.com/
 * Document how to add another provider
-* Document the event listenter functions in both createFrame and clientConnect and how each can talk to each other
+* Document the event listener functions in both createFrame and clientConnect and how each can talk to each other
