@@ -12,6 +12,7 @@ var argv = require('yargs').argv,
     assetsDst = codap ? dest + '/img/' : dest;
 
 module.exports = {
+  production: production,
   flags: {
     noMap: noMap,
     nojQuery: nojQuery,
