@@ -1,6 +1,6 @@
 translations =  {}
-translations['en'] = require './lang/en-us'
-defaultLang = 'en'
+translations['zh'] = require './lang/ch-tw'
+defaultLang = 'zh'
 varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
 translate = (key, vars={}, lang=defaultLang) ->
