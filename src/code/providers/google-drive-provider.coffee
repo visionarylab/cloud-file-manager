@@ -247,14 +247,15 @@ class GoogleDriveProvider extends ProviderInterface
             provider: @
             providerData:
               id: file.parents[0].id
+        url = file.downloadUrl
+        # use access_token as query parameter instead of header to avoid CORS request which breaks in IE 11
+        url += "#{if url.indexOf("?") is -1 then "?" else "&"}access_token=#{encodeURIComponent(@authToken.access_token)}"
         xhr = new XMLHttpRequest()
-        xhr.open 'GET', file.downloadUrl
-        if @authToken
-          xhr.setRequestHeader 'Authorization', "Bearer #{@authToken.access_token}"
+        xhr.open 'GET', url
         xhr.onload = ->
           callback null, cloudContentFactory.createEnvelopedCloudContent xhr.responseText
         xhr.onerror = ->
-          callback "Unable to download #{url}"
+          callback "Unable to download file content"
         xhr.send()
       else
         callback @_apiError file, 'Unable to get download url'
