@@ -38,7 +38,7 @@
     "gulp-replace": "^0.5.3",
     "gulp-stylus": "^2.0.1",
     "package-json-versionify": "^1.0.1",
-    "require-dir": "^0.1.0",
+    "require-dir": "^0.3.2",
     "run-sequence": "^1.1.5",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
@@ -46,7 +46,7 @@
   },
   "scripts": {
     "build": "gulp clean-and-build",
-    "build:codap": "gulp clean-and-build --dest ../codap/apps/dg/resources/cloud-file-manager --codap --nojQuery --noReact --noMap",
+    "build:codap": "gulp clean-and-build --dest ../codap/apps/dg/english.lproj/cloud-file-manager --codap --nojQuery --noReact --noMap",
     "build:watch": "gulp",
     "deploy": "gulp deploy",
     "serve": "live-server --open=dist/examples"
