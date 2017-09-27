@@ -63,6 +63,7 @@ class LaraProvider extends ProviderInterface
       false
 
   logLaraData: (laraData) ->
+    laraData.collaboratorUrls = @collaboratorUrls if @collaboratorUrls?.length
     @options.logLaraData laraData if @options.logLaraData
 
   # don't show in provider open/save dialogs
