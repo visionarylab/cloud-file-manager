@@ -62,6 +62,9 @@ class LaraProvider extends ProviderInterface
     else
       false
 
+  logLaraData: (laraData) ->
+    @options.logLaraData laraData if @options.logLaraData
+
   # don't show in provider open/save dialogs
   filterTabComponent: (capability, defaultComponent) ->
     null
@@ -97,7 +100,12 @@ class LaraProvider extends ProviderInterface
         accessKey: accessKey
       context: @
 
-      success: (data) ->
+      success: (data) =>
+        @logLaraData {
+          operation: 'open'
+          documentID: metadata.providerData?.recordid
+          documentUrl: url
+        }
         content = cloudContentFactory.createEnvelopedCloudContent data
 
         # for documents loaded by id or other means (besides name),
@@ -270,7 +278,12 @@ class LaraProvider extends ProviderInterface
             url: url,
             dataType: 'json'
           })
-          .done (createResponse, status, jqXHR) ->
+          .done (createResponse, status, jqXHR) =>
+            @logLaraData {
+              operation: 'clone'
+              documentID: docStore.recordid
+              documentUrl: url
+            }
             processCreateResponse createResponse
             callback null
           .fail (jqXHR, status, error) ->
@@ -383,7 +396,12 @@ class LaraProvider extends ProviderInterface
         xhrFields:
           withCredentials: true
       })
-      .done (data, status, jqXHR) ->
+      .done (data, status, jqXHR) =>
+        @logLaraData {
+          operation: 'open'
+          runStateUrl: openSavedParams.url
+          documentID: openSavedParams.source
+        }
         processInitialRunState openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data
       .fail (jqXHR, status, error) ->
         callback "Could not open the specified document because an error occurred [getState]"
