@@ -59,6 +59,7 @@ class CloudFileManagerClient
 
     # check the providers
     availableProviders = []
+    shareProvider = null
     for provider in @appOptions.providers
       [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
       # merge in other options as needed
@@ -71,6 +72,9 @@ class CloudFileManagerClient
           Provider = allProviders[providerName]
           provider = new Provider providerOptions, @
           @providers[providerName] = provider
+          # if we're using the DocumentStoreProvider, instantiate the ShareProvider
+          if providerName is DocumentStoreProvider.Name
+            shareProvider = new DocumentStoreShareProvider(@, provider)
           if provider.urlDisplayName        # also add to here in providers list so we can look it up when parsing url hash
             @providers[provider.urlDisplayName] = provider
           availableProviders.push provider
@@ -78,7 +82,7 @@ class CloudFileManagerClient
           @alert "Unknown provider: #{providerName}"
     @_setState
       availableProviders: availableProviders
-      shareProvider: new DocumentStoreShareProvider(@, @providers[DocumentStoreProvider.Name])
+      shareProvider: shareProvider
 
     @appOptions.ui or= {}
     @appOptions.ui.windowTitleSuffix or= document.title
