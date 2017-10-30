@@ -158,7 +158,10 @@ class ProviderInterface
   @Available: -> true
 
   can: (capability) ->
-    @capabilities[capability]
+    !!@capabilities[capability]
+
+  canAuto: (capability) ->
+    @capabilities[capability] is 'auto'
 
   isAuthorizationRequired: ->
     false
