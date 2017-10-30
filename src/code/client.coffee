@@ -39,7 +39,8 @@ class CloudFileManagerClient
     @appOptions.wrapFileContent ?= true
     CloudContent.wrapFileContent = @appOptions.wrapFileContent
 
-    # filter for available providers
+    # Determine the available providers. Note that order in the list can
+    # be significant in provider searches (e.g. @autoProvider).
     allProviders = {}
     providerList = [
       LocalStorageProvider
@@ -592,7 +593,7 @@ class CloudFileManagerClient
   # Used e.g. when exporting .csv files from CODAP
   saveSecondaryFile: (stringContent, metadata, callback = null) ->
     if metadata?.provider?.can 'export', metadata
-      metadata.provider.save stringContent, metadata, (err, statusCode) =>
+      metadata.provider.saveAsExport stringContent, metadata, (err, statusCode) =>
         if err
           return @alert(err)
         callback? stringContent, metadata

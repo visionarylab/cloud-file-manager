@@ -19,7 +19,7 @@ class PostMessageProvider extends ProviderInterface
 
   canOpenSaved: -> false
 
-  save: (content, metadata, callback) ->
+  saveAsExport: (content, metadata, callback) ->
     window.parent.postMessage({
       action: "saveSecondaryFile",
       extension: metadata.extension,
