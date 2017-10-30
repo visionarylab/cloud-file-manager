@@ -1,6 +1,7 @@
 tr = require './utils/translate'
 isString = require './utils/is-string'
 base64Array = require 'base64-js' # https://github.com/beatgammit/base64-js
+getQueryParam = require './utils/get-query-param'
 
 CloudFileManagerUI = (require './ui').CloudFileManagerUI
 
@@ -11,6 +12,7 @@ LaraProvider = require './providers/lara-provider'
 DocumentStoreProvider = require './providers/document-store-provider'
 DocumentStoreShareProvider = require './providers/document-store-share-provider'
 LocalFileProvider = require './providers/local-file-provider'
+PostMessageProvider = require './providers/post-message-provider'
 URLProvider = require './providers/url-provider'
 
 cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
@@ -37,9 +39,19 @@ class CloudFileManagerClient
     @appOptions.wrapFileContent ?= true
     CloudContent.wrapFileContent = @appOptions.wrapFileContent
 
-    # filter for available providers
+    # Determine the available providers. Note that order in the list can
+    # be significant in provider searches (e.g. @autoProvider).
     allProviders = {}
-    for Provider in [ReadOnlyProvider, LocalStorageProvider, GoogleDriveProvider, LaraProvider, DocumentStoreProvider, LocalFileProvider]
+    providerList = [
+      LocalStorageProvider
+      ReadOnlyProvider
+      GoogleDriveProvider
+      LaraProvider
+      DocumentStoreProvider
+      LocalFileProvider
+      PostMessageProvider
+    ]
+    for Provider in providerList
       if Provider.Available()
         allProviders[Provider.Name] = Provider
 
@@ -58,9 +70,15 @@ class CloudFileManagerClient
     readableMimetypes.push @appOptions.mimeType
 
     # check the providers
+    requestedProviders = @appOptions.providers.slice()
+    if getQueryParam "saveSecondaryFileViaPostMessage"
+      requestedProviders.push 'postMessage'
     availableProviders = []
-    for provider in @appOptions.providers
-      [providerName, providerOptions] = if isString provider then [provider, {}] else [provider.name, provider]
+    shareProvider = null
+    for providerSpec in requestedProviders
+      [providerName, providerOptions] = if isString providerSpec \
+                                          then [providerSpec, {}] \
+                                          else [providerSpec.name, providerSpec]
       # merge in other options as needed
       providerOptions.mimeType ?= @appOptions.mimeType
       providerOptions.readableMimetypes = readableMimetypes
@@ -71,6 +89,9 @@ class CloudFileManagerClient
           Provider = allProviders[providerName]
           provider = new Provider providerOptions, @
           @providers[providerName] = provider
+          # if we're using the DocumentStoreProvider, instantiate the ShareProvider
+          if providerName is DocumentStoreProvider.Name
+            shareProvider = new DocumentStoreShareProvider(@, provider)
           if provider.urlDisplayName        # also add to here in providers list so we can look it up when parsing url hash
             @providers[provider.urlDisplayName] = provider
           availableProviders.push provider
@@ -78,7 +99,7 @@ class CloudFileManagerClient
           @alert "Unknown provider: #{providerName}"
     @_setState
       availableProviders: availableProviders
-      shareProvider: new DocumentStoreShareProvider(@, @providers[DocumentStoreProvider.Name])
+      shareProvider: shareProvider
 
     @appOptions.ui or= {}
     @appOptions.ui.windowTitleSuffix or= document.title
@@ -150,6 +171,10 @@ class CloudFileManagerClient
   listen: (listener) ->
     if listener
       @_listeners.push listener
+
+  autoProvider: (capability) ->
+    for provider in @state.availableProviders
+      return provider if provider.canAuto capability
 
   appendMenuItem: (item) ->
     @_ui.appendMenuItem item; @
@@ -325,7 +350,7 @@ class CloudFileManagerClient
       @saveContent stringContent, callback
 
   saveContent: (stringContent, callback = null) ->
-    provider = @state.metadata?.provider
+    provider = @state.metadata?.provider or @autoProvider 'save'
     if provider?
       provider.authorized (isAuthorized) =>
         # we can save the document without authorization in some cases
@@ -550,13 +575,9 @@ class CloudFileManagerClient
       callback? 'No initial opened version was found for the currently active file'
 
   saveSecondaryFileAsDialog: (stringContent, extension, mimeType, callback) ->
-    if window.location.search.indexOf("saveSecondaryFileViaPostMessage") isnt -1
-      window.parent.postMessage({
-        action: "saveSecondaryFile",
-        extension: extension,
-        mimeType: mimeType,
-        content: stringContent
-      }, "*")
+    if (provider = @autoProvider 'export')
+      metadata = { provider, extension, mimeType }
+      @saveSecondaryFile stringContent, metadata, callback
     else
       data = { content: stringContent, extension, mimeType }
       @_ui.saveSecondaryFileAsDialog data, (metadata) =>
@@ -571,15 +592,11 @@ class CloudFileManagerClient
   # Saves a file to backend, but does not update current metadata.
   # Used e.g. when exporting .csv files from CODAP
   saveSecondaryFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can 'save', metadata
-      @_setState
-        saving: metadata
-      metadata.provider.save stringContent, metadata, (err, statusCode) =>
+    if metadata?.provider?.can 'export', metadata
+      metadata.provider.saveAsExport stringContent, metadata, (err, statusCode) =>
         if err
           return @alert(err)
-        @_setState
-          saving: null
-        callback? currentContent, metadata
+        callback? stringContent, metadata
 
   dirty: (isDirty = true)->
     @_setState
