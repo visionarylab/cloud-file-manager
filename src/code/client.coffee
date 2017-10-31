@@ -15,6 +15,7 @@ LocalFileProvider = require './providers/local-file-provider'
 PostMessageProvider = require './providers/post-message-provider'
 URLProvider = require './providers/url-provider'
 
+ProviderInterface = (require './providers/provider-interface').ProviderInterface
 cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
 CloudContent = (require './providers/provider-interface').CloudContent
 CloudMetadata = (require './providers/provider-interface').CloudMetadata
@@ -85,6 +86,8 @@ class CloudFileManagerClient
       if not providerName
         @alert "Invalid provider spec - must either be string or object with name property"
       else
+        if providerSpec.createProvider
+          allProviders[providerName] = providerSpec.createProvider ProviderInterface
         if allProviders[providerName]
           Provider = allProviders[providerName]
           provider = new Provider providerOptions, @
