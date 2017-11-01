@@ -280,11 +280,13 @@ class LaraProvider extends ProviderInterface
             dataType: 'json'
           })
           .done (createResponse, status, jqXHR) =>
-            @logLaraData {
+            laraData = {
               operation: 'clone'
               documentID: docStore.recordid
               documentUrl: url
             }
+            laraData.run_remote_endpoint = existingRunState.run_remote_endpoint if existingRunState?.run_remote_endpoint?
+            @logLaraData laraData
             processCreateResponse createResponse
             callback null
           .fail (jqXHR, status, error) ->
@@ -398,11 +400,13 @@ class LaraProvider extends ProviderInterface
           withCredentials: true
       })
       .done (data, status, jqXHR) =>
-        @logLaraData {
+        laraData = {
           operation: 'open'
           runStateUrl: openSavedParams.url
           documentID: openSavedParams.source
         }
+        laraData.run_remote_endpoint = data.run_remote_endpoint if data?.run_remote_endpoint?
+        @logLaraData laraData
         processInitialRunState openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data
       .fail (jqXHR, status, error) ->
         callback "Could not open the specified document because an error occurred [getState]"
