@@ -65,6 +65,7 @@ class LaraProvider extends ProviderInterface
   logLaraData: (laraData) ->
     laraData.collaboratorUrls = @collaboratorUrls if @collaboratorUrls?.length
     @options.logLaraData laraData if @options.logLaraData
+    @client.log 'logLaraData', laraData
 
   # don't show in provider open/save dialogs
   filterTabComponent: (capability, defaultComponent) ->
@@ -145,6 +146,17 @@ class LaraProvider extends ProviderInterface
     {method, url} = if patchResults.shouldPatch \
                       then @docStoreUrl.v2PatchDocument(metadata.providerData.recordid, params) \
                       else @docStoreUrl.v2SaveDocument(metadata.providerData.recordid, params)
+
+    logData =
+      operation: 'save'
+      provider: 'LaraProvider'
+      shouldPatch: patchResults.shouldPatch
+      method: method
+      # elide all but first two chars of accessKey
+      url: url.substr(0, url.indexOf('accessKey') + 16) + '...'
+      params: JSON.stringify({ recordname: params.recordname })
+      content: patchResults.sendContent.substr(0, 512)
+    @client.log 'save', logData
 
     $.ajax
       dataType: 'json'
