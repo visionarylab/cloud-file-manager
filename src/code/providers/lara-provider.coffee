@@ -285,7 +285,7 @@ class LaraProvider extends ProviderInterface
               documentID: docStore.recordid
               documentUrl: url
             }
-            laraData.remoteEndpoint = existingRunState.run_remote_endpoint if existingRunState?.run_remote_endpoint?
+            laraData.run_remote_endpoint = existingRunState.run_remote_endpoint if existingRunState?.run_remote_endpoint?
             @logLaraData laraData
             processCreateResponse createResponse
             callback null
@@ -405,7 +405,7 @@ class LaraProvider extends ProviderInterface
           runStateUrl: openSavedParams.url
           documentID: openSavedParams.source
         }
-        laraData.remoteEndpoint = data.run_remote_endpoint if data?.run_remote_endpoint?
+        laraData.run_remote_endpoint = data.run_remote_endpoint if data?.run_remote_endpoint?
         @logLaraData laraData
         processInitialRunState openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data
       .fail (jqXHR, status, error) ->
