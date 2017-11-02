@@ -175,6 +175,10 @@ class CloudFileManagerClient
     if listener
       @_listeners.push listener
 
+  log: (event, eventData) ->
+    if (@appOptions.log)
+      @appOptions.log event, eventData
+
   autoProvider: (capability) ->
     for provider in @state.availableProviders
       return provider if provider.canAuto capability
