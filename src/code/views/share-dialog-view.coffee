@@ -1,6 +1,6 @@
 {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = React.DOM
 
-SHOW_LONGEVITY_WARNING = false
+SHOW_LONGEVITY_WARNING = true
 
 ModalDialog = React.createFactory require './modal-dialog-view'
 getQueryParam = require '../utils/get-query-param'
