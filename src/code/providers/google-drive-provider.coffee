@@ -97,7 +97,7 @@ class GoogleDriveProvider extends ProviderInterface
       args =
         client_id: @clientId
         scope: [
-          'https://www.googleapis.com/auth/drive'
+          'https://www.googleapis.com/auth/drive.readonly'
           'https://www.googleapis.com/auth/drive.install'
           'https://www.googleapis.com/auth/drive.file'
           'https://www.googleapis.com/auth/userinfo.profile'
