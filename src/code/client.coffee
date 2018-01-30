@@ -221,6 +221,7 @@ class CloudFileManagerClient
 
   openFile: (metadata, callback = null) ->
     if metadata?.provider?.can 'load', metadata
+      @_event 'willOpenFile', {op: "openFile"}
       metadata.provider.load metadata, (err, content) =>
         return @alert(err, => @ready()) if err
         # should wait to close current file until client signals open is complete
@@ -268,6 +269,7 @@ class CloudFileManagerClient
     reader.readAsText file
 
   openLocalFile: (file, callback=null) ->
+    @_event 'willOpenFile', {op: "openLocalFile"}
     @readLocalFile file, (data) =>
       content = cloudContentFactory.createEnvelopedCloudContent data.content
       metadata = new CloudMetadata
@@ -281,6 +283,7 @@ class CloudFileManagerClient
       @importData data, callback
 
   openSharedContent: (id) ->
+    @_event 'willOpenFile', {op: "openSharedContent"}
     @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
       return @alert(err, => @ready()) if err
       @_fileOpened content, metadata, {overwritable: false, openedContent: content.clone()}
@@ -298,6 +301,7 @@ class CloudFileManagerClient
     # trigger authorize() from confirmation dialog to avoid popup blockers
     @confirm tr("~CONFIRM.AUTHORIZE_OPEN"), =>
       provider.authorize =>
+        @_event 'willOpenFile', {op: "confirmAuthorizeAndOpen"}
         provider.openSaved providerParams, (err, content, metadata) =>
           return @alert(err) if err
           @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
@@ -309,6 +313,7 @@ class CloudFileManagerClient
       provider.authorized (authorized) =>
         # we can open the document without authorization in some cases
         if authorized or not provider.isAuthorizationRequired()
+          @_event 'willOpenFile', {op: "openProviderFile"}
           provider.openSaved providerParams, (err, content, metadata) =>
             return @alert(err, => @ready()) if err
             @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
@@ -320,6 +325,7 @@ class CloudFileManagerClient
 
   openUrlFile: (url) ->
     @urlProvider.openFileFromUrl url, (err, content, metadata) =>
+      @_event 'willOpenFile', {op: "openUrlFile"}
       return @alert(err, => @ready()) if err
       @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
 
@@ -433,6 +439,7 @@ class CloudFileManagerClient
       callback "Unable to temporarily save copied file"
 
   openCopiedFile: (copyParams) ->
+    @_event 'willOpenFile', {op: "openCopiedFile"}
     try
       key = "cfm-copy::#{copyParams}"
       copied = JSON.parse window.localStorage.getItem key
@@ -572,6 +579,7 @@ class CloudFileManagerClient
       @rename @state.metadata, newName, callback
 
   revertToLastOpened: (callback = null) ->
+    @_event 'willOpenFile', {op: "revertToLastOpened"}
     if @state.openedContent? and @state.metadata
       @_fileOpened @state.openedContent, @state.metadata, {openedContent: @state.openedContent.clone()}
 
