@@ -3,7 +3,7 @@
     <script src="../js/globals.js"></script>
     <script src="../js/app.js"></script>
     <link rel="stylesheet" href="../css/app.css">
-    <title>Examples: Deprecate - Phase Three</title>
+    <title>Examples: Lara Provider</title>
   </head>
   <body>
     <div id="wrapper">
@@ -12,21 +12,19 @@
       var options = {
         app: "example-app",
         mimeType: "text/plain",
-        readableMimeTypes: ["application/json"],
-        extension: "txt",
-        readableExtensions: ["json", ""],
         appName: "CFM_Demo",
         appVersion: "0.1",
         appBuildNum: "1",
+        enableLaraSharing: true,
         providers: [
           "localStorage",
           "localFile",
+          "lara",
           {
             "name": "readOnly",
-            "urlDisplayName": "examples",
             "json": {
               "first-example": "This is the first readonly example",
-              "second-example.txt": "This is the second readonly example"
+              "second-example": "This is the second readonly example"
             }
           },
           {
@@ -35,24 +33,18 @@
           },
           {
             "name": "documentStore",
-            "patch": true,
-            "deprecationPhase": 3
+            "patch": true
           }
         ],
         ui: {
           menu: CloudFileManager.DefaultMenu,
           menuBar: {
-            info: "Deprecate: Phase Three",
+            info: "Version 1.0.0",
             help: "http://lmgtfy.com/"
           }
         }
       };
-      CloudFileManager.createFrame(options, "wrapper", function (event) {
-        if (event.type == 'connected') {
-          var client = event.data.client;
-          client.insertMenuItemAfter('openFileDialog', {"name": "Import data...", action: client.importDataDialog.bind(client)});
-        }
-      });
+      CloudFileManager.createFrame(options, "wrapper");
     </script>
   </body>
 </html>
