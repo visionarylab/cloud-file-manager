@@ -206,6 +206,9 @@ class GoogleDriveProvider extends ProviderInterface
   getOpenSavedParams: (metadata) ->
     metadata.providerData.id
 
+  isAuthorizationRequired: ->
+    true
+
   _loadGAPI: ->
     if not window._LoadingGAPI
       window._LoadingGAPI = true
