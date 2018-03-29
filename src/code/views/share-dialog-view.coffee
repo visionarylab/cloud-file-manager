@@ -46,6 +46,7 @@ module.exports = React.createClass
     codapServerUrl: "https://codap.concord.org/releases/latest/"
     launchButtonText: "Launch"
     fullscreenScaling: true
+    graphVisToggles: false
     tabSelected: 'link'
 
   getSharedDocumentId: ->
@@ -77,7 +78,8 @@ module.exports = React.createClass
       server = encodeURIComponent(@state.codapServerUrl)
       buttonText = if @state.pageType is 'launch' then "&buttonText=#{encodeURIComponent(@state.launchButtonText)}" else ''
       fullscreenScaling = if @state.pageType is 'autolaunch' and @state.fullscreenScaling then '&scaling' else ''
-      "#{documentServer}/v2/documents/#{sharedDocumentId}/#{@state.pageType}?server=#{server}#{buttonText}#{fullscreenScaling}"
+      graphVisToggles = if @state.graphVisToggles then '&app=is' else ''
+      "#{documentServer}/v2/documents/#{sharedDocumentId}/#{@state.pageType}?server=#{server}#{buttonText}#{fullscreenScaling}#{graphVisToggles}"
     else
       null
 
@@ -149,6 +151,10 @@ module.exports = React.createClass
   changedFullscreenScaling: (event) ->
     @setState
       fullscreenScaling: event.target.checked
+
+  changedGraphVisToggles: (event) ->
+    @setState
+      graphVisToggles: event.target.checked
 
   render: ->
     sharing = @state.link isnt null
@@ -223,11 +229,15 @@ module.exports = React.createClass
                           (input {type: 'checkbox', checked: @state.fullscreenScaling, onChange: @changedFullscreenScaling})
                           "Fullscreen button and scaling"
                         )
-                      else
+                      if @state.pageType is 'launch'
                         (div {className: 'launch-button-text'},
                           "Launch Button Text:"
                           (input {value: @state.launchButtonText, onChange: @changedLaunchButtonText})
                         )
+                      (div {},
+                        (input {type: 'checkbox', checked: @state.graphVisToggles, onChange: @changedGraphVisToggles})
+                        "Display data visibility toggles on graphs"
+                      )
                     )
                   )
                 else
