@@ -42,11 +42,11 @@ module.exports = React.createClass
   getInitialState: ->
     link: @getShareLink()
     embed: @getEmbed()
-    lara: @getLara
-      codapServerUrl: "https://codap.concord.org/releases/latest/"
-      launchButtonText: "Launch"
+    pageType: "autolaunch"
     codapServerUrl: "https://codap.concord.org/releases/latest/"
     launchButtonText: "Launch"
+    fullscreenScaling: true
+    graphVisToggles: false
     tabSelected: 'link'
 
   getSharedDocumentId: ->
@@ -70,14 +70,16 @@ module.exports = React.createClass
     else
       null
 
-  getLara: (options = null) ->
+  getLara: ->
     sharedDocumentId = @getSharedDocumentId()
     if sharedDocumentId
       documentServer = getQueryParam('documentServer') or 'https://document-store.concord.org'
       documentServer = documentServer.slice(0, -1) while documentServer.substr(-1) is '/'  # remove trailing slash
-      server = encodeURIComponent (if options?.hasOwnProperty('codapServerUrl') then options.codapServerUrl else @state.codapServerUrl)
-      buttonText = encodeURIComponent (if options?.hasOwnProperty('launchButtonText') then options.launchButtonText else @state.launchButtonText)
-      "#{documentServer}/v2/documents/#{sharedDocumentId}/launch?server=#{server}&buttonText=#{buttonText}"
+      server = encodeURIComponent(@state.codapServerUrl)
+      buttonText = if @state.pageType is 'launch' then "&buttonText=#{encodeURIComponent(@state.launchButtonText)}" else ''
+      fullscreenScaling = if @state.pageType is 'autolaunch' and @state.fullscreenScaling then '&scaling' else ''
+      graphVisToggles = if @state.graphVisToggles then '&app=is' else ''
+      "#{documentServer}/v2/documents/#{sharedDocumentId}/#{@state.pageType}?server=#{server}#{buttonText}#{fullscreenScaling}#{graphVisToggles}"
     else
       null
 
@@ -124,7 +126,6 @@ module.exports = React.createClass
       @setState
         link: @getShareLink()
         embed: @getEmbed()
-        lara: @getLara()
 
   selectLinkTab: ->
     @setState tabSelected: 'link'
@@ -135,17 +136,25 @@ module.exports = React.createClass
   selectLaraTab: ->
     @setState tabSelected: 'lara'
 
-  changedCodapServerUrl: ->
-    codapServerUrl = ReactDOM.findDOMNode(@refs.codapServerUrl).value
+  changedCodapServerUrl: (event) ->
     @setState
-      codapServerUrl: codapServerUrl
-      lara: @getLara codapServerUrl: codapServerUrl
+      codapServerUrl: event.target.value
 
-  changedLaunchButtonText: ->
-    launchButtonText = ReactDOM.findDOMNode(@refs.launchButtonText).value
+  changedLaunchButtonText: (event) ->
     @setState
-      launchButtonText: launchButtonText
-      lara: @getLara launchButtonText: launchButtonText
+      launchButtonText: event.target.value
+
+  changedAutoscalingPage: (event) ->
+    @setState
+      pageType: if event.target.checked then 'autolaunch' else 'launch'
+
+  changedFullscreenScaling: (event) ->
+    @setState
+      fullscreenScaling: event.target.checked
+
+  changedGraphVisToggles: (event) ->
+    @setState
+      graphVisToggles: event.target.checked
 
   render: ->
     sharing = @state.link isnt null
@@ -202,20 +211,32 @@ module.exports = React.createClass
                     if document.execCommand or window.clipboardData
                       (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
                     (div {},
-                      (input {value: @state.lara, readOnly: true})
+                      (input {value: @getLara(), readOnly: true})
                     )
                     (div {className: 'lara-settings'},
                       (div {className: 'codap-server-url'},
                         "CODAP Server URL:"
                         (div {},
-                          (input {value: @state.codapServerUrl, ref: 'codapServerUrl', onChange: @changedCodapServerUrl})
+                          (input {value: @state.codapServerUrl, onChange: @changedCodapServerUrl})
                         )
                       )
-                      (div {className: 'launch-button-text'},
-                        "Launch Button Text:"
-                        (div {},
-                          (input {value: @state.launchButtonText, ref: 'launchButtonText', onChange: @changedLaunchButtonText})
+                      (div {className: 'autolaunch'},
+                        (input {type: 'checkbox', checked: @state.pageType is 'autolaunch', onChange: @changedAutoscalingPage})
+                        "Autolaunch page"
+                      )
+                      if @state.pageType is 'autolaunch'
+                        (div {className: 'fullsceen-scaling'},
+                          (input {type: 'checkbox', checked: @state.fullscreenScaling, onChange: @changedFullscreenScaling})
+                          "Fullscreen button and scaling"
                         )
+                      if @state.pageType is 'launch'
+                        (div {className: 'launch-button-text'},
+                          "Launch Button Text:"
+                          (input {value: @state.launchButtonText, onChange: @changedLaunchButtonText})
+                        )
+                      (div {},
+                        (input {type: 'checkbox', checked: @state.graphVisToggles, onChange: @changedGraphVisToggles})
+                        "Display data visibility toggles on graphs"
                       )
                     )
                   )
