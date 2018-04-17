@@ -75,11 +75,13 @@ module.exports = React.createClass
     if sharedDocumentId
       documentServer = getQueryParam('documentServer') or 'https://document-store.concord.org'
       documentServer = documentServer.slice(0, -1) while documentServer.substr(-1) is '/'  # remove trailing slash
-      server = encodeURIComponent(@state.codapServerUrl)
+      graphVisToggles = if @state.graphVisToggles then '?app=is' else ''
+      # graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
+      server = encodeURIComponent(@state.codapServerUrl + graphVisToggles)
+      # Other params are handled by document server itself:
       buttonText = if @state.pageType is 'launch' then "&buttonText=#{encodeURIComponent(@state.launchButtonText)}" else ''
       fullscreenScaling = if @state.pageType is 'autolaunch' and @state.fullscreenScaling then '&scaling' else ''
-      graphVisToggles = if @state.graphVisToggles then '&app=is' else ''
-      "#{documentServer}/v2/documents/#{sharedDocumentId}/#{@state.pageType}?server=#{server}#{buttonText}#{fullscreenScaling}#{graphVisToggles}"
+      "#{documentServer}/v2/documents/#{sharedDocumentId}/#{@state.pageType}?server=#{server}#{buttonText}#{fullscreenScaling}"
     else
       null
 
