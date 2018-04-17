@@ -87,7 +87,10 @@ module.exports = React.createClass
   copy: (e) ->
     e.preventDefault()
     copied = false
-    toCopy = @state[@state.tabSelected]
+    toCopy = switch @state.tabSelected
+      when 'embed' then @getEmbed()
+      when 'link' then @getShareLink()
+      when 'lara' then @getLara()
     try
       mark = document.createElement 'mark'
       mark.innerText = toCopy
