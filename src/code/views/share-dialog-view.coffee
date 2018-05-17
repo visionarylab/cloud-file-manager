@@ -170,40 +170,40 @@ module.exports = React.createClass
           if sharing
             (div {},
               (div {className: 'share-status'},
-                "Shared view is ", (strong {}, "enabled")
-                (a {href: '#', onClick: @toggleShare}, 'Stop sharing')
+                tr "~SHARE_DIALOG.SHARE_STATE", {state: tr "~SHARE_DIALOG.SHARE_STATE_ENABLED"}
+                (a {href: '#', onClick: @toggleShare}, tr "~SHARE_DIALOG.STOP_SHARING")
               )
               (div {className: 'share-button'},
-                (button {onClick: @updateShare}, "Update shared view")
+                (button {onClick: @updateShare}, tr "~SHARE_DIALOG.UPDATE_SHARING")
                 (div {className: 'share-button-help-sharing'},
-                  (a {href: @state.link, target: '_blank'}, 'Preview shared view')
+                  (a {href: @state.link, target: '_blank'}, tr "~SHARE_DIALOG.PREVIEW_SHARING")
                 )
               )
             )
           else
             (div {},
               (div {className: 'share-status'},
-                "Shared view is ", (strong {}, "disabled")
+                tr "~SHARE_DIALOG.SHARE_STATE", {state: tr "~SHARE_DIALOG.SHARE_STATE_DISABLED"}
               )
               (div {className: 'share-button'},
-                (button {onClick: @toggleShare}, "Enable sharing")
-                (div {className: 'share-button-help-not-sharing'}, "When sharing is enabled, a copy of the current view is created.  This copy can be shared.")
+                (button {onClick: @toggleShare}, tr "~SHARE_DIALOG.ENABLE_SHARING")
+                (div {className: 'share-button-help-not-sharing'}, tr "~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")
               )
             )
         )
         if sharing
           (div {},
             (ul {className: 'sharing-tabs'},
-              (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, 'Link')
-              (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, 'Embed')
+              (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, tr "~SHARE_DIALOG.LINK_TAB")
+              (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, tr "~SHARE_DIALOG.EMBED_TAB")
               if @props.enableLaraSharing
-                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, 'LARA')
+                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, tr "~SHARE_DIALOG.LARA_TAB")
             )
             (div {className: 'sharing-tab-contents'},
               switch @state.tabSelected
                 when 'embed'
                   (div {},
-                    "Embed code for including in webpages or other web-based content",
+                    tr "~SHARE_DIALOG.EMBED_MESSAGE",
                     if document.execCommand or window.clipboardData
                       (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
                     (div {},
@@ -220,34 +220,34 @@ module.exports = React.createClass
                     )
                     (div {className: 'lara-settings'},
                       (div {className: 'codap-server-url'},
-                        "CODAP Server URL:"
+                        tr "~SHARE_DIALOG.LARA_CODAP_URL"
                         (div {},
                           (input {value: @state.codapServerUrl, onChange: @changedCodapServerUrl})
                         )
                       )
                       (div {className: 'autolaunch'},
                         (input {type: 'checkbox', checked: @state.pageType is 'autolaunch', onChange: @changedAutoscalingPage})
-                        "Autolaunch page"
+                        tr "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE"
                       )
                       if @state.pageType is 'autolaunch'
                         (div {className: 'fullsceen-scaling'},
                           (input {type: 'checkbox', checked: @state.fullscreenScaling, onChange: @changedFullscreenScaling})
-                          "Fullscreen button and scaling"
+                          tr "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING"
                         )
                       if @state.pageType is 'launch'
                         (div {className: 'launch-button-text'},
-                          "Launch Button Text:"
+                          tr "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT"
                           (input {value: @state.launchButtonText, onChange: @changedLaunchButtonText})
                         )
                       (div {},
                         (input {type: 'checkbox', checked: @state.graphVisToggles, onChange: @changedGraphVisToggles})
-                        "Display data visibility toggles on graphs"
+                        tr "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES"
                       )
                     )
                   )
                 else
                   (div {},
-                    "Paste this into an email or text message ",
+                    tr "~SHARE_DIALOG.LINK_MESSAGE",
                     if document.execCommand or window.clipboardData
                       (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
                     (div {},
