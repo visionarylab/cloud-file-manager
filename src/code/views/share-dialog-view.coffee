@@ -197,7 +197,7 @@ module.exports = React.createClass
               (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, tr "~SHARE_DIALOG.LINK_TAB")
               (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, tr "~SHARE_DIALOG.EMBED_TAB")
               if @props.enableLaraSharing
-                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, tr "~SHARE_DIALOG.LARA_TAB")
+                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, "LARA")
             )
             (div {className: 'sharing-tab-contents'},
               switch @state.tabSelected
