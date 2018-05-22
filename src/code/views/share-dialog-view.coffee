@@ -170,7 +170,7 @@ module.exports = React.createClass
           if sharing
             (div {},
               (div {className: 'share-status'},
-                tr "~SHARE_DIALOG.SHARE_STATE", {state: tr "~SHARE_DIALOG.SHARE_STATE_ENABLED"}
+                (tr "~SHARE_DIALOG.SHARE_STATE"), (strong {}, tr "~SHARE_DIALOG.SHARE_STATE_ENABLED")
                 (a {href: '#', onClick: @toggleShare}, tr "~SHARE_DIALOG.STOP_SHARING")
               )
               (div {className: 'share-button'},
@@ -183,7 +183,7 @@ module.exports = React.createClass
           else
             (div {},
               (div {className: 'share-status'},
-                tr "~SHARE_DIALOG.SHARE_STATE", {state: tr "~SHARE_DIALOG.SHARE_STATE_DISABLED"}
+                (tr "~SHARE_DIALOG.SHARE_STATE"), (strong {}, tr "~SHARE_DIALOG.SHARE_STATE_DISABLED")
               )
               (div {className: 'share-button'},
                 (button {onClick: @toggleShare}, tr "~SHARE_DIALOG.ENABLE_SHARING")

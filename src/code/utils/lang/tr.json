@@ -103,7 +103,7 @@
     "~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER": "Bunu sonra yapacağım",
     "~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE": "Concord Bulut Depolama sistemi kapatıldı!",
     "~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE": "Lütfen dosyanızı farklı bir yere kaydedin.",
-    "~SHARE_DIALOG.SHARE_STATE": "Shared view is %{state}",
+    "~SHARE_DIALOG.SHARE_STATE": "Shared view: ",
     "~SHARE_DIALOG.SHARE_STATE_ENABLED": "enabled",
     "~SHARE_DIALOG.SHARE_STATE_DISABLED": "disabled",
     "~SHARE_DIALOG.ENABLE_SHARING": "Enable sharing",
