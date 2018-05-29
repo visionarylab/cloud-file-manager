@@ -5,7 +5,10 @@ SHOW_LONGEVITY_WARNING = false
 ModalDialog = React.createFactory require './modal-dialog-view'
 getQueryParam = require '../utils/get-query-param'
 
-tr = require '../utils/translate'
+# This function is named "tr" elsewhere in this codeline.
+# Using the fullname, "translate" here, to avoid the potential overloading
+# of the react function, "tr".
+translate = require '../utils/translate'
 socialIcons = require 'svg-social-icons/lib/icons.json'
 
 SocialIcon = React.createFactory React.createClass
@@ -120,7 +123,7 @@ module.exports = React.createClass
           selection.removeAllRanges()
       if mark
         document.body.removeChild mark
-      @props.client.alert tr(if copied then "~SHARE_DIALOG.COPY_SUCCESS" else "~SHARE_DIALOG.COPY_ERROR"), (tr "~SHARE_DIALOG.COPY_TITLE")
+      @props.client.alert translate(if copied then "~SHARE_DIALOG.COPY_SUCCESS" else "~SHARE_DIALOG.COPY_ERROR"), (translate "~SHARE_DIALOG.COPY_TITLE")
 
   updateShare: ->
     @props.client.shareUpdate()
@@ -164,38 +167,38 @@ module.exports = React.createClass
   render: ->
     sharing = @state.link isnt null
 
-    (ModalDialog {title: (tr '~DIALOG.SHARED'), close: @props.close},
+    (ModalDialog {title: (translate '~DIALOG.SHARED'), close: @props.close},
       (div {className: 'share-dialog'},
         (div {className: 'share-top-dialog'},
           if sharing
             (div {},
               (div {className: 'share-status'},
-                (tr "~SHARE_DIALOG.SHARE_STATE"), (strong {}, tr "~SHARE_DIALOG.SHARE_STATE_ENABLED")
-                (a {href: '#', onClick: @toggleShare}, tr "~SHARE_DIALOG.STOP_SHARING")
+                (translate "~SHARE_DIALOG.SHARE_STATE"), (strong {}, translate "~SHARE_DIALOG.SHARE_STATE_ENABLED")
+                (a {href: '#', onClick: @toggleShare}, translate "~SHARE_DIALOG.STOP_SHARING")
               )
               (div {className: 'share-button'},
-                (button {onClick: @updateShare}, tr "~SHARE_DIALOG.UPDATE_SHARING")
+                (button {onClick: @updateShare}, translate "~SHARE_DIALOG.UPDATE_SHARING")
                 (div {className: 'share-button-help-sharing'},
-                  (a {href: @state.link, target: '_blank'}, tr "~SHARE_DIALOG.PREVIEW_SHARING")
+                  (a {href: @state.link, target: '_blank'}, translate "~SHARE_DIALOG.PREVIEW_SHARING")
                 )
               )
             )
           else
             (div {},
               (div {className: 'share-status'},
-                (tr "~SHARE_DIALOG.SHARE_STATE"), (strong {}, tr "~SHARE_DIALOG.SHARE_STATE_DISABLED")
+                (translate "~SHARE_DIALOG.SHARE_STATE"), (strong {}, translate "~SHARE_DIALOG.SHARE_STATE_DISABLED")
               )
               (div {className: 'share-button'},
-                (button {onClick: @toggleShare}, tr "~SHARE_DIALOG.ENABLE_SHARING")
-                (div {className: 'share-button-help-not-sharing'}, tr "~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")
+                (button {onClick: @toggleShare}, translate "~SHARE_DIALOG.ENABLE_SHARING")
+                (div {className: 'share-button-help-not-sharing'}, translate "~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")
               )
             )
         )
         if sharing
           (div {},
             (ul {className: 'sharing-tabs'},
-              (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, tr "~SHARE_DIALOG.LINK_TAB")
-              (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, tr "~SHARE_DIALOG.EMBED_TAB")
+              (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, translate "~SHARE_DIALOG.LINK_TAB")
+              (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, translate "~SHARE_DIALOG.EMBED_TAB")
               if @props.enableLaraSharing
                 (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, "LARA")
             )
@@ -203,53 +206,53 @@ module.exports = React.createClass
               switch @state.tabSelected
                 when 'embed'
                   (div {},
-                    tr "~SHARE_DIALOG.EMBED_MESSAGE",
+                    translate("~SHARE_DIALOG.EMBED_MESSAGE"),
                     if document.execCommand or window.clipboardData
-                      (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+                      (a {className: 'copy-link', href: '#', onClick: @copy}, translate '~SHARE_DIALOG.COPY')
                     (div {},
                       (textarea {value: @state.embed, readOnly: true})
                     )
                   )
                 when 'lara'
                   (div {},
-                    "Use this link when creating an activity in LARA",
+                    translate("~SHARE_DIALOG.LARA_MESSAGE"),
                     if document.execCommand or window.clipboardData
-                      (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+                      (a {className: 'copy-link', href: '#', onClick: @copy}, translate '~SHARE_DIALOG.COPY')
                     (div {},
                       (input {value: @getLara(), readOnly: true})
                     )
                     (div {className: 'lara-settings'},
                       (div {className: 'codap-server-url'},
-                        tr "~SHARE_DIALOG.LARA_CODAP_URL"
+                        translate("~SHARE_DIALOG.LARA_CODAP_URL")
                         (div {},
                           (input {value: @state.codapServerUrl, onChange: @changedCodapServerUrl})
                         )
                       )
                       (div {className: 'autolaunch'},
                         (input {type: 'checkbox', checked: @state.pageType is 'autolaunch', onChange: @changedAutoscalingPage})
-                        tr "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE"
+                        translate "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE"
                       )
                       if @state.pageType is 'autolaunch'
                         (div {className: 'fullsceen-scaling'},
                           (input {type: 'checkbox', checked: @state.fullscreenScaling, onChange: @changedFullscreenScaling})
-                          tr "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING"
+                          translate "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING"
                         )
                       if @state.pageType is 'launch'
                         (div {className: 'launch-button-text'},
-                          tr "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT"
+                          translate("~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT")
                           (input {value: @state.launchButtonText, onChange: @changedLaunchButtonText})
                         )
                       (div {},
                         (input {type: 'checkbox', checked: @state.graphVisToggles, onChange: @changedGraphVisToggles})
-                        tr "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES"
+                        translate "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES"
                       )
                     )
                   )
                 else
                   (div {},
-                    tr "~SHARE_DIALOG.LINK_MESSAGE",
+                    translate("~SHARE_DIALOG.LINK_MESSAGE"),
                     if document.execCommand or window.clipboardData
-                      (a {className: 'copy-link', href: '#', onClick: @copy}, tr '~SHARE_DIALOG.COPY')
+                      (a {className: 'copy-link', href: '#', onClick: @copy}, translate '~SHARE_DIALOG.COPY')
                     (div {},
                       (input {value: @state.link, readOnly: true})
                     )
@@ -263,8 +266,8 @@ module.exports = React.createClass
           )
 
         (div {className: 'buttons'},
-          (button {onClick: @props.close}, tr '~SHARE_DIALOG.CLOSE')
+          (button {onClick: @props.close}, translate '~SHARE_DIALOG.CLOSE')
         )
-        (div {className: 'longevity-warning'}, tr '~SHARE_DIALOG.LONGEVITY_WARNING') if SHOW_LONGEVITY_WARNING
+        (div {className: 'longevity-warning'}, translate '~SHARE_DIALOG.LONGEVITY_WARNING') if SHOW_LONGEVITY_WARNING
       )
     )
