@@ -81,12 +81,13 @@ FileDialogTab = React.createClass
   mixins: [AuthorizeMixin]
 
   getInitialState: ->
+    @_isMounted = true
     initialState = @getStateForFolder(@props.client.state.metadata?.parent, true) or null
     initialState.filename = initialState.metadata?.name or ''
     initialState
 
-  componentDidMount: ->
-    @_isMounted = true
+#  componentDidMount: ->
+#    @_isMounted = true
 
   componentWillUnmount: ->
     @_isMounted = false
