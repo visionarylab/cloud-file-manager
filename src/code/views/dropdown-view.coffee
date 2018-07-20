@@ -65,6 +65,8 @@ DropDown = React.createClass
       window.removeEventListener 'touchstart', @checkClose, true
 
   checkClose: (evt) ->
+    # no need to walk the DOM if the menu isn't open
+    return if not @state.showingMenu
     # if the click is on the menu, let the menu handle it
     elt = evt.target
     while elt?
