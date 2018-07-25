@@ -105,9 +105,6 @@ class CloudFileManagerClient
       shareProvider: shareProvider
 
     @appOptions.ui or= {}
-    @appOptions.ui.windowTitleSuffix or= document.title
-    @appOptions.ui.windowTitleSeparator or= ' - '
-    @_setWindowTitle()
 
     @_ui.init @appOptions.ui
 
@@ -710,7 +707,6 @@ class CloudFileManagerClient
       dirty: not additionalState.saved and content?.requiresConversion()
     for own key, value of additionalState
       state[key] = value
-    @_setWindowTitle metadata?.name
     if hashParams isnt null
       window.location.hash = hashParams
     @_setState state
@@ -747,10 +743,6 @@ class CloudFileManagerClient
     if metadata?
       currentContent.addMetadata docName: metadata.name
     currentContent
-
-  _setWindowTitle: (name) ->
-    if @appOptions?.ui?.windowTitleSuffix
-      document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
   _getHashParams: (metadata) ->
     if metadata?.provider?.canOpenSaved() and (openSavedParams = metadata?.provider?.getOpenSavedParams metadata)?
