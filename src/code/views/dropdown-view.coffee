@@ -43,6 +43,8 @@ DropdownItem = React.createFactory React.createClass
         name
       )
 
+cfmMenuClass = 'cfm-menu'
+
 DropDown = React.createClass
 
   displayName: 'Dropdown'
@@ -54,27 +56,24 @@ DropDown = React.createClass
 
   componentWillMount: ->
     if window.addEventListener
-      window.addEventListener 'mousedown', @checkBlur, true
-      window.addEventListener 'touchstart', @checkBlur, true
+      window.addEventListener 'mousedown', @checkClose, true
+      window.addEventListener 'touchstart', @checkClose, true
 
   componentWillUnmount: ->
     if window.removeEventListener
-      window.removeEventListener 'mousedown', @checkBlur, true
-      window.removeEventListener 'touchstart', @checkBlur, true
+      window.removeEventListener 'mousedown', @checkClose, true
+      window.removeEventListener 'touchstart', @checkClose, true
 
-  checkBlur: ->
-    if @state.showingMenu
-      @blur()
-
-  blur: ->
-    @unblur()
-    timeout = setTimeout ( => @setState {showingMenu: false, subMenu: false} ), 500
-    @setState {timeout: timeout}
-
-  unblur: ->
-    if @state.timeout
-      clearTimeout(@state.timeout)
-    @setState {timeout: null}
+  checkClose: (evt) ->
+    # no need to walk the DOM if the menu isn't open
+    return if not @state.showingMenu
+    # if the click is on the menu, let the menu handle it
+    elt = evt.target
+    while elt?
+      return if typeof elt.className is "string" and elt.className.indexOf(cfmMenuClass) >= 0
+      elt = elt.parentNode
+    # otherwise, close the menu
+    @setState {showingMenu: false, subMenu: false}
 
   setSubMenu: (subMenu) ->
     @setState subMenu: subMenu
@@ -87,13 +86,13 @@ DropDown = React.createClass
     item.action?()
 
   render: ->
-    menuClass = if @state.showingMenu then 'menu-showing' else 'menu-hidden'
+    menuClass = "#{cfmMenuClass} #{if @state.showingMenu then 'menu-showing' else 'menu-hidden'}"
     select = (item) =>
       ( => @select(item))
     (div {className: 'menu'},
       if @props.items?.length > 0
         (div {},
-          (div {className: 'menu-anchor', onClick: => @select(null)},
+          (div {className: "#{cfmMenuClass} menu-anchor", onClick: => @select(null)},
             (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
               (g {},
                 (rect {y: 2, width: 16, height: 2})
@@ -102,7 +101,7 @@ DropDown = React.createClass
               )
             )
           )
-          (div {className: menuClass, onMouseLeave: @blur, onMouseEnter: @unblur},
+          (div {className: menuClass},
             (ul {},
               (DropdownItem {key: index, item: item, select: @select, setSubMenu: @setSubMenu}) for item, index in @props.items
             )
