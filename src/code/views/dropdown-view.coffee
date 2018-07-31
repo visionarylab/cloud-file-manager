@@ -5,9 +5,15 @@ DropdownItem = React.createFactory React.createClass
   displayName: 'DropdownItem'
 
   clicked: ->
-    @props.select @props.item
+    if @props.item.items
+      @showSubMenu()
+    else
+      @props.select @props.item
 
   mouseEnter: ->
+    @showSubMenu()
+
+  showSubMenu: ->
     if @props.item.items
       menuItem = $ ReactDOM.findDOMNode @refs.item
       menu = menuItem.parent().parent()
@@ -43,7 +49,7 @@ DropdownItem = React.createFactory React.createClass
         name
       )
 
-cfmMenuClass = 'cfm-menu'
+cfmMenuClass = 'cfm-menu dg-wants-touch'
 
 DropDown = React.createClass
 
@@ -51,7 +57,6 @@ DropDown = React.createClass
 
   getInitialState: ->
     showingMenu: false
-    timeout: null
     subMenu: null
 
   componentWillMount: ->
