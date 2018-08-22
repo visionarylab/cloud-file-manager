@@ -98,7 +98,20 @@ module.exports = React.createClass
       when 'lara' then @getLara()
     try
       mark = document.createElement 'mark'
-      mark.innerText = toCopy
+      mark.textContent = toCopy
+      # reset user styles for span element
+      mark.style.all = 'unset'
+      # prevents scrolling to the end of the page
+      mark.style.position = 'fixed'
+      mark.style.top = 0
+      mark.style.clip = 'rect(0, 0, 0, 0)'
+      # used to preserve spaces and line breaks
+      mark.style.whiteSpace = 'pre'
+      # do not inherit user-select (it may be `none`)
+      mark.style.webkitUserSelect = 'text'
+      mark.style.MozUserSelect = 'text'
+      mark.style.msUserSelect = 'text'
+      mark.style.userSelect = 'text'
       document.body.appendChild mark
 
       selection = document.getSelection()
