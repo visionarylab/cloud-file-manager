@@ -38,6 +38,7 @@
   "~FILE_STATUS.SAVED": "All changes saved",
   "~FILE_STATUS.SAVED_TO_PROVIDER": "All changes saved to %{providerName}",
   "~FILE_STATUS.UNSAVED": "Unsaved",
+  "~FILE_STATUS.FAILURE": "Retrying...",
 
   "~FILE_DIALOG.FILENAME": "Filename",
   "~FILE_DIALOG.OPEN": "Open",

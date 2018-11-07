@@ -385,18 +385,26 @@ class CloudFileManagerClient
     metadata.provider.save currentContent, metadata, (err, statusCode) =>
       if err
         # disable autosave on save failure; clear "Saving..." message
-        metadata.autoSaveDisabled = true
+#        metadata.autoSaveDisabled = true
         @_setState { metadata: metadata, saving: null }
         if statusCode is 403
           return @confirmAuthorizeAndSave stringContent, callback
         else
-          return @alert(err)
-      if @state.metadata isnt metadata
-        @_closeCurrentFile()
-      # reenable autosave on save success if this isn't a local file save
-      delete metadata.autoSaveDisabled if metadata.autoSaveDisabled?
-      @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
-      callback? currentContent, metadata
+          failures = @state.failures
+          if (not failures)
+            failures = 1
+          else
+            failures++
+          @_setState { failures: failures }
+          return @alert(err) if failures is 1
+      else
+        @_setState { failures: 0 }
+        if @state.metadata isnt metadata
+          @_closeCurrentFile()
+        # reenable autosave on save success if this isn't a local file save
+        delete metadata.autoSaveDisabled if metadata.autoSaveDisabled?
+        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
+        callback? currentContent, metadata
 
   saveFileDialog: (stringContent = null, callback = null) ->
     @_ui.saveFileDialog (metadata) =>
@@ -729,6 +737,7 @@ class CloudFileManagerClient
       dirty: false
       saving: null
       saved: false
+      failures: null
 
   _closeCurrentFile: ->
     if @state.metadata?.provider?.can 'close', @state.metadata

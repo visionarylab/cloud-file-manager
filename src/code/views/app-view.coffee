@@ -55,6 +55,8 @@ App = React.createClass
                     then tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName: providerName }) \
                     else tr('~FILE_STATUS.SAVED')
         {message: message, type: 'info'}
+      else if event.state.failures
+        {message: tr('~FILE_STATUS.FAILURE'), type: 'alert'}
       else if event.state.dirty
         {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
       else
