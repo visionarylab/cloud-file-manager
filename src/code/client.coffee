@@ -22,7 +22,18 @@ CloudMetadata = (require './providers/provider-interface').CloudMetadata
 
 class CloudFileManagerClientEvent
 
+  @id: 0
+  @events: {}
+
   constructor: (@type, @data = {}, @callback = null, @state = {}) ->
+    CloudFileManagerClientEvent.id++
+    @id = CloudFileManagerClientEvent.id
+
+  postMessage: (iframe) ->
+    if @callback
+      CloudFileManagerClientEvent.events[@id] = @
+    message = {type: "cfm::event", eventId: @id, eventType: @type, eventData: @data}
+    iframe.postMessage message, "*"
 
 class CloudFileManagerClient
 
@@ -617,6 +628,8 @@ class CloudFileManagerClient
     @_setState
       dirty: isDirty
       saved: @state.saved and not isDirty
+    if window.self isnt window.top
+      window.top.postMessage({type: "cfm::setDirty", isDirty: isDirty})
 
   shouldAutoSave: =>
     @state.dirty and
@@ -719,6 +732,8 @@ class CloudFileManagerClient
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     for listener in @_listeners
       listener event
+    if @appOptions?.sendPostMessageClientEvents and @appOptions?.iframe
+      event.postMessage(@appOptions.iframe.contentWindow)
 
   _setState: (options) ->
     for own key, value of options
@@ -763,17 +778,27 @@ class CloudFileManagerClient
   _startPostMessageListener: ->
     $(window).on 'message', (e) =>
       oe = e.originalEvent
+      data = oe.data or {}
       reply = (type, params={}) ->
         message = _.merge {}, params, {type: type}
         oe.source.postMessage message, oe.origin
       switch oe.data?.type
         when 'cfm::getCommands'
-          reply 'cfm::commands', commands: ['cfm::autosave']
+          reply 'cfm::commands', commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty']
         when 'cfm::autosave'
           if @shouldAutoSave()
             @save -> reply 'cfm::autosaved', saved: true
           else
             reply 'cfm::autosaved', saved: false
+        when 'cfm::event'
+          @_event data.eventType, data.eventData, ->
+            callbackArgs = JSON.stringify(Array.prototype.slice.call(arguments))
+            reply 'cfm::event:reply', {eventId: data.eventId, callbackArgs: callbackArgs}
+        when 'cfm::event:reply'
+          event = CloudFileManagerClientEvent.events[data.eventId]
+          event?.callback?.apply(@, JSON.parse(data.callbackArgs))
+        when 'cfm::setDirty'
+          @dirty data.isDirty
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

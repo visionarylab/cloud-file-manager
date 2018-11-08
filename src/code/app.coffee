@@ -38,10 +38,13 @@ class CloudFileManager
     @_renderApp document.getElementById(appElemId)
 
   clientConnect: (eventCallback) ->
-    if @appOptions.appOrMenuElemId?
-      @_renderApp document.getElementById(@appOptions.appOrMenuElemId)
-    else
-      @_createHiddenApp()
+    try
+      if @appOptions.appOrMenuElemId?
+        @_renderApp document.getElementById(@appOptions.appOrMenuElemId)
+      else
+        @_createHiddenApp()
+    catch e
+      console.error "Unable render app: #{e}"
     @client.listen eventCallback
     @client.connect()
 
@@ -56,5 +59,6 @@ class CloudFileManager
   _renderApp: (anchor) ->
     @appOptions.client = @client
     ReactDOM.render (AppView @appOptions), anchor
+    @appOptions.iframe = anchor.getElementsByTagName('iframe')[0]
 
 module.exports = new CloudFileManager()

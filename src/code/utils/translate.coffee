@@ -1,4 +1,5 @@
 urlParams = require './url-params'
+_ = require 'lodash'
 
 languageFiles = {
   'de': require './lang/de'
