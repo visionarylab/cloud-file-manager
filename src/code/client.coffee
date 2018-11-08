@@ -732,8 +732,8 @@ class CloudFileManagerClient
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     for listener in @_listeners
       listener event
-    if @appOptions?.sendPostMessageClientEvents and @appOptions?.iframe
-      event.postMessage(@appOptions.iframe.contentWindow)
+    if @appOptions?.sendPostMessageClientEvents and @iframe
+      event.postMessage(@iframe.contentWindow)
 
   _setState: (options) ->
     for own key, value of options

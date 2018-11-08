@@ -97,6 +97,9 @@ module.exports = React.createClass
   help: ->
     window.open @props.options.help, '_blank'
 
+  infoClicked: ->
+    @props.options.onInfoClicked?(@props.client)
+
   # CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
   checkBlur: (e) ->
     @filenameBlurred() if @state.editingFilename and e.target isnt @filename()
@@ -116,7 +119,7 @@ module.exports = React.createClass
       )
       (div {className: 'menu-bar-right'},
         if @props.options.info
-          (span {className: 'menu-bar-info'}, @props.options.info)
+          (span {className: 'menu-bar-info', onClick: @infoClicked}, @props.options.info)
         if @props.provider?.authorized()
           @props.provider.renderUser()
         if @props.options.help

@@ -59,6 +59,6 @@ class CloudFileManager
   _renderApp: (anchor) ->
     @appOptions.client = @client
     ReactDOM.render (AppView @appOptions), anchor
-    @appOptions.iframe = anchor.getElementsByTagName('iframe')[0]
+    @client.iframe = anchor.getElementsByTagName('iframe')[0]
 
 module.exports = new CloudFileManager()
