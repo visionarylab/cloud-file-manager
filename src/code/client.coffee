@@ -799,6 +799,9 @@ class CloudFileManagerClient
           event?.callback?.apply(@, JSON.parse(data.callbackArgs))
         when 'cfm::setDirty'
           @dirty data.isDirty
+        when 'cfm::iframedClientConnected'
+          @processUrlParams()
+
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent

@@ -51,6 +51,10 @@ class CloudFileManager
     # open any initial document (if any specified) and signal ready()
     @client.processUrlParams()
 
+    # if iframed let the parent know about the connect
+    if window.parent
+      window.parent.postMessage({type: "cfm::iframedClientConnected"})
+
   _createHiddenApp: ->
     anchor = document.createElement("div")
     document.body.appendChild(anchor)
