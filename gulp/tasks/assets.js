@@ -1,7 +1,7 @@
 var gulp        = require('gulp');
 var production  = require('../config').production;
-var buildInfo   = require('../config').buildInfo;
-var environment = require('../config').environment;
+var commit      = require('../config').commit ;
+var date        = require('../config').date;
 var config      = require('../config').assets;
 var gulpif      = require('gulp-if');
 var replace     = require('gulp-replace');
@@ -13,7 +13,7 @@ var isHTML = function (file) {
 // Copy files directly simple
 gulp.task('assets', function() {
   return gulp.src(config.src)
-    .pipe(gulpif(isHTML, replace(/__BUILD_INFO__/g,  buildInfo)))
-    .pipe(gulpif(isHTML, replace(/__ENVIRONMENT__/g, environment)))
+    .pipe(gulpif(isHTML, replace(/__COMMIT__/g,  commit )))
+    .pipe(gulpif(isHTML, replace(/__DATE__/g, date)))
     .pipe(gulp.dest(config.dest));
 });
