@@ -32,7 +32,10 @@ class CloudFileManagerClientEvent
   postMessage: (iframe) ->
     if @callback
       CloudFileManagerClientEvent.events[@id] = @
-    message = {type: "cfm::event", eventId: @id, eventType: @type, eventData: @data}
+    # remove client from data to avoid structured clone error in postMessage
+    eventData = _.clone @data
+    delete eventData.client
+    message = {type: "cfm::event", eventId: @id, eventType: @type, eventData: eventData}
     iframe.postMessage message, "*"
 
 class CloudFileManagerClient
@@ -181,6 +184,9 @@ class CloudFileManagerClient
 
   ready: ->
     @_event 'ready'
+
+  rendered: ->
+    @_event 'rendered', {client: @}
 
   listen: (listener) ->
     if listener
