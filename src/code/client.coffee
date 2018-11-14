@@ -790,7 +790,7 @@ class CloudFileManagerClient
         oe.source.postMessage message, oe.origin
       switch oe.data?.type
         when 'cfm::getCommands'
-          reply 'cfm::commands', commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty']
+          reply 'cfm::commands', commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty', 'cfm::iframedClientConnected']
         when 'cfm::autosave'
           if @shouldAutoSave()
             @save -> reply 'cfm::autosaved', saved: true
