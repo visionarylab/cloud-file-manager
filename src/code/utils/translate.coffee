@@ -1,22 +1,20 @@
 urlParams = require './url-params'
 
-languageFiles = {
-  'de': require './lang/de'
-  'en-US': require './lang/en-US'
-  'es': require './lang/es'
-  'he': require './lang/he'
-  'tr': require './lang/tr'
-  'zh-TW': require './lang/zh-TW'
-}
+languageFiles = [
+  {key: 'de' ,   contents: require './lang/de'}
+  {key: 'en-US', contents: require './lang/en-US'}
+  {key: 'es' ,   contents: require './lang/es'}
+  {key: 'he' ,   contents: require './lang/he'}
+  {key: 'tr' ,   contents: require './lang/tr'}
+  {key: 'zh-TW', contents: require './lang/zh-TW'}
+]
 
 translations =  {}
-_.each languageFiles, (langContents, langKey) ->
-  translations[langKey] = langContents
+languageFiles.forEach (lang) ->
+  translations[lang.key] = lang.contents
   # accept full key with region code or just the language code
-  if (dashLoc = langKey.indexOf('-')) > 0
-    lang = langKey.substring(0, dashLoc)
-    translations[lang] = langContents
-  return
+  if (dashLoc = lang.key.indexOf('-')) > 0
+    translations[lang.key.substring(0, dashLoc)] = lang.contents
 
 defaultLang = null
 # default to English unless the user expresses another preference (via URL param for now)

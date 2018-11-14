@@ -44,6 +44,7 @@
     "require-dir": "^0.3.2",
     "run-sequence": "^1.1.5",
     "strip-json-comments-cli": "^1.0.1",
+    "sync-exec": "^0.6.2",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "yargs": "^3.6.0"
