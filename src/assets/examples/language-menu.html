@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <script src="../js/globals.js"></script>
+    <script src="../js/app.js"></script>
+    <link rel="stylesheet" href="../css/app.css">
+    <title>Examples: Language menu</title>
+  </head>
+  <body>
+    <div id="wrapper">
+    </div>
+    <script>
+      var getQueryVariable = function (name) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) === name) {
+            return decodeURIComponent(pair[1]);
+          }
+        }
+      }
+      var updateQueryStringParameter = function (key, value) {
+        var uri = window.location.search;
+        var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+        var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+        if (uri.match(re)) {
+          if (value !== null) {
+            // Update variable.
+            window.location.search = uri.replace(re, '$1' + key + "=" + value + '$2');
+          } else {
+            // Remove variable.
+            window.location.search = uri.replace(re, '$1' + '$2');
+          }
+        } else {
+          if (value !== null) {
+            window.location.search = uri + separator + key + "=" + value;
+          }
+        }
+      }
+
+      var options = {
+        app: "example-app",
+        mimeType: "text/plain",
+        appName: "CFM_Demo",
+        appVersion: "0.1",
+        appBuildNum: "1",
+        providers: [
+          {
+            "name": "googleDrive",
+            "clientId": "1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com"
+          },
+          {
+            "name": "documentStore",
+            "patch": true
+          }
+        ],
+        ui: {
+          menuBar: {
+            info: "This version presents language menu",
+            languageMenu: {
+              currentLang: getQueryVariable("lang") || "en-US",
+              options: [
+                {langCode: "en-US", flag: "us"},
+                {langCode: "de", flag: "de"},
+                {langCode: "es", flag: "es"},
+                {langCode: "he", flag: "il"},
+                {langCode: "tr", flag: "tr"},
+                {langCode: "zh", flag: "tw"}
+              ],
+              onLangChanged: function (langCode) {
+                if (langCode === "en-US") {
+                  updateQueryStringParameter("lang", null);
+                } else {
+                  updateQueryStringParameter("lang", langCode);
+                }
+              }
+            }
+          }
+        }
+      };
+      CloudFileManager.createFrame(options, "wrapper");
+    </script>
+  </body>
+</html>
