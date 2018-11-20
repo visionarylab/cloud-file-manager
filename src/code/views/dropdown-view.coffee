@@ -42,11 +42,11 @@ DropdownItem = React.createFactory React.createClass
       (li {className: classes.join(' ')}, '')
     else
       classes.push 'disabled' if not enabled or not (@props.item.action or @props.item.items)
-      name = @props.item.name or @props.item
+      content = @props.item.name or @props.item.content or @props.item
       (li {ref: 'item', className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
         if @props.item.items
           (i {className: 'icon-inspectorArrow-collapse'})
-        name
+        content
       )
 
 cfmMenuClass = 'cfm-menu dg-wants-touch'
@@ -90,21 +90,27 @@ DropDown = React.createClass
     return unless item
     item.action?()
 
+  renderDefaultAnchor: ->
+    # Hamburger icon
+    (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
+      (g {},
+        (rect {y: 2, width: 16, height: 2})
+        (rect {y: 7, width: 16, height: 2})
+        (rect {y: 12, width: 16, height: 2})
+      )
+    )
+
   render: ->
     menuClass = "#{cfmMenuClass} #{if @state.showingMenu then 'menu-showing' else 'menu-hidden'}"
-    select = (item) =>
-      ( => @select(item))
-    (div {className: 'menu'},
+    dropdownClass = "menu #{if @props.className then @props.className else ''}"
+    (div {className: dropdownClass},
       if @props.items?.length > 0
         (div {},
           (div {className: "#{cfmMenuClass} menu-anchor", onClick: => @select(null)},
-            (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
-              (g {},
-                (rect {y: 2, width: 16, height: 2})
-                (rect {y: 7, width: 16, height: 2})
-                (rect {y: 12, width: 16, height: 2})
-              )
-            )
+            if @props.menuAnchor
+              @props.menuAnchor
+            else
+              @renderDefaultAnchor()
           )
           (div {className: menuClass},
             (ul {},

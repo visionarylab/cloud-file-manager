@@ -104,16 +104,32 @@ module.exports = React.createClass
   checkBlur: (e) ->
     @filenameBlurred() if @state.editingFilename and e.target isnt @filename()
 
+  langMenuItems: ->
+    langMenu = @props.options.languageMenu
+    langMenu.options
+      # Do not show current language in the menu.
+      .filter((option) -> option.langCode isnt langMenu.currentLang)
+      .map((option) ->
+        {
+          content: (span {className: 'lang-option'}, (div {className: "flag flag-#{option.flag}"}), option.langCode)
+          action: -> langMenu.onLangChanged?(option.langCode)
+        }
+      )
+
+  currentFlag: ->
+    langCode = @props.options.languageMenu.currentLang
+    (opt for opt in @props.options.languageMenu.options when opt.langCode is langCode)[0].flag
+
   render: ->
     (div {className: 'menu-bar'},
       (div {className: 'menu-bar-left'},
         (Dropdown {items: @props.items})
         if @state.editingFilename
-          (div {className:'menu-bar-content-filename'},
+          (div {className: 'menu-bar-content-filename'},
             (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
           )
         else
-          (div {className:'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
+          (div {className: 'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
         if @props.fileStatus
           (span {className: "menu-bar-file-status-#{@props.fileStatus.type}"}, @props.fileStatus.message)
       )
@@ -124,5 +140,11 @@ module.exports = React.createClass
           @props.provider.renderUser()
         if @props.options.help
           (i {style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: @help})
+        if @props.options.languageMenu
+          (Dropdown {
+            className: "lang-menu",
+            items: @langMenuItems(),
+            menuAnchor: (div {className: "flag flag-#{@currentFlag()}"})
+          })
       )
     )

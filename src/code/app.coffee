@@ -29,7 +29,7 @@ class CloudFileManager
 
     @client.setAppOptions @appOptions
 
-  # Convenience function for settinp up CFM with an iframe-wrapped client app
+  # Convenience function for setting up CFM with an iframe-wrapped client app
   createFrame: (@appOptions, appElemId, eventCallback = null) ->
     @appOptions.usingIframe = true
     @appOptions.appOrMenuElemId = appElemId
