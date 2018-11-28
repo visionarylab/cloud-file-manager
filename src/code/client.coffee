@@ -137,6 +137,7 @@ class CloudFileManagerClient
       appBuildNum: @appOptions.appBuildNum or ""
 
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
+    @newFileAddsNewToQuery = @appOptions.ui?.newFileAddsNewToQuery
 
     @_startPostMessageListener()
 
@@ -226,7 +227,7 @@ class CloudFileManagerClient
 
   newFileDialog: (callback = null) ->
     if @newFileOpensInNewTab
-      window.open @getCurrentUrl(), '_blank'
+      window.open @getCurrentUrl(if @newFileAddsNewToQuery then "#new" else null), '_blank'
     else if @state.dirty
       if @_autoSaveInterval and @state.metadata
         @save()
