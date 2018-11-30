@@ -1,4 +1,4 @@
-{div, i, span, ul, li, svg, g, rect} = React.DOM
+{div, i, span, ul, li, svg, g, rect, polygon} = React.DOM
 
 DropdownItem = React.createFactory React.createClass
 
@@ -92,11 +92,12 @@ DropDown = React.createClass
 
   renderDefaultAnchor: ->
     # Hamburger icon
-    (svg {version: '1.1', width: 16, height: 16, viewBox: '0 0 16 16', enableBackground: 'new 0 0 16 16'},
+    (svg {className: 'default-anchor', version: '1.1', width: 33, height: 18, viewBox: '0 0 33 18', enableBackground: 'new 0 0 33 18'},
       (g {},
-        (rect {y: 2, width: 16, height: 2})
-        (rect {y: 7, width: 16, height: 2})
-        (rect {y: 12, width: 16, height: 2})
+        (rect {x: 2, y: 3, width: 16, height: 2})
+        (rect {x: 2, y: 8, width: 16, height: 2})
+        (rect {x: 2, y: 13, width: 16, height: 2})
+        (polygon (points: "21,7 25,13 29,7"))
       )
     )
 
