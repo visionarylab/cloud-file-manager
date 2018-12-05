@@ -120,6 +120,5 @@
     "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "Autolaunch page",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Fullscreen button and scaling",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Launch Button Text:",
-    "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Display data visibility toggles on graphs",
-    "~FILE_STATUS.FAILURE": "Retrying..."
+    "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Display data visibility toggles on graphs"
 }

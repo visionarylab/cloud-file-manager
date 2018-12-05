@@ -120,6 +120,5 @@
     "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "Autolaunch Seite",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Vollbild und Skalieren",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Textbutton",
-    "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Datensichtbarkeit in Graphen anzeigen",
-    "~FILE_STATUS.FAILURE": "Erneut versuchen..."
+    "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Datensichtbarkeit in Graphen anzeigen"
 }

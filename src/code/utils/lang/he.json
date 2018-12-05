@@ -120,6 +120,5 @@
     "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "הפעלה אוטומטית של הדף",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "כפתור מסך מלא ומירכוז",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "הפעלת כפתור טקסט:",
-    "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "הצגת מידע ויזואלי בגרפים",
-    "~FILE_STATUS.FAILURE": "מנסה שוב..."
+    "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "הצגת מידע ויזואלי בגרפים"
 }
