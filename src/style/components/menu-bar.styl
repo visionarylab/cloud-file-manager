@@ -12,6 +12,8 @@
   span, i
     padding-left 0.5em
     padding-right 0.5em
+    vertical-align middle
+    display inline-block
 
   .menu-bar-content-filename
     label-font(size: 13px, transform: none)
@@ -19,6 +21,7 @@
     padding-left 5px
     padding-top 1px
     cursor pointer
+    vertical-align middle
     no-select()
 
     input
@@ -42,6 +45,11 @@
 
   .menu-bar-file-status-info
     font-style: italic
+
+  .menu-bar-left, .menu-bar-right
+    height 100%
+    display flex
+    align-items center
 
   .menu-bar-right
     padding-left 0.5em
@@ -67,3 +75,16 @@
     padding 0
     position relative
     top 3px
+
+  // Customize default drop-down styles. Language menu is a bit more compact.
+  .lang-menu
+    .menu-showing
+      min-width 50px
+
+    .lang-option
+      padding 0
+      text-transform uppercase
+      .flag
+        vertical-align middle
+        margin-right 10px
+

@@ -6,7 +6,7 @@ var coffeeify   = require('coffeeify');
 var versionify  = require('package-json-versionify');
 var pkgVersion  = require('../../package.json').version;
 var gulpif      = require('gulp-if');
-var inject      = require('gulp-inject-string');
+var es          = require('event-stream');
 var rename      = require('gulp-rename');
 var replace     = require('gulp-replace');
 var production  = require('../config').production;
@@ -22,6 +22,18 @@ var errorHandler = function (error) {
   console.log(error.toString());
   beep();
   this.emit('end');
+};
+
+// replacement for gulp-inject-string which has security vuln
+var injectAppend = function(str) {
+  return es.map(function (file, cb) {
+    try {
+      file.contents = new Buffer(String(file.contents) + str);
+    } catch (err) {
+      return cb(new Error('gulp-inject-string: ' + err));
+    }
+    cb(null, file);
+  });
 };
 
 gulp.task('browserify-app', function(){
@@ -41,7 +53,7 @@ gulp.task('browserify-app', function(){
     // add .ignore to the name for CODAP to hide it from the SproutCore build system
     .pipe(gulpif(codap, rename({ extname: '.js.ignore' })))
     // for ease of debugging when loaded dynamically (e.g CODAP)
-    .pipe(gulpif(codap, inject.append('\n//# sourceURL=cfm/app.js.ignore\n')))
+    .pipe(gulpif(codap, injectAppend('\n//# sourceURL=cfm/app.js.ignore\n')))
     .pipe(gulp.dest(config.app.dest));
 });
 
@@ -73,7 +85,7 @@ gulp.task('browserify-globals', function(){
     // add .ignore to the name for CODAP to hide it from the SproutCore build system
     .pipe(gulpif(codap, rename({ extname: '.js.ignore' })))
     // for ease of debugging when loaded dynamically (e.g CODAP)
-    .pipe(gulpif(codap, inject.append('\n//# sourceURL=cfm/globals.js.ignore\n')))
+    .pipe(gulpif(codap, injectAppend('\n//# sourceURL=cfm/globals.js.ignore\n')))
     .pipe(gulp.dest(config.globals.dest));
 });
 

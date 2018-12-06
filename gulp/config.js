@@ -1,7 +1,5 @@
 var argv = require('yargs').argv,
-    environment = process.env.ENVIRONMENT || "development",
     production = !!argv.production,
-    buildInfo = argv.buildInfo || 'development build (' + (new Date()) + ')',
     src = './src',
     dest  = argv.dest ? argv.dest : './dist', // configure destination folder
     noMap = !!argv.noMap,       // don't generate .map files
@@ -9,10 +7,14 @@ var argv = require('yargs').argv,
     noReact = !!argv.noReact, // don't include React
     codap = !!argv.codap,       // include CODAP-specific modifications
     assetsSrc = codap ? src + '/assets/img/*.*' : src + '/assets/**/*.*',
-    assetsDst = codap ? dest + '/img/' : dest;
+    assetsDst = codap ? dest + '/img/' : dest,
+    execSync = require('sync-exec'),
+    commit = execSync('git log -1 --pretty=format:"%H"').stdout;
 
 module.exports = {
   production: production,
+  date: new Date(),
+  commit: commit,
   flags: {
     noMap: noMap,
     nojQuery: nojQuery,

@@ -29,7 +29,7 @@ class CloudFileManager
 
     @client.setAppOptions @appOptions
 
-  # Convenience function for settinp up CFM with an iframe-wrapped client app
+  # Convenience function for setting up CFM with an iframe-wrapped client app
   createFrame: (@appOptions, appElemId, eventCallback = null) ->
     @appOptions.usingIframe = true
     @appOptions.appOrMenuElemId = appElemId
@@ -38,15 +38,22 @@ class CloudFileManager
     @_renderApp document.getElementById(appElemId)
 
   clientConnect: (eventCallback) ->
-    if @appOptions.appOrMenuElemId?
-      @_renderApp document.getElementById(@appOptions.appOrMenuElemId)
-    else
-      @_createHiddenApp()
+    try
+      if @appOptions.appOrMenuElemId?
+        @_renderApp document.getElementById(@appOptions.appOrMenuElemId)
+      else
+        @_createHiddenApp()
+    catch e
+      console.error "Unable render app: #{e}"
     @client.listen eventCallback
     @client.connect()
 
     # open any initial document (if any specified) and signal ready()
     @client.processUrlParams()
+
+    # if iframed let the parent know about the connect
+    if window.parent
+      window.parent.postMessage({type: "cfm::iframedClientConnected"})
 
   _createHiddenApp: ->
     anchor = document.createElement("div")
@@ -56,5 +63,7 @@ class CloudFileManager
   _renderApp: (anchor) ->
     @appOptions.client = @client
     ReactDOM.render (AppView @appOptions), anchor
+    @client.iframe = anchor.getElementsByTagName('iframe')[0]
+    @client.rendered()
 
 module.exports = new CloudFileManager()

@@ -97,29 +97,54 @@ module.exports = React.createClass
   help: ->
     window.open @props.options.help, '_blank'
 
+  infoClicked: ->
+    @props.options.onInfoClicked?(@props.client)
+
   # CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
   checkBlur: (e) ->
     @filenameBlurred() if @state.editingFilename and e.target isnt @filename()
+
+  langMenuItems: ->
+    langMenu = @props.options.languageMenu
+    langMenu.options
+      # Do not show current language in the menu.
+      .filter((option) -> option.langCode isnt langMenu.currentLang)
+      .map((option) ->
+        {
+          content: (span {className: 'lang-option'}, (div {className: "flag flag-#{option.flag}"}), option.langCode)
+          action: -> langMenu.onLangChanged?(option.langCode)
+        }
+      )
+
+  currentFlag: ->
+    langCode = @props.options.languageMenu.currentLang
+    (opt for opt in @props.options.languageMenu.options when opt.langCode is langCode)[0].flag
 
   render: ->
     (div {className: 'menu-bar'},
       (div {className: 'menu-bar-left'},
         (Dropdown {items: @props.items})
         if @state.editingFilename
-          (div {className:'menu-bar-content-filename'},
+          (div {className: 'menu-bar-content-filename'},
             (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
           )
         else
-          (div {className:'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
+          (div {className: 'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
         if @props.fileStatus
           (span {className: "menu-bar-file-status-#{@props.fileStatus.type}"}, @props.fileStatus.message)
       )
       (div {className: 'menu-bar-right'},
         if @props.options.info
-          (span {className: 'menu-bar-info'}, @props.options.info)
+          (span {className: 'menu-bar-info', onClick: @infoClicked}, @props.options.info)
         if @props.provider?.authorized()
           @props.provider.renderUser()
         if @props.options.help
           (i {style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: @help})
+        if @props.options.languageMenu
+          (Dropdown {
+            className: "lang-menu",
+            items: @langMenuItems(),
+            menuAnchor: (div {className: "flag flag-#{@currentFlag()}"})
+          })
       )
     )
