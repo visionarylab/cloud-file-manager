@@ -739,7 +739,13 @@ class CloudFileManagerClient
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     for listener in @_listeners
       listener event
-    if @appOptions?.sendPostMessageClientEvents and @iframe
+    # Workaround to fix https://www.pivotaltracker.com/story/show/162392580
+    # CODAP will fail on the renamedFile message because we don't send the state with
+    # the postMessage events and CODAP examines the state to get the new name.
+    # I tried sending the state but that causes CODAP to replace its state which breaks other things.
+    # A permanent fix for this would be to send the new filename outside of the state metadata.
+    skipPostMessage = type is "renamedFile"
+    if @appOptions?.sendPostMessageClientEvents and @iframe and not skipPostMessage
       event.postMessage(@iframe.contentWindow)
 
   _setState: (options) ->
