@@ -53,7 +53,7 @@ class CloudFileManager
 
     # if iframed let the parent know about the connect
     if window.parent
-      window.parent.postMessage({type: "cfm::iframedClientConnected"})
+      window.parent.postMessage({type: "cfm::iframedClientConnected"}, "*")
 
   _createHiddenApp: ->
     anchor = document.createElement("div")
