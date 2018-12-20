@@ -636,7 +636,7 @@ class CloudFileManagerClient
       dirty: isDirty
       saved: @state.saved and not isDirty
     if window.self isnt window.top
-      window.top.postMessage({type: "cfm::setDirty", isDirty: isDirty})
+      window.top.postMessage({type: "cfm::setDirty", isDirty: isDirty}, "*")
 
   shouldAutoSave: =>
     @state.dirty and
