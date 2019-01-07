@@ -29,7 +29,6 @@ class URLProvider extends ProviderInterface
       provider: @
 
     $.ajax
-      dataType: 'json'
       url: metadata.url
       success: (data) ->
         callback null, cloudContentFactory.createEnvelopedCloudContent(data), metadata

@@ -697,7 +697,7 @@ class CloudFileManagerClient
     @_event type, { content: content?.getClientContent(), shared: @_sharedMetadata() }
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
-    @_event 'openedFile', { content: content?.getClientContent() }, (iError, iSharedMetadata) =>
+    @_event 'openedFile', { content: content?.getClientContent(), metadata: metadata }, (iError, iSharedMetadata) =>
       return @alert(iError, => @ready()) if iError
 
       metadata?.overwritable ?= true
