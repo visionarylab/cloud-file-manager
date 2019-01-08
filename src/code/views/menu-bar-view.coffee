@@ -104,15 +104,21 @@ module.exports = React.createClass
   checkBlur: (e) ->
     @filenameBlurred() if @state.editingFilename and e.target isnt @filename()
 
+  langChanged: (langCode) ->
+    {client, options} = @props
+    {onLangChanged} = options.languageMenu
+    if onLangChanged?
+      client.changeLanguage langCode, onLangChanged
+
   langMenuItems: ->
     langMenu = @props.options.languageMenu
     langMenu.options
       # Do not show current language in the menu.
       .filter((option) -> option.langCode isnt langMenu.currentLang)
-      .map((option) ->
+      .map((option) =>
         {
           content: (span {className: 'lang-option'}, (div {className: "flag flag-#{option.flag}"}), option.langCode)
-          action: -> langMenu.onLangChanged?(option.langCode)
+          action: => @langChanged(option.langCode)
         }
       )
 

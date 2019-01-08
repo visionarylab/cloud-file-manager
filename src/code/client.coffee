@@ -657,6 +657,13 @@ class CloudFileManagerClient
   isAutoSaving: ->
     @_autoSaveInterval?
 
+  changeLanguage: (newLangCode, callback) ->
+    if callback
+      if not @state.dirty
+        callback newLangCode
+      else
+        @confirm tr('~CONFIRM.CHANGE_LANGUAGE'), -> callback newLangCode
+
   showBlockingModal: (modalProps) ->
     @_ui.showBlockingModal modalProps
 
