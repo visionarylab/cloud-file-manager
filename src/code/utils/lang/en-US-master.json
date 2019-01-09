@@ -97,6 +97,7 @@
   "~CONFIRM.CLOSE_FILE": "You have unsaved changes. Are you sure you want to close the document?",
   "~CONFIRM.REVERT_TO_LAST_OPENED": "Are you sure you want to revert the document to its most recently opened state?",
   "~CONFIRM.REVERT_TO_SHARED_VIEW": "Are you sure you want to revert the document to its most recently shared state?",
+  "~CONFIRM.CHANGE_LANGUAGE": "You have unsaved changes. Are you sure you want to change languages?",
 
   "~CONFIRM_DIALOG.TITLE": "Are you sure?",
   "~CONFIRM_DIALOG.YES": "Yes",
