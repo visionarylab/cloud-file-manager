@@ -636,7 +636,8 @@ class CloudFileManagerClient
       dirty: isDirty
       saved: @state.saved and not isDirty
     if window.self isnt window.top
-      window.top.postMessage({type: "cfm::setDirty", isDirty: isDirty}, "*")
+      # post to parent and not top window (not a bug even though we test for self inst top above)
+      window.parent.postMessage({type: "cfm::setDirty", isDirty: isDirty}, "*")
 
   shouldAutoSave: =>
     @state.dirty and
@@ -656,6 +657,13 @@ class CloudFileManagerClient
 
   isAutoSaving: ->
     @_autoSaveInterval?
+
+  changeLanguage: (newLangCode, callback) ->
+    if callback
+      if not @state.dirty
+        callback newLangCode
+      else
+        @confirm tr('~CONFIRM.CHANGE_LANGUAGE'), -> callback newLangCode
 
   showBlockingModal: (modalProps) ->
     @_ui.showBlockingModal modalProps
