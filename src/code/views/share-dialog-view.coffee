@@ -46,7 +46,8 @@ module.exports = React.createClass
     link: @getShareLink()
     embed: @getEmbed()
     pageType: "autolaunch"
-    codapServerUrl: "https://codap.concord.org/releases/latest/"
+    serverUrl: @props.settings.serverUrl or "https://codap.concord.org/releases/latest/"
+    serverUrlLabel: @props.settings.serverUrlLabel or translate("~SHARE_DIALOG.LARA_CODAP_URL")
     launchButtonText: "Launch"
     fullscreenScaling: true
     graphVisToggles: false
@@ -80,7 +81,7 @@ module.exports = React.createClass
       documentServer = documentServer.slice(0, -1) while documentServer.substr(-1) is '/'  # remove trailing slash
       graphVisToggles = if @state.graphVisToggles then '?app=is' else ''
       # graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-      server = encodeURIComponent(@state.codapServerUrl + graphVisToggles)
+      server = encodeURIComponent(@state.serverUrl + graphVisToggles)
       # Other params are handled by document server itself:
       buttonText = if @state.pageType is 'launch' then "&buttonText=#{encodeURIComponent(@state.launchButtonText)}" else ''
       fullscreenScaling = if @state.pageType is 'autolaunch' and @state.fullscreenScaling then '&scaling' else ''
@@ -157,9 +158,9 @@ module.exports = React.createClass
   selectLaraTab: ->
     @setState tabSelected: 'lara'
 
-  changedCodapServerUrl: (event) ->
+  changedServerUrl: (event) ->
     @setState
-      codapServerUrl: event.target.value
+      serverUrl: event.target.value
 
   changedLaunchButtonText: (event) ->
     @setState
@@ -236,9 +237,9 @@ module.exports = React.createClass
                     )
                     (div {className: 'lara-settings'},
                       (div {className: 'codap-server-url'},
-                        translate("~SHARE_DIALOG.LARA_CODAP_URL")
+                        @state.serverUrlLabel
                         (div {},
-                          (input {value: @state.codapServerUrl, onChange: @changedCodapServerUrl})
+                          (input {value: @state.serverUrl, onChange: @changedServerUrl})
                         )
                       )
                       (div {className: 'autolaunch'},
