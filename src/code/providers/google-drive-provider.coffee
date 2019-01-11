@@ -244,6 +244,7 @@ class GoogleDriveProvider extends ProviderInterface
         metadata.rename file.title
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
+        metadata.mimeType = file.mimeType
         if not metadata.parent? and file.parents?.length > 0
           metadata.parent = new CloudMetadata
             type: CloudMetadata.Folder
