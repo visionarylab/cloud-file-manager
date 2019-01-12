@@ -720,7 +720,11 @@ class CloudFileManagerClient
     @_event type, { content: content?.getClientContent(), shared: @_sharedMetadata() }
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
-    @_event 'openedFile', { content: content?.getClientContent() }, (iError, iSharedMetadata) =>
+    eventData = { content: content?.getClientContent() }
+    # add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
+    contentType = metadata.mimeType or metadata.contentType
+    eventData.metadata = {contentType} if contentType
+    @_event 'openedFile', eventData, (iError, iSharedMetadata) =>
       return @alert(iError, => @ready()) if iError
 
       metadata?.overwritable ?= true
