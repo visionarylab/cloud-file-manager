@@ -1,6 +1,6 @@
 PROJECT_ID=125177
 OUTPUT_DIR=src/code/utils/lang
-LANGUAGES=("de" "es" "he" "tr" "zh-TW")
+LANGUAGES=("de" "el" "es" "he" "tr" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
