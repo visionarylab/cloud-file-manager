@@ -101,11 +101,12 @@ class ReadOnlyProvider extends ProviderInterface
           @tree = @_convertJSONToMetadataTree @options.json
           complete @tree
     else if @options.src
+      baseUrl = @options.src.replace(/\/[^/]*$/, '/')
       $.ajax
         dataType: 'json'
         url: @options.src
         success: (iResponse) =>
-          @tree = @_convertJSONToMetadataTree iResponse
+          @tree = @_convertJSONToMetadataTree iResponse, baseUrl
           # alphabetize remotely loaded folder contents if requested
           if @options.alphabetize
             @tree.sort (iMeta1, iMeta2) ->
@@ -120,7 +121,7 @@ class ReadOnlyProvider extends ProviderInterface
     else
       complete null
 
-  _convertJSONToMetadataTree: (json, parent = null) ->
+  _convertJSONToMetadataTree: (json, baseUrl, parent = null) ->
     tree = []
 
     if isArray json
@@ -128,12 +129,14 @@ class ReadOnlyProvider extends ProviderInterface
       # [{ name: "...", content: "..."}, { name: "...", type: 'folder', children: [...] }]
       for item in json
         type = CloudMetadata.mapTypeToCloudMetadataType item.type
+        url = item.url or item.location
+        url = baseUrl + url if baseUrl and not (url.startsWith('http://') or url.startsWith('https://') or url.startsWith('//'))
         metadata = new CloudMetadata
           name: item.name
           type: type
           description: item.description
           content: if item.content? then cloudContentFactory.createEnvelopedCloudContent item.content else undefined
-          url: item.url or item.location
+          url: url
           parent: parent
           provider: @
           providerData:
@@ -142,14 +145,14 @@ class ReadOnlyProvider extends ProviderInterface
           newFolderPromise = (iItem, iMetadata) =>
             return new Promise (resolve, reject) =>
               if iItem.children?
-                iMetadata.providerData.children = @_convertJSONToMetadataTree iItem.children, iMetadata
+                iMetadata.providerData.children = @_convertJSONToMetadataTree iItem.children, baseUrl, iMetadata
                 resolve iMetadata
               else if iItem.url?
                 $.ajax
                   dataType: 'json'
                   url: iItem.url,
                   success: (iResponse) =>
-                    iMetadata.providerData.children = @_convertJSONToMetadataTree iResponse, iMetadata
+                    iMetadata.providerData.children = @_convertJSONToMetadataTree iResponse, baseUrl, iMetadata
                     # alphabetize remotely loaded folder contents if requested
                     if @options.alphabetize or iItem.alphabetize
                       iMetadata.providerData.children.sort (iMeta1, iMeta2) ->
@@ -179,7 +182,7 @@ class ReadOnlyProvider extends ProviderInterface
           providerData:
             children: null
         if type is CloudMetadata.Folder
-          metadata.providerData.children = @_convertJSONToMetadataTree itemContent, metadata
+          metadata.providerData.children = @_convertJSONToMetadataTree itemContent, baseUrl, metadata
         tree.push metadata
 
     tree
