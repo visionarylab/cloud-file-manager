@@ -3,7 +3,7 @@
     <script src="../js/globals.js"></script>
     <script src="../js/app.js"></script>
     <link rel="stylesheet" href="../css/app.css">
-    <title>Examples: Language menu</title>
+    <title>Examples: No Flag language menu</title>
   </head>
   <body>
     <div id="wrapper">
@@ -56,16 +56,16 @@
         ],
         ui: {
           menuBar: {
-            info: "Language menu with flags",
+            info: "Language menu without flags",
             languageMenu: {
               currentLang: getQueryVariable("lang") || "en-US",
               options: [
-                {langCode: "en-US", flag: "us"},
-                {langCode: "de", flag: "de"},
-                {langCode: "es", flag: "es"},
-                {langCode: "he", flag: "il"},
-                {langCode: "tr", flag: "tr"},
-                {langCode: "zh", flag: "tw"}
+                {langCode: "en-US", label: "English"},
+                {langCode: "de", label: "Deutsche"},
+                {langCode: "es", label: "Español"},
+                {langCode: "he", label: "עברית"},
+                {langCode: "tr", label: "Türkçe"},
+                {langCode: "zh", label: "中文"}
               ],
               onLangChanged: function (langCode) {
                 if (langCode === "en-US") {
