@@ -1,5 +1,6 @@
-{div, i, span, ul, li, svg, g, rect, polygon} = React.DOM
+{div, i, span, ul, li} = React.DOM
 
+{DefaultAnchor} = require "./dropdown-anchors"
 DropdownItem = React.createFactory React.createClass
 
   displayName: 'DropdownItem'
@@ -90,28 +91,18 @@ DropDown = React.createClass
     return unless item
     item.action?()
 
-  renderDefaultAnchor: ->
-    # Hamburger icon
-    (svg {className: 'default-anchor', version: '1.1', width: 33, height: 18, viewBox: '0 0 33 18', enableBackground: 'new 0 0 33 18'},
-      (g {},
-        (rect {x: 2, y: 3, width: 16, height: 2})
-        (rect {x: 2, y: 8, width: 16, height: 2})
-        (rect {x: 2, y: 13, width: 16, height: 2})
-        (polygon (points: "21,7 25,13 29,7"))
-      )
-    )
-
   render: ->
     menuClass = "#{cfmMenuClass} #{if @state.showingMenu then 'menu-showing' else 'menu-hidden'}"
     dropdownClass = "menu #{if @props.className then @props.className else ''}"
+    menuAnchorClass = "menu-anchor #{if @props.menuAnchorClassName then @props.menuAnchorClassName else ''}"
     (div {className: dropdownClass},
       if @props.items?.length > 0
         (div {},
-          (div {className: "#{cfmMenuClass} menu-anchor", onClick: => @select(null)},
+          (div {className: "#{cfmMenuClass} #{menuAnchorClass}", onClick: => @select(null)},
             if @props.menuAnchor
               @props.menuAnchor
             else
-              @renderDefaultAnchor()
+              DefaultAnchor
           )
           (div {className: menuClass},
             (ul {},
