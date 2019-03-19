@@ -1,6 +1,7 @@
 {div, i, span, input} = React.DOM
 
 Dropdown = React.createFactory require './dropdown-view'
+{TriangleOnlyAnchor} = require "./dropdown-anchors"
 tr = require '../utils/translate'
 
 module.exports = React.createClass
@@ -110,21 +111,38 @@ module.exports = React.createClass
     if onLangChanged?
       client.changeLanguage langCode, onLangChanged
 
-  langMenuItems: ->
+  renderLanguageMenu: ->
     langMenu = @props.options.languageMenu
-    langMenu.options
+    items = langMenu.options
       # Do not show current language in the menu.
       .filter((option) -> option.langCode isnt langMenu.currentLang)
       .map((option) =>
+        label = option.label or option.langCode.toUpperCase()
+        className = "flag flag-#{option.flag}" if option.flag
         {
-          content: (span {className: 'lang-option'}, (div {className: "flag flag-#{option.flag}"}), option.langCode)
+          content: (span {className: 'lang-option'}, (div {className}), label)
           action: => @langChanged(option.langCode)
         }
       )
 
-  currentFlag: ->
-    langCode = @props.options.languageMenu.currentLang
-    (opt for opt in @props.options.languageMenu.options when opt.langCode is langCode)[0].flag
+    hasFlags = langMenu.options.filter((option) -> option.flag?).length > 0
+    currentOption = langMenu.options.filter((option) -> option.langCode is langMenu.currentLang)[0]
+    defaultOption = if hasFlags then {flag: "us"} else {label: "English"}
+    {flag, label} = currentOption or defaultOption
+    menuAnchor = if flag
+      (div {className: "flag flag-#{flag}"})
+    else
+      (div {className: "lang-menu with-border"},
+        (span {className: "lang-label"}, label or defaultOption.label),
+        TriangleOnlyAnchor
+      )
+
+    (Dropdown {
+      className: "lang-menu",
+      menuAnchorClassName: "menu-anchor-right",
+      items,
+      menuAnchor
+    })
 
   render: ->
     (div {className: 'menu-bar'},
@@ -147,10 +165,6 @@ module.exports = React.createClass
         if @props.options.help
           (i {style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: @help})
         if @props.options.languageMenu
-          (Dropdown {
-            className: "lang-menu",
-            items: @langMenuItems(),
-            menuAnchor: (div {className: "flag flag-#{@currentFlag()}"})
-          })
+          @renderLanguageMenu()
       )
     )

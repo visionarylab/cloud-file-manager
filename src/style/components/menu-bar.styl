@@ -78,13 +78,19 @@
 
   // Customize default drop-down styles. Language menu is a bit more compact.
   .lang-menu
+    &.with-border
+      border #aaa 1px solid
+      padding-right 5px
+    no-select()
     .menu-showing
       min-width 50px
 
     .lang-option
       padding 0
-      text-transform uppercase
       .flag
         vertical-align middle
         margin-right 10px
+    .lang-label
+      padding-right: 0.25em;
+      margin-top: -11px
 
