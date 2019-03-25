@@ -721,6 +721,9 @@ class CloudFileManagerClient
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
     eventData = { content: content?.getClientContent() }
+    # update state before sending 'openedFile' events so that 'openedFile' listeners that
+    # reference state have the updated state values
+    @_updateState content, metadata, additionalState, hashParams
     # add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
     contentType = metadata.mimeType or metadata.contentType
     eventData.metadata = {contentType} if contentType
@@ -730,6 +733,7 @@ class CloudFileManagerClient
       metadata?.overwritable ?= true
       if not @appOptions.wrapFileContent
         content.addMetadata iSharedMetadata
+      # and then update state again for the metadata and content changes
       @_updateState content, metadata, additionalState, hashParams
       @ready()
 
