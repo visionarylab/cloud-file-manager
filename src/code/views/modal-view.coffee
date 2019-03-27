@@ -10,8 +10,8 @@ module.exports = React.createClass
 
   # shadow the entire viewport behind the dialog
   getDimensions: ->
-    width: $(window).width() + 'px'
-    height: $(window).height() + 'px'
+    width: '100vw'
+    height: '100vh'
 
   getInitialState: ->
     dimensions = @getDimensions()
