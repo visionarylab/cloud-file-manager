@@ -2,6 +2,7 @@ urlParams = require './url-params'
 
 languageFiles = [
   {key: 'de' ,   contents: require './lang/de'}
+  {key: 'el' ,   contents: require './lang/el'}
   {key: 'en-US', contents: require './lang/en-US'}
   {key: 'es' ,   contents: require './lang/es'}
   {key: 'he' ,   contents: require './lang/he'}
