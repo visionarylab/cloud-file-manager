@@ -135,6 +135,7 @@ class ReadOnlyProvider extends ProviderInterface
           name: item.name
           type: type
           description: item.description
+          mimeType: item.mimeType
           content: if item.content? then cloudContentFactory.createEnvelopedCloudContent item.content else undefined
           url: url
           parent: parent

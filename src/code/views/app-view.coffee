@@ -160,7 +160,7 @@ App = React.createClass
       else if @state.importDialog
         (ImportTabbedDialog {client: @props.client, dialog: @state.importDialog, close: @closeDialogs})
       else if @state.shareDialog
-        (ShareDialog {client: @props.client, enableLaraSharing: @props.enableLaraSharing, close: @closeDialogs})
+        (ShareDialog {client: @props.client, enableLaraSharing: @props.enableLaraSharing, close: @closeDialogs, settings: @props.ui?.shareDialog or {}})
 
       # alert and confirm dialogs can be overlayed on other dialogs
       if @state.alertDialog

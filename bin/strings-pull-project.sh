@@ -1,5 +1,12 @@
+#!/bin/bash
 PROJECT_ID=125177
 OUTPUT_DIR=src/code/utils/lang
+# zh-TW: Chinese (TW)
+# de: German
+# el: Greek
+# he: Hebrew
+# es: Spanish
+# tr: Turkish
 LANGUAGES=("de" "el" "es" "he" "tr" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146

@@ -1,6 +1,7 @@
 {div, i, span, input} = React.DOM
 
 Dropdown = React.createFactory require './dropdown-view'
+{TriangleOnlyAnchor} = require "./dropdown-anchors"
 tr = require '../utils/translate'
 
 module.exports = React.createClass
@@ -97,29 +98,73 @@ module.exports = React.createClass
   help: ->
     window.open @props.options.help, '_blank'
 
+  infoClicked: ->
+    @props.options.onInfoClicked?(@props.client)
+
   # CODAP eats the click events in the main workspace which causes the blur event not to fire so we need to check for a non-bubbling global click event when editing
   checkBlur: (e) ->
     @filenameBlurred() if @state.editingFilename and e.target isnt @filename()
+
+  langChanged: (langCode) ->
+    {client, options} = @props
+    {onLangChanged} = options.languageMenu
+    if onLangChanged?
+      client.changeLanguage langCode, onLangChanged
+
+  renderLanguageMenu: ->
+    langMenu = @props.options.languageMenu
+    items = langMenu.options
+      # Do not show current language in the menu.
+      .filter((option) -> option.langCode isnt langMenu.currentLang)
+      .map((option) =>
+        label = option.label or option.langCode.toUpperCase()
+        className = "flag flag-#{option.flag}" if option.flag
+        {
+          content: (span {className: 'lang-option'}, (div {className}), label)
+          action: => @langChanged(option.langCode)
+        }
+      )
+
+    hasFlags = langMenu.options.filter((option) -> option.flag?).length > 0
+    currentOption = langMenu.options.filter((option) -> option.langCode is langMenu.currentLang)[0]
+    defaultOption = if hasFlags then {flag: "us"} else {label: "English"}
+    {flag, label} = currentOption or defaultOption
+    menuAnchor = if flag
+      (div {className: "flag flag-#{flag}"})
+    else
+      (div {className: "lang-menu with-border"},
+        (span {className: "lang-label"}, label or defaultOption.label),
+        TriangleOnlyAnchor
+      )
+
+    (Dropdown {
+      className: "lang-menu",
+      menuAnchorClassName: "menu-anchor-right",
+      items,
+      menuAnchor
+    })
 
   render: ->
     (div {className: 'menu-bar'},
       (div {className: 'menu-bar-left'},
         (Dropdown {items: @props.items})
         if @state.editingFilename
-          (div {className:'menu-bar-content-filename'},
+          (div {className: 'menu-bar-content-filename'},
             (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
           )
         else
-          (div {className:'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
+          (div {className: 'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)
         if @props.fileStatus
           (span {className: "menu-bar-file-status-#{@props.fileStatus.type}"}, @props.fileStatus.message)
       )
       (div {className: 'menu-bar-right'},
         if @props.options.info
-          (span {className: 'menu-bar-info'}, @props.options.info)
+          (span {className: 'menu-bar-info', onClick: @infoClicked}, @props.options.info)
         if @props.provider?.authorized()
           @props.provider.renderUser()
         if @props.options.help
           (i {style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: @help})
+        if @props.options.languageMenu
+          @renderLanguageMenu()
       )
     )

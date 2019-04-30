@@ -69,6 +69,12 @@ class GoogleDriveProvider extends ProviderInterface
     @clientId = @options.clientId
     if not @clientId
       throw new Error (tr "~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")
+    @scopes = @options.scopes or [
+      'https://www.googleapis.com/auth/drive'
+      'https://www.googleapis.com/auth/drive.install'
+      'https://www.googleapis.com/auth/drive.file'
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ]
     @mimeType = @options.mimeType or "text/plain"
     @readableMimetypes = @options.readableMimetypes
     @useRealTimeAPI = @options.useRealTimeAPI or false
@@ -96,12 +102,7 @@ class GoogleDriveProvider extends ProviderInterface
     @_loadedGAPI =>
       args =
         client_id: @clientId
-        scope: [
-          'https://www.googleapis.com/auth/drive'
-          'https://www.googleapis.com/auth/drive.install'
-          'https://www.googleapis.com/auth/drive.file'
-          'https://www.googleapis.com/auth/userinfo.profile'
-        ]
+        scope: @scopes
         immediate: immediate
       gapi.auth.authorize args, (authToken) =>
         @authToken = if authToken and not authToken.error then authToken else null
@@ -244,6 +245,7 @@ class GoogleDriveProvider extends ProviderInterface
         metadata.rename file.title
         metadata.overwritable = file.editable
         metadata.providerData = id: file.id
+        metadata.mimeType = file.mimeType
         if not metadata.parent? and file.parents?.length > 0
           metadata.parent = new CloudMetadata
             type: CloudMetadata.Folder

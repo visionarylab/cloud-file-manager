@@ -22,7 +22,21 @@ CloudMetadata = (require './providers/provider-interface').CloudMetadata
 
 class CloudFileManagerClientEvent
 
+  @id: 0
+  @events: {}
+
   constructor: (@type, @data = {}, @callback = null, @state = {}) ->
+    CloudFileManagerClientEvent.id++
+    @id = CloudFileManagerClientEvent.id
+
+  postMessage: (iframe) ->
+    if @callback
+      CloudFileManagerClientEvent.events[@id] = @
+    # remove client from data to avoid structured clone error in postMessage
+    eventData = _.clone @data
+    delete eventData.client
+    message = {type: "cfm::event", eventId: @id, eventType: @type, eventData: eventData}
+    iframe.postMessage message, "*"
 
 class CloudFileManagerClient
 
@@ -120,6 +134,7 @@ class CloudFileManagerClient
       appBuildNum: @appOptions.appBuildNum or ""
 
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
+    @newFileAddsNewToQuery = @appOptions.ui?.newFileAddsNewToQuery
 
     @_startPostMessageListener()
 
@@ -168,6 +183,9 @@ class CloudFileManagerClient
   ready: ->
     @_event 'ready'
 
+  rendered: ->
+    @_event 'rendered', {client: @}
+
   listen: (listener) ->
     if listener
       @_listeners.push listener
@@ -206,7 +224,7 @@ class CloudFileManagerClient
 
   newFileDialog: (callback = null) ->
     if @newFileOpensInNewTab
-      window.open @getCurrentUrl(), '_blank'
+      window.open @getCurrentUrl(if @newFileAddsNewToQuery then "#new" else null), '_blank'
     else if @state.dirty
       if @_autoSaveInterval and @state.metadata
         @save()
@@ -622,6 +640,9 @@ class CloudFileManagerClient
     @_setState
       dirty: isDirty
       saved: @state.saved and not isDirty
+    if window.self isnt window.top
+      # post to parent and not top window (not a bug even though we test for self inst top above)
+      window.parent.postMessage({type: "cfm::setDirty", isDirty: isDirty}, "*")
 
   shouldAutoSave: =>
     @state.dirty and
@@ -641,6 +662,13 @@ class CloudFileManagerClient
 
   isAutoSaving: ->
     @_autoSaveInterval?
+
+  changeLanguage: (newLangCode, callback) ->
+    if callback
+      if not @state.dirty
+        callback newLangCode
+      else
+        @confirm tr('~CONFIRM.CHANGE_LANGUAGE'), -> callback newLangCode
 
   showBlockingModal: (modalProps) ->
     @_ui.showBlockingModal modalProps
@@ -697,12 +725,21 @@ class CloudFileManagerClient
     @_event type, { content: content?.getClientContent(), shared: @_sharedMetadata() }
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
-    @_event 'openedFile', { content: content?.getClientContent(), metadata: metadata }, (iError, iSharedMetadata) =>
+    # @_event 'openedFile', { content: content?.getClientContent(), metadata: metadata }, (iError, iSharedMetadata) =>
+    eventData = { content: content?.getClientContent() }
+    # update state before sending 'openedFile' events so that 'openedFile' listeners that
+    # reference state have the updated state values
+    @_updateState content, metadata, additionalState, hashParams
+    # add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
+    contentType = metadata.mimeType or metadata.contentType
+    eventData.metadata = {contentType} if contentType
+    @_event 'openedFile', eventData, (iError, iSharedMetadata) =>
       return @alert(iError, => @ready()) if iError
 
       metadata?.overwritable ?= true
       if not @appOptions.wrapFileContent
         content.addMetadata iSharedMetadata
+      # and then update state again for the metadata and content changes
       @_updateState content, metadata, additionalState, hashParams
       @ready()
 
@@ -723,6 +760,14 @@ class CloudFileManagerClient
     event = new CloudFileManagerClientEvent type, data, eventCallback, @state
     for listener in @_listeners
       listener event
+    # Workaround to fix https://www.pivotaltracker.com/story/show/162392580
+    # CODAP will fail on the renamedFile message because we don't send the state with
+    # the postMessage events and CODAP examines the state to get the new name.
+    # I tried sending the state but that causes CODAP to replace its state which breaks other things.
+    # A permanent fix for this would be to send the new filename outside of the state metadata.
+    skipPostMessage = type is "renamedFile"
+    if @appOptions?.sendPostMessageClientEvents and @iframe and not skipPostMessage
+      event.postMessage(@iframe.contentWindow)
 
   _setState: (options) ->
     for own key, value of options
@@ -764,17 +809,30 @@ class CloudFileManagerClient
   _startPostMessageListener: ->
     $(window).on 'message', (e) =>
       oe = e.originalEvent
+      data = oe.data or {}
       reply = (type, params={}) ->
         message = _.merge {}, params, {type: type}
         oe.source.postMessage message, oe.origin
       switch oe.data?.type
         when 'cfm::getCommands'
-          reply 'cfm::commands', commands: ['cfm::autosave']
+          reply 'cfm::commands', commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty', 'cfm::iframedClientConnected']
         when 'cfm::autosave'
           if @shouldAutoSave()
             @save -> reply 'cfm::autosaved', saved: true
           else
             reply 'cfm::autosaved', saved: false
+        when 'cfm::event'
+          @_event data.eventType, data.eventData, ->
+            callbackArgs = JSON.stringify(Array.prototype.slice.call(arguments))
+            reply 'cfm::event:reply', {eventId: data.eventId, callbackArgs: callbackArgs}
+        when 'cfm::event:reply'
+          event = CloudFileManagerClientEvent.events[data.eventId]
+          event?.callback?.apply(@, JSON.parse(data.callbackArgs))
+        when 'cfm::setDirty'
+          @dirty data.isDirty
+        when 'cfm::iframedClientConnected'
+          @processUrlParams()
+
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
