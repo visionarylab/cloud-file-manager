@@ -56,7 +56,7 @@ where the options variable has the following optional or required settings:
 
 ```
 var options = {
-  app: "example-app", // required when iframing - relative path to the app to wrap
+  app: "example-app/index.html", // required when iframing - relative path to the app to wrap
   mimeType: "application/json", // optional - defaults to text/plain
   appName: "CFM_Demo", // document store app name - required for sharing
   appVersion: "0.1", // document store app version - required for sharing
