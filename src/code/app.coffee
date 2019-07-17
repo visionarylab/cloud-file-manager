@@ -52,7 +52,7 @@ class CloudFileManager
     @client.processUrlParams()
 
     # if iframed let the parent know about the connect
-    if window.parent
+    if window.parent isnt window
       window.parent.postMessage({type: "cfm::iframedClientConnected"}, "*")
 
   _createHiddenApp: ->
