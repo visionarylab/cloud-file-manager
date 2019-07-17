@@ -793,7 +793,7 @@ class CloudFileManagerClient
     currentContent
 
   _setWindowTitle: (name) ->
-    if @appOptions?.ui?.windowTitleSuffix
+    if not @appOptions.appSetsWindowTitle and @appOptions?.ui?.windowTitleSuffix
       document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
 
   _getHashParams: (metadata) ->
