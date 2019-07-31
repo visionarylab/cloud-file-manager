@@ -121,7 +121,7 @@ class GoogleDriveProvider extends ProviderInterface
 
   renderUser: ->
     if @user
-      (span {}, (span {className: 'gdrive-icon'}), @user.name)
+      (span {className: 'gdrive-user'}, (span {className: 'gdrive-icon'}), @user.name)
     else
       null
 
