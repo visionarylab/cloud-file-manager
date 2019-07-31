@@ -3,7 +3,7 @@
 The Cloud File Manager is a Javascript library that enables applications to save and load files from various file systems using a simple consistent API.  Currently the following file system providers are supported:
 
 * [Concord Document Store](https://github.com/concord-consortium/document-store) [DEPRECATED]
-* Google Drive (both normal files and realtime models backed by empty normal files)
+* Google Drive
 * Local and remote read-only files
 * Browser LocalStorage (used mostly for development/testing)
 
