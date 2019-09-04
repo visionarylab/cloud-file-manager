@@ -139,6 +139,9 @@ class CloudFileManagerClient
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
     @newFileAddsNewToQuery = @appOptions.ui?.newFileAddsNewToQuery
 
+    if @appOptions.ui?.confirmCloseIfDirty
+      @_setupConfirmOnClose()
+
     @_startPostMessageListener()
 
   setProviderOptions: (name, newOptions) ->
@@ -831,6 +834,12 @@ class CloudFileManagerClient
         when 'cfm::iframedClientConnected'
           @processUrlParams()
 
+  _setupConfirmOnClose: ->
+    $(window).on 'beforeunload', (e) =>
+      if @state.dirty
+        # different browsers trigger the confirm in different ways
+        e.preventDefault()
+        e.returnValue = true
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
