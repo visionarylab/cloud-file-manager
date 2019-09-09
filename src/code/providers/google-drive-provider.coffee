@@ -77,9 +77,6 @@ class GoogleDriveProvider extends ProviderInterface
     ]
     @mimeType = @options.mimeType or "text/plain"
     @readableMimetypes = @options.readableMimetypes
-    @useRealTimeAPI = @options.useRealTimeAPI or false
-    if @useRealTimeAPI
-      @mimeType += '+cfm_realtime'
     @_loadGAPI()
 
   @Name: 'googleDrive'
@@ -124,23 +121,17 @@ class GoogleDriveProvider extends ProviderInterface
 
   renderUser: ->
     if @user
-      (span {}, (span {className: 'gdrive-icon'}), @user.name)
+      (span {className: 'gdrive-user'}, (span {className: 'gdrive-icon'}), @user.name)
     else
       null
 
   save:  (content, metadata, callback) ->
     @_loadedGAPI =>
-      if @useRealTimeAPI
-        @_saveRealTimeFile content, metadata, callback
-      else
-        @_saveFile content, metadata, callback
+      @_saveFile content, metadata, callback
 
   load: (metadata, callback) ->
     @_loadedGAPI =>
-      if @useRealTimeAPI
-        @_loadOrCreateRealTimeFile metadata, callback
-      else
-        @_loadFile metadata, callback
+      @_loadFile metadata, callback
 
   list: (metadata, callback) ->
     @_loadedGAPI =>
@@ -190,8 +181,7 @@ class GoogleDriveProvider extends ProviderInterface
           callback null, metadata
 
   close: (metadata, callback) ->
-    if metadata.providerData?.realTime?.doc?
-      metadata.providerData.realTime.doc.close()
+    # nothing to do now that the realtime library was removed
 
   canOpenSaved: -> true
 
@@ -230,9 +220,8 @@ class GoogleDriveProvider extends ProviderInterface
         if window._LoadedGAPI
           gapi.client.load 'drive', 'v2', ->
             gapi.client.load 'oauth2', 'v2', ->
-              gapi.load 'drive-realtime', ->
-                window._LoadedGAPIClients = true
-                callback.call self
+              window._LoadedGAPIClients = true
+              callback.call self
         else
           setTimeout check, 10
       setTimeout check, 10
@@ -305,75 +294,6 @@ class GoogleDriveProvider extends ProviderInterface
           callback null, file
         else
           callback @_apiError file, 'Unabled to upload file'
-
-  _loadOrCreateRealTimeFile: (metadata, callback) ->
-    self = @
-    fileLoaded = (doc) ->
-      content = doc.getModel().getRoot().get 'content'
-      if metadata.overwritable
-        throwError = (e) ->
-          if not e.isLocal and e.sessionId isnt metadata.providerData.realTime.sessionId
-            self.client.showBlockingModal
-              title: 'Concurrent Edit Lock'
-              message: 'An edit was made to this file from another browser window. This app is now locked for input.'
-        content.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, throwError
-        content.addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, throwError
-      for collaborator in doc.getCollaborators()
-        sessionId = collaborator.sessionId if collaborator.isMe
-      metadata.providerData.realTime =
-        doc: doc
-        content: content
-        sessionId: sessionId
-      callback null, cloudContentFactory.createEnvelopedCloudContent content.getText()
-
-    init = (model) ->
-      content = model.createString ''
-      model.getRoot().set 'content', content
-
-    error = (err) =>
-      if err.type is 'TOKEN_REFRESH_REQUIRED'
-        @authorize GoogleDriveProvider.IMMEDIATE
-      else
-        @client.alert err.message
-
-    if metadata.providerData?.id
-      request = gapi.client.drive.files.get
-        fileId: metadata.providerData.id
-    else
-      request = gapi.client.drive.files.insert
-        title: metadata.filename
-        mimeType: @mimeType
-        parents: [{id: if metadata.parent?.providerData?.id? then metadata.parent.providerData.id else 'root'}]
-
-    request.execute (file) =>
-      if file?.id
-        metadata.rename file.title
-        metadata.overwritable = file.editable
-        metadata.providerData = id: file.id
-        gapi.drive.realtime.load file.id, fileLoaded, init, error
-      else
-        callback @_apiError file, 'Unable to load file'
-
-  _saveRealTimeFile: (content, metadata, callback) ->
-    if metadata.providerData?.model
-      @_diffAndUpdateRealTimeModel content, metadata, callback
-    else
-      @_loadOrCreateRealTimeFile metadata, (err) =>
-        return callback err if err
-        @_diffAndUpdateRealTimeModel content, metadata, callback
-
-  _diffAndUpdateRealTimeModel: (content, metadata, callback) ->
-    index = 0
-    realTimeContent = metadata.providerData.realTime.content
-    diffs = jsdiff.diffChars realTimeContent.getText(), content.getContentAsJSON()
-    for diff in diffs
-      if diff.removed
-        realTimeContent.removeRange index, index + diff.value.length
-      else
-        if diff.added
-          realTimeContent.insertString index, diff.value
-        index += diff.count
-    callback null
 
   _apiError: (result, prefix) ->
     if result?.message?
