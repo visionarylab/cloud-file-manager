@@ -6,6 +6,8 @@ languageFiles = [
   {key: 'en-US', contents: require './lang/en-US'}
   {key: 'es' ,   contents: require './lang/es'}
   {key: 'he' ,   contents: require './lang/he'}
+  {key: 'nb' ,   contents: require './lang/nb'}
+  {key: 'nn' ,   contents: require './lang/nn'}
   {key: 'tr' ,   contents: require './lang/tr'}
   {key: 'zh-TW', contents: require './lang/zh-TW'}
 ]
