@@ -121,5 +121,6 @@
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Vollbild und Skalieren",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Textbutton",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Datensichtbarkeit in Graphen anzeigen",
-    "~CONFIRM.CHANGE_LANGUAGE": "You have unsaved changes. Are you sure you want to change languages?"
+    "~CONFIRM.CHANGE_LANGUAGE": "You have unsaved changes. Are you sure you want to change languages?",
+    "~FILE_STATUS.FAILURE": "Retrying..."
 }
