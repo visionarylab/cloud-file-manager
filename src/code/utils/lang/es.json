@@ -45,7 +45,6 @@
     "~FILE_DIALOG.LOADING": "Cargando...",
     "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Error al cargar contenido de la carpeta ***",
     "~FILE_DIALOG.DOWNLOAD": "Bajar",
-    "~FILE_DIALOG.DOWNLOAD_NOTE": "NOTA: En Safari el archivo puede ser \"Desconocido\" y deben ser renombrado de manera manual con extensión .codap",
     "~DOWNLOAD_DIALOG.DOWNLOAD": "Bajar",
     "~DOWNLOAD_DIALOG.CANCEL": "Cancelar",
     "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "Incluir información para compartir en archivo bajado",
