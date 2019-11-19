@@ -45,7 +45,6 @@
     "~FILE_DIALOG.LOADING": "Φόρτωση...",
     "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Σφάλμα φόρτωσης περιεχομένων φακέλου ***",
     "~FILE_DIALOG.DOWNLOAD": "Λήψη",
-    "~FILE_DIALOG.DOWNLOAD_NOTE": "ΣΗΜΕΙΩΣΗ: Στο Safari το αρχείο μπορεί να είναι \"Άγνωστο\" και πρέπει να το μετονομάσετε εσείς, προσθέτοντας την κατάληξη .codap",
     "~DOWNLOAD_DIALOG.DOWNLOAD": "Λήψη",
     "~DOWNLOAD_DIALOG.CANCEL": "Ακύρωση",
     "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "Να συμπεριληφθούν πληροφορίες κοινοποίησης στο αρχείο λήψης",

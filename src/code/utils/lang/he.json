@@ -45,7 +45,6 @@
     "~FILE_DIALOG.LOADING": "טוען...",
     "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** טעות בעת טעינת תוכן הקובץ ***",
     "~FILE_DIALOG.DOWNLOAD": "הורד",
-    "~FILE_DIALOG.DOWNLOAD_NOTE": "שים לב: הקובץ נשמר כ'לא ידוע' וצריך לשנות את השם ידנית עם תוספת .CODAP",
     "~DOWNLOAD_DIALOG.DOWNLOAD": "הורד",
     "~DOWNLOAD_DIALOG.CANCEL": "בטל",
     "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "צרף נתוני שיתוף בקובץ שהורד",

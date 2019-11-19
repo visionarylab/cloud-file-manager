@@ -133,7 +133,6 @@ module.exports = React.createClass
             (tr '~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')
           )
       )
-      div({className: 'note'}, tr('~FILE_DIALOG.DOWNLOAD_NOTE', {download: tr('~FILE_DIALOG.DOWNLOAD')}))
       (div {className: 'buttons'},
         if @state.supportsDownloadAttribute then downloadAnchor else downloadButton
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
