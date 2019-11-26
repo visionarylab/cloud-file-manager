@@ -51,8 +51,15 @@ class CloudMetadata
     @filename = @name
     if @name?.substr? and CloudMetadata.Extension? and @type is CloudMetadata.File
       extLen = CloudMetadata.Extension.length
-      @name = @name.substr(0, @name.length - (extLen+1)) if @name.substr(-extLen+1) is ".#{CloudMetadata.Extension}"
-      @filename = CloudMetadata.withExtension @name, null, true
+      if extLen > 0
+        # at this point the filename and name are the same so we now check for a file extension
+        hasCurrentExtension = @name.substr(-extLen-1) is ".#{CloudMetadata.Extension}"
+        if hasCurrentExtension
+          # remove extension from name for display purposes
+          @name = @name.substr(0, @name.length - (extLen+1))
+        else
+          # add extension to filename for saving purposes
+          @filename += "." + CloudMetadata.Extension
 
 # singleton that can create CloudContent wrapped with global options
 class CloudContentFactory
