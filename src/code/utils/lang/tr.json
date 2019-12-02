@@ -45,7 +45,6 @@
     "~FILE_DIALOG.LOADING": "Yükleniyor...",
     "~FILE_DIALOG.LOAD_FOLDER_ERROR": "İçerik yüklenirken hata oluştu.",
     "~FILE_DIALOG.DOWNLOAD": "İndir",
-    "~FILE_DIALOG.DOWNLOAD_NOTE": "NOT: Safari ile çalışırken dosya \"Bilinmeyen\" olarak görülebilir ve .codap uzantısı olarak el ile yeniden adlandırılması gerekebilir.",
     "~DOWNLOAD_DIALOG.DOWNLOAD": "İndir",
     "~DOWNLOAD_DIALOG.CANCEL": "İptal",
     "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "Paylaşılan bilgileri indirilen dosyaya dahil et.",

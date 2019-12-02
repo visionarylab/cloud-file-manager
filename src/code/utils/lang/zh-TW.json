@@ -45,7 +45,6 @@
     "~FILE_DIALOG.LOADING": "讀取中...",
     "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** 載入文件時發生錯誤 ***",
     "~FILE_DIALOG.DOWNLOAD": "下載",
-    "~FILE_DIALOG.DOWNLOAD_NOTE": "NOTE: 使用Safari 檔案可能變為 \"Unknown\" 您需要在手動更改副檔名為 .codap",
     "~DOWNLOAD_DIALOG.DOWNLOAD": "下載",
     "~DOWNLOAD_DIALOG.CANCEL": "取消",
     "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "下載的檔案中包含分享的檔案",

@@ -45,7 +45,6 @@
     "~FILE_DIALOG.LOADING": "Laden...",
     "~FILE_DIALOG.LOAD_FOLDER_ERROR": "*** Fehler beim Laden der Ordnerinhalte ***",
     "~FILE_DIALOG.DOWNLOAD": "Download",
-    "~FILE_DIALOG.DOWNLOAD_NOTE": "Achtung: Bei Safari könnte diese Datei \"unbekannt\" heißen und sollte manuell mit der .codap Erweiterung versehen werden.",
     "~DOWNLOAD_DIALOG.DOWNLOAD": "Download",
     "~DOWNLOAD_DIALOG.CANCEL": "Abbrechen",
     "~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO": "Information über Teilen im Dokument ",
