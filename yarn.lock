@@ -1208,6 +1208,7 @@ gulp-util@*, gulp-util@^3.0.0, gulp-util@^3.0.6, gulp-util@^3.0.7:
 gulp@^3.8.11:
   version "3.9.1"
   resolved "https://registry.yarnpkg.com/gulp/-/gulp-3.9.1.tgz#571ce45928dd40af6514fc4011866016c13845b4"
+  integrity sha1-VxzkWSjdQK9lFPxAEYZgFsE4RbQ=
   dependencies:
     archy "^1.0.0"
     chalk "^1.0.0"
@@ -1961,9 +1962,10 @@ multipipe@^0.1.2:
   dependencies:
     duplexer2 "0.0.2"
 
-natives@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/natives/-/natives-1.1.0.tgz#e9ff841418a6b2ec7a495e939984f78f163e6e31"
+natives@^1.1.0, natives@^1.1.3:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/natives/-/natives-1.1.6.tgz#a603b4a498ab77173612b9ea1acdec4d980f00bb"
+  integrity sha512-6+TDFewD4yxY14ptjKaS63GVdtKiES1pTPyxn9Jb0rBqPMZ7VcCiooEhPNsr+mqHtMGxa/5c/HhcC4uPEUw/nA==
 
 node-fetch@^1.0.1:
   version "1.6.3"
