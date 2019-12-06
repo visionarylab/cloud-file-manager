@@ -6,6 +6,8 @@ languageFiles = [
   {key: 'en-US', contents: require './lang/en-US'}   # US English
   {key: 'es',    contents: require './lang/es'}      # Spanish
   {key: 'he',    contents: require './lang/he'}      # Hebrew
+  {key: 'nb',    contents: require './lang/nb.json'} # Norwegian Bokmål
+  {key: 'nn',    contents: require './lang/nn.json'} # Norwegian Nynorsk
   {key: 'tr',    contents: require './lang/tr'}      # Turkish
   {key: 'zh-TW', contents: require './lang/zh-TW'}   # Chinese (Taiwan)
 ]

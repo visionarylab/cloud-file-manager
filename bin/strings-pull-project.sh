@@ -7,7 +7,7 @@ OUTPUT_DIR=src/code/utils/lang
 # he: Hebrew
 # es: Spanish
 # tr: Turkish
-LANGUAGES=("zh-TW" "de" "el" "he" "es" "tr")
+LANGUAGES=("zh-TW" "de" "el" "he" "es" "tr" "nb" "nn")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
