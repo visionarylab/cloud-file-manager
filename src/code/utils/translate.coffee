@@ -6,11 +6,12 @@ languageFiles = [
   {key: 'en-US', contents: require './lang/en-US'}   # US English
   {key: 'es',    contents: require './lang/es'}      # Spanish
   {key: 'he',    contents: require './lang/he'}      # Hebrew
-  {key: 'ja' ,   contents: require './lang/ja'}
+  {key: 'ja' ,   contents: require './lang/ja'}      # Japanese
   {key: 'nb',    contents: require './lang/nb.json'} # Norwegian Bokmål
   {key: 'nn',    contents: require './lang/nn.json'} # Norwegian Nynorsk
   {key: 'tr',    contents: require './lang/tr'}      # Turkish
-  {key: 'zh-TW', contents: require './lang/zh-TW'}   # Chinese (Taiwan)
+  {key: 'zh-tw', contents: require './lang/zh-TW'}   # Traditional Chinese (Taiwan)
+  {key: 'zh-hans', contents: require './lang/zh-Hans'} # Simplified Chinese
 ]
 
 # returns baseLANG from baseLANG-REGION if REGION exists
