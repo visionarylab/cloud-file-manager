@@ -9,7 +9,7 @@ OUTPUT_DIR=src/code/utils/lang
 # tr: Turkish
 # nb: Norwegian Bokmal
 # nn: Norwegian Nynorsk
-LANGUAGES=("de" "el" "es" "he" "nb" "nn" "tr" "zh-TW")
+LANGUAGES=("de" "el" "es" "he" "ja" "nb" "nn" "tr" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
