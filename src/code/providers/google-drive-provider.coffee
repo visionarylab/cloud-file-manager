@@ -241,15 +241,20 @@ class GoogleDriveProvider extends ProviderInterface
             provider: @
             providerData:
               id: file.parents[0].id
-        url = file.downloadUrl
-        xhr = new XMLHttpRequest()
-        xhr.open 'GET', url
-        xhr.setRequestHeader("Authorization", "Bearer #{@authToken.access_token}")
-        xhr.onload = ->
-          callback null, cloudContentFactory.createEnvelopedCloudContent xhr.responseText
-        xhr.onerror = ->
-          callback "Unable to download file content"
-        xhr.send()
+        download = (url, fallback) =>
+          xhr = new XMLHttpRequest()
+          xhr.open 'GET', url
+          xhr.setRequestHeader("Authorization", "Bearer #{@authToken.access_token}")
+          xhr.onload = ->
+            callback null, cloudContentFactory.createEnvelopedCloudContent xhr.responseText
+          xhr.onerror = ->
+            # try second request after changing the domain (https://issuetracker.google.com/issues/149891169)
+            if fallback
+              download(url.replace(/^https:\/\/content\.googleapis\.com/, "https://www.googleapis.com"), false)
+            else
+              callback "Unable to download file content"
+          xhr.send()
+        download(file.downloadUrl, true)
       else
         callback @_apiError file, 'Unable to get download url'
 
