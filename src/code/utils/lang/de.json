@@ -120,5 +120,6 @@
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Vollbild und Skalieren",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Textbutton",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Datensichtbarkeit in Graphen anzeigen",
-    "~CONFIRM.CHANGE_LANGUAGE": "Einige Änderungen wurden nicht gespeichert. Sind Sie sicher, dass Sie die Sprache wechseln wollen?"
+    "~CONFIRM.CHANGE_LANGUAGE": "Einige Änderungen wurden nicht gespeichert. Sind Sie sicher, dass Sie die Sprache wechseln wollen?",
+    "~FILE_STATUS.FAILURE": "Retrying..."
 }
