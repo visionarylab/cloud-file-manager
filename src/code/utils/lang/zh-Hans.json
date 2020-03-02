@@ -120,5 +120,6 @@
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "全屏按钮和缩放",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "启动按钮文本",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "图表数据可视化显示切换",
-    "~CONFIRM.CHANGE_LANGUAGE": "有未保存更改，确定更改语言吗？"
+    "~CONFIRM.CHANGE_LANGUAGE": "有未保存更改，确定更改语言吗？",
+    "~FILE_STATUS.FAILURE": "重试..."
 }
