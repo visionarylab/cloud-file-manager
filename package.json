@@ -7,6 +7,7 @@
     "type": "git",
     "url": "https://github.com/concord-consortium/cloud-file-manger"
   },
+  "license": "MIT",
   "dependencies": {
     "base64-js": "^1.2.0",
     "diff": "^2.2.1",
