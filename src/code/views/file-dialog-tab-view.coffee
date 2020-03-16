@@ -9,7 +9,7 @@ tr = require '../utils/translate'
 FileListFile = createReactClassFactory
   displayName: 'FileListFile'
 
-  componentWillMount: ->
+  componentDidMount: ->
     @lastClick = 0
 
   fileSelected:  (e) ->

@@ -9,7 +9,7 @@ module.exports = createReactClass
 
   displayName: 'MenuBar'
 
-  componentWillMount: ->
+  componentDidMount: ->
     # need to use direct DOM events because the event needs to be captured
     if window.addEventListener
       window.addEventListener 'mousedown', @checkBlur, true

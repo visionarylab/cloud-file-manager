@@ -47,7 +47,7 @@ App = createReactClass
     confirmDialog: null
     dirty: false
 
-  componentWillMount: ->
+  componentDidMount: ->
     @props.client.listen (event) =>
       fileStatus = if event.state.saving
         {message: tr('~FILE_STATUS.SAVING'), type: 'info'}

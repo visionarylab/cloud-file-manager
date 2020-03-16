@@ -61,7 +61,7 @@ DropDown = createReactClass
     showingMenu: false
     subMenu: null
 
-  componentWillMount: ->
+  componentDidMount: ->
     if window.addEventListener
       window.addEventListener 'mousedown', @checkClose, true
       window.addEventListener 'touchstart', @checkClose, true
