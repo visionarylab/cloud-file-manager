@@ -45,19 +45,19 @@ module.exports = createReactClass
     # in which the onClick handler got triggered multiple times and the default
     # handler could not be prevented, presumably due to React's SyntheticEvent system.
     # The solution here is to use standard browser event handlers.
-    @refs.download.addEventListener 'click', @confirm
+    @downloadRef.addEventListener 'click', @confirm
 
   componentWillUnmount: ->
-    @refs.download.removeEventListener 'click', @confirm
+    @downloadRef.removeEventListener 'click', @confirm
 
   filenameChanged: ->
-    filename = @refs.filename.value
+    filename = @filenameRef.value
     @setState
       filename: filename
       downloadFilename: @getDownloadFilename @state.hasPropsContent, filename, @state.extension
 
   includeShareInfoChanged: ->
-    @setState includeShareInfo: @refs.includeShareInfo.checked
+    @setState includeShareInfo: @includeShareInfoRef.checked
 
   getDownloadFilename: (hasPropsContent, filename, extension) ->
     newName = filename.replace /^\s+|\s+$/, ''
@@ -68,8 +68,8 @@ module.exports = createReactClass
   confirm: (e, simulateClick) ->
     if not @confirmDisabled()
       if @state.supportsDownloadAttribute
-        @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
-        @refs.download.click() if simulateClick
+        @downloadRef.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
+        @downloadRef.click() if simulateClick
       else
         blob = @props.client.getDownloadBlob(@state.content, @state.includeShareInfo, @state.mimeType)
         FileSaver.saveAs(blob, @state.downloadFilename, true)
@@ -90,7 +90,7 @@ module.exports = createReactClass
     return
 
   contextMenu: (e) ->
-    @refs.download.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
+    @downloadRef.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
     return
 
   cancel: ->
@@ -113,7 +113,7 @@ module.exports = createReactClass
     # for modern browsers
     downloadAnchor = (a {
       href: '#'
-      ref: 'download'
+      ref: (elt) => @downloadRef = elt
       className: (if confirmDisabled then 'disabled' else '')
       download: @state.downloadFilename
       onContextMenu: @contextMenu
@@ -121,16 +121,16 @@ module.exports = createReactClass
 
     # for Safari (or other non-modern browsers)
     downloadButton = (button {
-      ref: 'download'
+      ref: (elt) => @downloadRef = elt
       className: (if confirmDisabled then 'disabled' else '')
     }, tr '~FILE_DIALOG.DOWNLOAD')
 
     (div {className: 'dialogTab localFileSave'},
-      (input {type: 'text', ref: 'filename', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter}),
+      (input {type: 'text', ref: ((elt) => @filenameRef = elt), value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter}),
       (div {className: 'saveArea'},
         if @state.shared and not @state.hasPropsContent
           (div {className: 'shareCheckbox'},
-            (input {type: 'checkbox', ref: 'includeShareInfo', value: @state.includeShareInfo, onChange: @includeShareInfoChanged})
+            (input {type: 'checkbox', ref: ((elt) => @includeShareInfoRef = elt), value: @state.includeShareInfo, onChange: @includeShareInfoChanged})
             (tr '~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')
           )
       )

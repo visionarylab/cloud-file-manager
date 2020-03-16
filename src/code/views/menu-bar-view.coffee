@@ -42,7 +42,7 @@ module.exports = createReactClass
       initialEditableFilename: @getEditableFilename @props
       editingInitialFilename: false
 
-  componentWillReceiveProps: (nextProps) ->
+  UNSAFE_componentWillReceiveProps: (nextProps) ->
     @setState
       filename: @getFilename nextProps
       editableFilename: @getEditableFilename nextProps
@@ -64,7 +64,7 @@ module.exports = createReactClass
     @rename()
 
   filename: ->
-    ReactDOM.findDOMNode(@refs.filename)
+    ReactDOM.findDOMNode(@filenameRef)
 
   focusFilename: ->
     el = @filename()
@@ -151,7 +151,7 @@ module.exports = createReactClass
         (Dropdown {items: @props.items})
         if @state.editingFilename
           (div {className: 'menu-bar-content-filename'},
-            (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
+            (input {ref: ((elt) => @filenameRef = elt), value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
           )
         else
           (div {className: 'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)

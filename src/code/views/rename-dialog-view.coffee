@@ -16,7 +16,7 @@ module.exports = createReactClass
       trimmedFilename: @trim filename
 
   componentDidMount: ->
-    @filename = ReactDOM.findDOMNode @refs.filename
+    @filename = ReactDOM.findDOMNode @filenameRef
     @filename.focus()
 
   updateFilename: ->
@@ -39,7 +39,7 @@ module.exports = createReactClass
   render: ->
     (ModalDialog {title: (tr '~DIALOG.RENAME'), close: @props.close},
       (div {className: 'rename-dialog'},
-        (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
+        (input {ref: ((elt) => @filenameRef = elt), placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
         (div {className: 'buttons'},
           (button {className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), onClick: @rename}, tr '~RENAME_DIALOG.RENAME')
           (button {onClick: @props.close}, tr '~RENAME_DIALOG.CANCEL')

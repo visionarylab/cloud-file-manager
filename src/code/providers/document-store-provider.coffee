@@ -21,7 +21,7 @@ DocumentStoreAuthorizationDialog = createReactClassFactory
   getInitialState: ->
     docStoreAvailable: false
 
-  componentWillMount: ->
+  UNSAFE_componentWillMount: ->
     @props.provider._onDocStoreLoaded =>
       @setState docStoreAvailable: true
 

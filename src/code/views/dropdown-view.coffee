@@ -17,7 +17,7 @@ DropdownItem = createReactClassFactory
 
   showSubMenu: ->
     if @props.item.items
-      menuItem = $ ReactDOM.findDOMNode @refs.item
+      menuItem = $ ReactDOM.findDOMNode @itemRef
       menu = menuItem.parent().parent()
 
       @props.setSubMenu
@@ -45,7 +45,7 @@ DropdownItem = createReactClassFactory
     else
       classes.push 'disabled' if not enabled or not (@props.item.action or @props.item.items)
       content = @props.item.name or @props.item.content or @props.item
-      (li {ref: 'item', className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
+      (li {ref: ((elt) => @itemRef = elt), className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
         if @props.item.items
           (i {className: 'icon-inspectorArrow-collapse'})
         content

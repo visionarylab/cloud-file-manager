@@ -43,7 +43,7 @@ FileList = createReactClassFactory
     @_isMounted = true
     @load @props.folder
 
-  componentWillReceiveProps: (nextProps) ->
+  UNSAFE_componentWillReceiveProps: (nextProps) ->
     if nextProps.folder isnt @props.folder
       @load nextProps.folder
 

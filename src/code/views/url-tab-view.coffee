@@ -14,7 +14,7 @@ module.exports = createReactClass
     @props.close()
 
   import: ->
-    url = $.trim ReactDOM.findDOMNode(@refs.url).value
+    url = $.trim ReactDOM.findDOMNode(@urlRef).value
     if url.length is 0
       @props.client.alert tr "~IMPORT_URL.PLEASE_ENTER_URL"
     else
@@ -46,7 +46,7 @@ module.exports = createReactClass
       (div {className: dropClass, onDragEnter: @dragEnter, onDragLeave: @dragLeave, onDrop: @drop},
         (tr "~URL_TAB.DROP_URL_HERE")
       )
-      (input {ref: 'url', placeholder: 'URL'})
+      (input {ref: ((elt) => @urlRef = elt), placeholder: 'URL'})
       (div {className: 'buttons'},
         (button {onClick: @import}, (tr "~URL_TAB.IMPORT"))
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))

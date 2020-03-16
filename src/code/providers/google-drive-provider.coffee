@@ -20,7 +20,7 @@ GoogleDriveAuthorizationDialog = createReactClassFactory
   # and state to track authorization status while avoiding calling setState on
   # unmounted components, which doesn't work and triggers a React warning.
 
-  componentWillMount: ->
+  UNSAFE_componentWillMount: ->
     @props.provider._loadedGAPI =>
       if @_isMounted
         @setState loadedGAPI: true
