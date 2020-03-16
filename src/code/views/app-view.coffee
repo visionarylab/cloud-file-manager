@@ -13,7 +13,7 @@ ImportTabbedDialog = createReactFactory require './import-tabbed-dialog-view'
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
-{div, iframe} = React.DOM
+{div, iframe} = require 'react-dom-factories'
 
 InnerApp = createReactClassFactory
 

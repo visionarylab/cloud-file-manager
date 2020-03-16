@@ -1,5 +1,5 @@
 {createReactClass, createReactFactory} = require '../utils/react'
-{div, i} = React.DOM
+{div} = require 'react-dom-factories'
 
 Modal = createReactFactory require './modal-view'
 

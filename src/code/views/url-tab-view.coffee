@@ -1,5 +1,5 @@
 {createReactClass} = require '../utils/react'
-{div, input, button} = React.DOM
+{div, input, button} = require 'react-dom-factories'
 tr = require '../utils/translate'
 
 module.exports = createReactClass

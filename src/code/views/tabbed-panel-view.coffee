@@ -1,5 +1,5 @@
 {createReactClass, createReactClassFactory} = require '../utils/react'
-{div, ul, li, a} = React.DOM
+{div, ul, li, a} = require 'react-dom-factories'
 
 class TabInfo
   constructor: (settings={}) ->

@@ -1,5 +1,5 @@
 {createReactClass} = require '../utils/react'
-{div, input, button, a} = React.DOM
+{div, input, button, a} = require 'react-dom-factories'
 tr = require '../utils/translate'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 cloudContentFactory = (require '../providers/provider-interface').cloudContentFactory

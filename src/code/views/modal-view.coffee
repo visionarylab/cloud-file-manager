@@ -1,5 +1,5 @@
 {createReactClass} = require '../utils/react'
-{div} = React.DOM
+{div} = require 'react-dom-factories'
 
 module.exports = createReactClass
 

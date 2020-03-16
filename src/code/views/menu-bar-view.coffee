@@ -1,5 +1,5 @@
 {createReactClass, createReactFactory} = require '../utils/react'
-{div, i, span, input} = React.DOM
+{div, i, span, input} = require 'react-dom-factories'
 
 Dropdown = createReactFactory require './dropdown-view'
 {TriangleOnlyAnchor} = require "./dropdown-anchors"

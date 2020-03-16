@@ -20,6 +20,7 @@
     "pako": "1.0.6",
     "react": "^15.6.2",
     "react-dom": "^15.6.2",
+    "react-dom-factories": "^1.0.2",
     "svg-social-icons": "^1.1.0"
   },
   "resolutions": {
