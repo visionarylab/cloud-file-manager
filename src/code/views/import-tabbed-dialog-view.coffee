@@ -1,13 +1,15 @@
-ModalTabbedDialog = React.createFactory require './modal-tabbed-dialog-view'
+{createReactClass, createReactClassFactory, createReactFactory} = require '../utils/react'
+
+ModalTabbedDialog = createReactFactory require './modal-tabbed-dialog-view'
 TabbedPanel = require './tabbed-panel-view'
-LocalFileTab = React.createFactory require './local-file-tab-list-view'
-UrlTab = React.createFactory require './url-tab-view'
+LocalFileTab = createReactFactory require './local-file-tab-list-view'
+UrlTab = createReactFactory require './url-tab-view'
 
 tr = require '../utils/translate'
 
-LocalFileImportTab = React.createFactory React.createClass
+LocalFileImportTab = createReactClassFactory
 
-module.exports = React.createClass
+module.exports = createReactClass
   displayName: 'ImportTabbedDialog'
 
   importFile: (metadata, via) ->

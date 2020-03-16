@@ -1,11 +1,12 @@
+{createReactClass, createReactFactory} = require '../utils/react'
 {div, input, a, button} = React.DOM
 
-ModalDialog = React.createFactory require './modal-dialog-view'
+ModalDialog = createReactFactory require './modal-dialog-view'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'DownloadDialogView'
 

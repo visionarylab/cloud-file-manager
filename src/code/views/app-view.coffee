@@ -1,19 +1,21 @@
-MenuBar = React.createFactory require './menu-bar-view'
-ProviderTabbedDialog = React.createFactory require './provider-tabbed-dialog-view'
-DownloadDialog = React.createFactory require './download-dialog-view'
-RenameDialog = React.createFactory require './rename-dialog-view'
-ShareDialog = React.createFactory require './share-dialog-view'
-BlockingModal = React.createFactory require './blocking-modal-view'
-AlertDialog = React.createFactory require './alert-dialog-view'
-ConfirmDialog = React.createFactory require './confirm-dialog-view'
-ImportTabbedDialog = React.createFactory require './import-tabbed-dialog-view'
+{createReactClass, createReactClassFactory, createReactFactory} = require '../utils/react'
+
+MenuBar = createReactFactory require './menu-bar-view'
+ProviderTabbedDialog = createReactFactory require './provider-tabbed-dialog-view'
+DownloadDialog = createReactFactory require './download-dialog-view'
+RenameDialog = createReactFactory require './rename-dialog-view'
+ShareDialog = createReactFactory require './share-dialog-view'
+BlockingModal = createReactFactory require './blocking-modal-view'
+AlertDialog = createReactFactory require './alert-dialog-view'
+ConfirmDialog = createReactFactory require './confirm-dialog-view'
+ImportTabbedDialog = createReactFactory require './import-tabbed-dialog-view'
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
 {div, iframe} = React.DOM
 
-InnerApp = React.createFactory React.createClass
+InnerApp = createReactClassFactory
 
   displayName: 'CloudFileManagerInnerApp'
 
@@ -25,7 +27,7 @@ InnerApp = React.createFactory React.createClass
       (iframe {src: @props.app})
     )
 
-App = React.createClass
+App = createReactClass
 
   displayName: 'CloudFileManager'
 

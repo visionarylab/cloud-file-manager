@@ -1,8 +1,9 @@
+{createReactClass} = require '../utils/react'
 {div, input, button} = React.DOM
 tr = require '../utils/translate'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'LocalFileListTab'
 

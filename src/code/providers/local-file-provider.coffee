@@ -1,10 +1,11 @@
+{createReactFactory} = require '../utils/react'
 {div, input, button} = React.DOM
 tr = require '../utils/translate'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
-LocalFileListTab = React.createFactory require '../views/local-file-tab-list-view'
-LocalFileSaveTab = React.createFactory require '../views/local-file-tab-save-view'
+LocalFileListTab = createReactFactory require '../views/local-file-tab-list-view'
+LocalFileSaveTab = createReactFactory require '../views/local-file-tab-save-view'
 
 class LocalFileProvider extends ProviderInterface
 

@@ -3,9 +3,10 @@ CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
 tr = require '../utils/translate'
 
+{createReactClass, createReactClassFactory} = require '../utils/react'
 {div, img, i, span, input, button} = React.DOM
 
-FileListFile = React.createFactory React.createClass
+FileListFile = createReactClassFactory
   displayName: 'FileListFile'
 
   componentWillMount: ->
@@ -31,7 +32,7 @@ FileListFile = React.createFactory React.createClass
       @props.metadata.name
     )
 
-FileList = React.createFactory React.createClass
+FileList = createReactClassFactory
   displayName: 'FileList'
 
   getInitialState: ->
@@ -75,7 +76,7 @@ FileList = React.createFactory React.createClass
         list
     )
 
-FileDialogTab = React.createClass
+FileDialogTab = createReactClass
   displayName: 'FileDialogTab'
 
   mixins: [AuthorizeMixin]

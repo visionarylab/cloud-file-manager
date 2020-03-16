@@ -1,7 +1,8 @@
+{createReactClass, createReactClassFactory} = require '../utils/react'
 {div, i, span, ul, li} = React.DOM
 
 {DefaultAnchor} = require "./dropdown-anchors"
-DropdownItem = React.createFactory React.createClass
+DropdownItem = createReactClassFactory
 
   displayName: 'DropdownItem'
 
@@ -52,7 +53,7 @@ DropdownItem = React.createFactory React.createClass
 
 cfmMenuClass = 'cfm-menu dg-wants-touch'
 
-DropDown = React.createClass
+DropDown = createReactClass
 
   displayName: 'Dropdown'
 

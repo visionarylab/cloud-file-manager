@@ -1,10 +1,11 @@
+{createReactClass, createReactFactory} = require '../utils/react'
 {div, i, span, input} = React.DOM
 
-Dropdown = React.createFactory require './dropdown-view'
+Dropdown = createReactFactory require './dropdown-view'
 {TriangleOnlyAnchor} = require "./dropdown-anchors"
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'MenuBar'
 

@@ -1,7 +1,9 @@
-Modal = React.createFactory require './modal-view'
+{createReactClass, createReactFactory} = require '../utils/react'
 {div, i} = React.DOM
 
-module.exports = React.createClass
+Modal = createReactFactory require './modal-view'
+
+module.exports = createReactClass
 
   displayName: 'ModalDialog'
 

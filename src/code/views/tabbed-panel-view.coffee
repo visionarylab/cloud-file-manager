@@ -1,10 +1,11 @@
+{createReactClass, createReactClassFactory} = require '../utils/react'
 {div, ul, li, a} = React.DOM
 
 class TabInfo
   constructor: (settings={}) ->
     {@label, @component, @capability, @onSelected} = settings
 
-Tab = React.createFactory React.createClass
+Tab = createReactClassFactory
 
   displayName: 'TabbedPanelTab'
 
@@ -16,7 +17,7 @@ Tab = React.createFactory React.createClass
     classname = if @props.selected then 'tab-selected' else ''
     (li {className: classname, onClick: @clicked}, @props.label)
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'TabbedPanelView'
 

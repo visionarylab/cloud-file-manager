@@ -1,3 +1,4 @@
+{createReactClassFactory} = require '../utils/react'
 {div, button, span} = React.DOM
 
 tr = require '../utils/translate'
@@ -8,7 +9,7 @@ ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
-GoogleDriveAuthorizationDialog = React.createFactory React.createClass
+GoogleDriveAuthorizationDialog = createReactClassFactory
   displayName: 'GoogleDriveAuthorizationDialog'
 
   getInitialState: ->

@@ -1,3 +1,4 @@
+{createReactClassFactory} = require '../utils/react'
 {div, button, span} = React.DOM
 
 getQueryParam = require '../utils/get-query-param'
@@ -14,7 +15,7 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 DocumentStoreUrl = require './document-store-url'
 PatchableContent = require './patchable-content'
 
-DocumentStoreAuthorizationDialog = React.createFactory React.createClass
+DocumentStoreAuthorizationDialog = createReactClassFactory
   displayName: 'DocumentStoreAuthorizationDialog'
 
   getInitialState: ->

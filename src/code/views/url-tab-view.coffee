@@ -1,7 +1,8 @@
+{createReactClass} = require '../utils/react'
 {div, input, button} = React.DOM
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'UrlTab'
 

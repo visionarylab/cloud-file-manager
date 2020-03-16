@@ -1,10 +1,11 @@
+{createReactClass} = require '../utils/react'
 {div, input, button, a} = React.DOM
 tr = require '../utils/translate'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 cloudContentFactory = (require '../providers/provider-interface').cloudContentFactory
 FileSaver = require('../lib/file-saver')
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'LocalFileSaveTab'
 

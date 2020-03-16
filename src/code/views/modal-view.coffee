@@ -1,6 +1,7 @@
+{createReactClass} = require '../utils/react'
 {div} = React.DOM
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'Modal'
 

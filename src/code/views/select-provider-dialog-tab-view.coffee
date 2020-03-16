@@ -1,6 +1,7 @@
+{createReactClassFactory} = require '../utils/react'
 {div} = React.DOM
 
-SelectProviderDialogTab = React.createFactory React.createClass
+SelectProviderDialogTab = createReactClassFactory
   displayName: 'SelectProviderDialogTab'
   render: -> (div {}, "TODO: SelectProviderDialogTab: #{@props.provider.displayName}")
 
