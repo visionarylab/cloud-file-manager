@@ -1,8 +1,9 @@
-{div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = React.DOM
+{createReactClass, createReactClassFactory, createReactFactory} = require '../utils/react'
+{div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = require 'react-dom-factories'
 
 SHOW_LONGEVITY_WARNING = false
 
-ModalDialog = React.createFactory require './modal-dialog-view'
+ModalDialog = createReactFactory require './modal-dialog-view'
 getQueryParam = require '../utils/get-query-param'
 
 # This function is named "tr" elsewhere in this codeline.
@@ -11,7 +12,7 @@ getQueryParam = require '../utils/get-query-param'
 translate = require '../utils/translate'
 socialIcons = require 'svg-social-icons/lib/icons.json'
 
-SocialIcon = React.createFactory React.createClass
+SocialIcon = createReactClassFactory
 
   displayName: 'SocialIcon'
 
@@ -38,7 +39,7 @@ SocialIcon = React.createFactory React.createClass
       )
     )
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'ShareDialogView'
 

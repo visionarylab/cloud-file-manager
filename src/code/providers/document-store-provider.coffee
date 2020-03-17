@@ -1,4 +1,5 @@
-{div, button, span} = React.DOM
+{createReactClassFactory} = require '../utils/react'
+{div, button, span} = require 'react-dom-factories'
 
 getQueryParam = require '../utils/get-query-param'
 getHashParam = require '../utils/get-hash-param'
@@ -14,13 +15,13 @@ CloudMetadata = (require './provider-interface').CloudMetadata
 DocumentStoreUrl = require './document-store-url'
 PatchableContent = require './patchable-content'
 
-DocumentStoreAuthorizationDialog = React.createFactory React.createClass
+DocumentStoreAuthorizationDialog = createReactClassFactory
   displayName: 'DocumentStoreAuthorizationDialog'
 
   getInitialState: ->
     docStoreAvailable: false
 
-  componentWillMount: ->
+  UNSAFE_componentWillMount: ->
     @props.provider._onDocStoreLoaded =>
       @setState docStoreAvailable: true
 

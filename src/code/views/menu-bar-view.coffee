@@ -1,14 +1,15 @@
-{div, i, span, input} = React.DOM
+{createReactClass, createReactFactory} = require '../utils/react'
+{div, i, span, input} = require 'react-dom-factories'
 
-Dropdown = React.createFactory require './dropdown-view'
+Dropdown = createReactFactory require './dropdown-view'
 {TriangleOnlyAnchor} = require "./dropdown-anchors"
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'MenuBar'
 
-  componentWillMount: ->
+  componentDidMount: ->
     # need to use direct DOM events because the event needs to be captured
     if window.addEventListener
       window.addEventListener 'mousedown', @checkBlur, true
@@ -41,7 +42,7 @@ module.exports = React.createClass
       initialEditableFilename: @getEditableFilename @props
       editingInitialFilename: false
 
-  componentWillReceiveProps: (nextProps) ->
+  UNSAFE_componentWillReceiveProps: (nextProps) ->
     @setState
       filename: @getFilename nextProps
       editableFilename: @getEditableFilename nextProps
@@ -63,7 +64,7 @@ module.exports = React.createClass
     @rename()
 
   filename: ->
-    ReactDOM.findDOMNode(@refs.filename)
+    ReactDOM.findDOMNode(@filenameRef)
 
   focusFilename: ->
     el = @filename()
@@ -150,7 +151,7 @@ module.exports = React.createClass
         (Dropdown {items: @props.items})
         if @state.editingFilename
           (div {className: 'menu-bar-content-filename'},
-            (input {ref: 'filename', value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
+            (input {ref: ((elt) => @filenameRef = elt), value: @state.editableFilename, onChange: @filenameChanged, onKeyDown: @watchForEnter})
           )
         else
           (div {className: 'menu-bar-content-filename', onClick: @filenameClicked}, @state.filename)

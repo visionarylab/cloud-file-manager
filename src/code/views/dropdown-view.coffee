@@ -1,7 +1,8 @@
-{div, i, span, ul, li} = React.DOM
+{createReactClass, createReactClassFactory} = require '../utils/react'
+{div, i, span, ul, li} = require 'react-dom-factories'
 
 {DefaultAnchor} = require "./dropdown-anchors"
-DropdownItem = React.createFactory React.createClass
+DropdownItem = createReactClassFactory
 
   displayName: 'DropdownItem'
 
@@ -16,7 +17,7 @@ DropdownItem = React.createFactory React.createClass
 
   showSubMenu: ->
     if @props.item.items
-      menuItem = $ ReactDOM.findDOMNode @refs.item
+      menuItem = $ ReactDOM.findDOMNode @itemRef
       menu = menuItem.parent().parent()
 
       @props.setSubMenu
@@ -44,7 +45,7 @@ DropdownItem = React.createFactory React.createClass
     else
       classes.push 'disabled' if not enabled or not (@props.item.action or @props.item.items)
       content = @props.item.name or @props.item.content or @props.item
-      (li {ref: 'item', className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
+      (li {ref: ((elt) => @itemRef = elt), className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
         if @props.item.items
           (i {className: 'icon-inspectorArrow-collapse'})
         content
@@ -52,7 +53,7 @@ DropdownItem = React.createFactory React.createClass
 
 cfmMenuClass = 'cfm-menu dg-wants-touch'
 
-DropDown = React.createClass
+DropDown = createReactClass
 
   displayName: 'Dropdown'
 
@@ -60,7 +61,7 @@ DropDown = React.createClass
     showingMenu: false
     subMenu: null
 
-  componentWillMount: ->
+  componentDidMount: ->
     if window.addEventListener
       window.addEventListener 'mousedown', @checkClose, true
       window.addEventListener 'touchstart', @checkClose, true

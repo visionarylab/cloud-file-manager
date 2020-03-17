@@ -1,7 +1,9 @@
-ModalDialog = React.createFactory require './modal-dialog-view'
-TabbedPanel = React.createFactory require './tabbed-panel-view'
+{createReactClass, createReactFactory} = require '../utils/react'
 
-module.exports = React.createClass
+ModalDialog = createReactFactory require './modal-dialog-view'
+TabbedPanel = createReactFactory require './tabbed-panel-view'
+
+module.exports = createReactClass
 
   displayName: 'ModalTabbedDialogView'
 

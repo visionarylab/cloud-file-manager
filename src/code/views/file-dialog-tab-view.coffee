@@ -3,12 +3,14 @@ CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
 tr = require '../utils/translate'
 
-{div, img, i, span, input, button} = React.DOM
+{createReactClass, createReactClassFactory} = require '../utils/react'
+{div, img, i, span, input, button} = require 'react-dom-factories'
+italic = i
 
-FileListFile = React.createFactory React.createClass
+FileListFile = createReactClassFactory
   displayName: 'FileListFile'
 
-  componentWillMount: ->
+  componentDidMount: ->
     @lastClick = 0
 
   fileSelected:  (e) ->
@@ -27,11 +29,11 @@ FileListFile = React.createFactory React.createClass
     (div {className: "#{selectableClass} #{selectedClass} #{subFolderClass}"
           , title: @props.metadata.description or undefined
           , onClick: if @props.metadata.type isnt CloudMetadata.Label then @fileSelected else undefined },
-      (React.DOM.i {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else if @props.metadata.type is CloudMetadata.File then 'icon-noteTool'})
+      (italic {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else if @props.metadata.type is CloudMetadata.File then 'icon-noteTool'})
       @props.metadata.name
     )
 
-FileList = React.createFactory React.createClass
+FileList = createReactClassFactory
   displayName: 'FileList'
 
   getInitialState: ->
@@ -41,7 +43,7 @@ FileList = React.createFactory React.createClass
     @_isMounted = true
     @load @props.folder
 
-  componentWillReceiveProps: (nextProps) ->
+  UNSAFE_componentWillReceiveProps: (nextProps) ->
     if nextProps.folder isnt @props.folder
       @load nextProps.folder
 
@@ -64,7 +66,7 @@ FileList = React.createFactory React.createClass
     list = []
     isSubFolder = @props.folder?
     if isSubFolder
-      list.push (div {key: 'parent', className: 'selectable', onClick: @parentSelected}, (React.DOM.i {className: 'icon-paletteArrow-collapse'}), @props.folder.name)
+      list.push (div {key: 'parent', className: 'selectable', onClick: @parentSelected}, (italic {className: 'icon-paletteArrow-collapse'}), @props.folder.name)
     for metadata, i in @props.list
       list.push (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed, isSubFolder: isSubFolder})
 
@@ -75,7 +77,7 @@ FileList = React.createFactory React.createClass
         list
     )
 
-FileDialogTab = React.createClass
+FileDialogTab = createReactClass
   displayName: 'FileDialogTab'
 
   mixins: [AuthorizeMixin]
