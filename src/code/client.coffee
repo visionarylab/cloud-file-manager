@@ -136,6 +136,9 @@ class CloudFileManagerClient
     @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
     @newFileAddsNewToQuery = @appOptions.ui?.newFileAddsNewToQuery
 
+    if @appOptions.ui?.confirmCloseIfDirty
+      @_setupConfirmOnClose()
+
     @_startPostMessageListener()
 
   setProviderOptions: (name, newOptions) ->
@@ -172,6 +175,8 @@ class CloudFileManagerClient
     else if hashParams.newInFolderParams
       [providerName, folder] = hashParams.newInFolderParams.split ':'
       @createNewInFolder providerName, folder
+    else if @haveTempFile()
+      @openAndClearTempFile()
     else
       # give providers a chance to process url params
       for provider in @state.availableProviders
@@ -476,6 +481,43 @@ class CloudFileManagerClient
     catch e
       callback "Unable to load copied file"
 
+  haveTempFile: ->
+    try
+      key = "cfm-tempfile"
+      return !!(JSON.parse window.localStorage.getItem key)
+    catch e
+      return false
+
+  saveTempFile: (callback) ->
+    @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
+      currentContent = @_createOrUpdateCurrentContent stringContent
+      try
+        key = "cfm-tempfile"
+        value = JSON.stringify
+          stringContent: stringContent
+        window.localStorage.setItem key, value
+        metadata = new CloudMetadata
+          name: currentContent.name
+          type: CloudMetadata.File
+        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, ""
+        callback? null
+      catch e
+        callback "Unable to temporarily save copied file"
+
+  openAndClearTempFile: ->
+    @_event 'willOpenFile', {op: "openAndClearTempFile"}
+    try
+      key = "cfm-tempfile"
+      tempFile = JSON.parse window.localStorage.getItem key
+      content = cloudContentFactory.createEnvelopedCloudContent tempFile.stringContent
+      metadata = new CloudMetadata
+        name: tempFile.name
+        type: CloudMetadata.File
+      @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
+      window.localStorage.removeItem key
+    catch e
+      callback "Unable to load temp file"
+
   _sharedMetadata: ->
     @state.currentContent?.getSharedMetadata() or {}
 
@@ -668,7 +710,16 @@ class CloudFileManagerClient
       if not @state.dirty
         callback newLangCode
       else
-        @confirm tr('~CONFIRM.CHANGE_LANGUAGE'), -> callback newLangCode
+        postSave = (err) =>
+          if err
+            @alert(err)
+            @confirm tr('~CONFIRM.CHANGE_LANGUAGE'), -> callback newLangCode
+          else
+            callback newLangCode
+        if @state.metadata?.provider or @autoProvider 'save'
+          @save (err) -> postSave()
+        else
+          @saveTempFile postSave
 
   showBlockingModal: (modalProps) ->
     @_ui.showBlockingModal modalProps
@@ -725,7 +776,6 @@ class CloudFileManagerClient
     @_event type, { content: content?.getClientContent(), shared: @_sharedMetadata() }
 
   _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
-    # @_event 'openedFile', { content: content?.getClientContent(), metadata: metadata }, (iError, iSharedMetadata) =>
     eventData = { content: content?.getClientContent() }
     # update state before sending 'openedFile' events so that 'openedFile' listeners that
     # reference state have the updated state values
@@ -833,6 +883,12 @@ class CloudFileManagerClient
         when 'cfm::iframedClientConnected'
           @processUrlParams()
 
+  _setupConfirmOnClose: ->
+    $(window).on 'beforeunload', (e) =>
+      if @state.dirty
+        # different browsers trigger the confirm in different ways
+        e.preventDefault()
+        e.returnValue = true
 
 module.exports =
   CloudFileManagerClientEvent: CloudFileManagerClientEvent
