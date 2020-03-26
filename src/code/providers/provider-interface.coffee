@@ -1,4 +1,4 @@
-{div} = React.DOM
+{div} = require 'react-dom-factories'
 
 isString = require '../utils/is-string'
 

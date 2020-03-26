@@ -1,4 +1,5 @@
-AppView = React.createFactory require './views/app-view'
+{createReactFactory} = require './utils/react'
+AppView = createReactFactory require './views/app-view'
 
 CloudFileManagerUIMenu = (require './ui').CloudFileManagerUIMenu
 CloudFileManagerClient = (require './client').CloudFileManagerClient

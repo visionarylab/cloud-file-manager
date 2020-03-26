@@ -1,10 +1,11 @@
-{div, button} = React.DOM
+{createReactClass, createReactFactory} = require '../utils/react'
+{div, button} = require 'react-dom-factories'
 
-ModalDialog = React.createFactory require './modal-dialog-view'
+ModalDialog = createReactFactory require './modal-dialog-view'
 
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'AlertDialogView'
 

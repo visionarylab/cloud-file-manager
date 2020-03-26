@@ -7,8 +7,10 @@
     "type": "git",
     "url": "https://github.com/concord-consortium/cloud-file-manger"
   },
+  "license": "MIT",
   "dependencies": {
     "base64-js": "^1.2.0",
+    "create-react-class": "^15.6.3",
     "diff": "^2.2.1",
     "es6-promise": "^3.1.2",
     "jiff": "^0.7.3",
@@ -16,8 +18,9 @@
     "js-base64": "2.3.2",
     "lodash": "^3.3.0",
     "pako": "1.0.6",
-    "react": "^15.4.1",
-    "react-dom": "^15.4.1",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "react-dom-factories": "^1.0.2",
     "svg-social-icons": "^1.1.0"
   },
   "resolutions": {
@@ -45,8 +48,8 @@
     "run-sequence": "^1.1.5",
     "strip-json-comments-cli": "^1.0.1",
     "sync-exec": "^0.6.2",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^1.1.2",
     "yargs": "^3.6.0"
   },
   "scripts": {

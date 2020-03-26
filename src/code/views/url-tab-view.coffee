@@ -1,7 +1,8 @@
-{div, input, button} = React.DOM
+{createReactClass} = require '../utils/react'
+{div, input, button} = require 'react-dom-factories'
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'UrlTab'
 
@@ -13,7 +14,7 @@ module.exports = React.createClass
     @props.close()
 
   import: ->
-    url = $.trim ReactDOM.findDOMNode(@refs.url).value
+    url = $.trim ReactDOM.findDOMNode(@urlRef).value
     if url.length is 0
       @props.client.alert tr "~IMPORT_URL.PLEASE_ENTER_URL"
     else
@@ -45,7 +46,7 @@ module.exports = React.createClass
       (div {className: dropClass, onDragEnter: @dragEnter, onDragLeave: @dragLeave, onDrop: @drop},
         (tr "~URL_TAB.DROP_URL_HERE")
       )
-      (input {ref: 'url', placeholder: 'URL'})
+      (input {ref: ((elt) => @urlRef = elt), placeholder: 'URL'})
       (div {className: 'buttons'},
         (button {onClick: @import}, (tr "~URL_TAB.IMPORT"))
         (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))

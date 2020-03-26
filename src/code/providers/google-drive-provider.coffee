@@ -1,4 +1,5 @@
-{div, button, span} = React.DOM
+{createReactClassFactory} = require '../utils/react'
+{div, button, span} = require 'react-dom-factories'
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
@@ -8,7 +9,7 @@ ProviderInterface = (require './provider-interface').ProviderInterface
 cloudContentFactory = (require './provider-interface').cloudContentFactory
 CloudMetadata = (require './provider-interface').CloudMetadata
 
-GoogleDriveAuthorizationDialog = React.createFactory React.createClass
+GoogleDriveAuthorizationDialog = createReactClassFactory
   displayName: 'GoogleDriveAuthorizationDialog'
 
   getInitialState: ->
@@ -19,7 +20,7 @@ GoogleDriveAuthorizationDialog = React.createFactory React.createClass
   # and state to track authorization status while avoiding calling setState on
   # unmounted components, which doesn't work and triggers a React warning.
 
-  componentWillMount: ->
+  UNSAFE_componentWillMount: ->
     @props.provider._loadedGAPI =>
       if @_isMounted
         @setState loadedGAPI: true

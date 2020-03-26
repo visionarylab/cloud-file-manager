@@ -1,10 +1,11 @@
-{div, input, a, button} = React.DOM
+{createReactClass, createReactFactory} = require '../utils/react'
+{div, input, a, button} = require 'react-dom-factories'
 
-ModalDialog = React.createFactory require './modal-dialog-view'
+ModalDialog = createReactFactory require './modal-dialog-view'
 
 tr = require '../utils/translate'
 
-module.exports = React.createClass
+module.exports = createReactClass
 
   displayName: 'RenameDialogView'
 
@@ -15,7 +16,7 @@ module.exports = React.createClass
       trimmedFilename: @trim filename
 
   componentDidMount: ->
-    @filename = ReactDOM.findDOMNode @refs.filename
+    @filename = ReactDOM.findDOMNode @filenameRef
     @filename.focus()
 
   updateFilename: ->
@@ -38,7 +39,7 @@ module.exports = React.createClass
   render: ->
     (ModalDialog {title: (tr '~DIALOG.RENAME'), close: @props.close},
       (div {className: 'rename-dialog'},
-        (input {ref: 'filename', placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
+        (input {ref: ((elt) => @filenameRef = elt), placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
         (div {className: 'buttons'},
           (button {className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), onClick: @rename}, tr '~RENAME_DIALOG.RENAME')
           (button {onClick: @props.close}, tr '~RENAME_DIALOG.CANCEL')

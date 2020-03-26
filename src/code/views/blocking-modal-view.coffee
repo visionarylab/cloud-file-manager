@@ -1,7 +1,9 @@
-Modal = React.createFactory require './modal-view'
-{div, i} = React.DOM
+{createReactClass, createReactFactory} = require '../utils/react'
+{div} = require 'react-dom-factories'
 
-module.exports = React.createClass
+Modal = createReactFactory require './modal-view'
+
+module.exports = createReactClass
 
   displayName: 'BlockingModal'
 
