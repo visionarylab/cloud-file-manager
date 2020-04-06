@@ -2,8 +2,10 @@ var argv = require('yargs').argv,
     production = !!argv.production,
     src = './src',
     dest  = argv.dest ? argv.dest : './dist', // configure destination folder
+    noGlobals = !!argv.noGlobals, // don't generate globals bundle
     noMap = !!argv.noMap,       // don't generate .map files
     nojQuery = !!argv.nojQuery, // don't include jQuery
+    noPolyfill = !!argv.noPolyfill, // don't include browser polyfills
     noReact = !!argv.noReact, // don't include React
     codap = !!argv.codap,       // include CODAP-specific modifications
     assetsSrc = codap ? src + '/assets/img/*.*' : src + '/assets/**/*.*',
@@ -16,8 +18,10 @@ module.exports = {
   date: new Date(),
   commit: commit,
   flags: {
+    noGlobals: noGlobals,
     noMap: noMap,
     nojQuery: nojQuery,
+    noPolyfill: noPolyfill,
     noReact: noReact,
     codap: codap
   },
