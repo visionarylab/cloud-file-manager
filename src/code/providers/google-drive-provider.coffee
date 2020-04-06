@@ -1,5 +1,4 @@
-{createReactClassFactory} = require '../utils/react'
-{div, button, span} = require 'react-dom-factories'
+{div, button, span} = ReactDOMFactories
 
 tr = require '../utils/translate'
 isString = require '../utils/is-string'

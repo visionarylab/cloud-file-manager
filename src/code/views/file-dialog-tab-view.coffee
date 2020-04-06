@@ -3,8 +3,7 @@ CloudMetadata = (require '../providers/provider-interface').CloudMetadata
 
 tr = require '../utils/translate'
 
-{createReactClass, createReactClassFactory} = require '../utils/react'
-{div, img, i, span, input, button} = require 'react-dom-factories'
+{div, img, i, span, input, button} = ReactDOMFactories
 italic = i
 
 FileListFile = createReactClassFactory

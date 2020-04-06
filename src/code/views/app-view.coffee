@@ -1,5 +1,3 @@
-{createReactClass, createReactClassFactory, createReactFactory} = require '../utils/react'
-
 MenuBar = createReactFactory require './menu-bar-view'
 ProviderTabbedDialog = createReactFactory require './provider-tabbed-dialog-view'
 DownloadDialog = createReactFactory require './download-dialog-view'
@@ -13,7 +11,7 @@ ImportTabbedDialog = createReactFactory require './import-tabbed-dialog-view'
 tr = require '../utils/translate'
 isString = require '../utils/is-string'
 
-{div, iframe} = require 'react-dom-factories'
+{div, iframe} = ReactDOMFactories
 
 InnerApp = createReactClassFactory
 

@@ -1,5 +1,4 @@
-{createReactClass, createReactClassFactory, createReactFactory} = require '../utils/react'
-{div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = require 'react-dom-factories'
+{div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = ReactDOMFactories
 
 SHOW_LONGEVITY_WARNING = false
 
