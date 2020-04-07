@@ -1,5 +1,4 @@
-{createReactFactory} = require '../utils/react'
-{div, input, button} = require 'react-dom-factories'
+{div, input, button} = ReactDOMFactories
 tr = require '../utils/translate'
 
 ProviderInterface = (require './provider-interface').ProviderInterface
