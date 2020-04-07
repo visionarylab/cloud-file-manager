@@ -1,4 +1,4 @@
-{svg, g, rect, polygon} = require 'react-dom-factories'
+{svg, g, rect, polygon} = ReactDOMFactories
 
 DefaultAnchor =
   # Hamburger icon

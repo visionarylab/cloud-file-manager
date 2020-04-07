@@ -1,5 +1,4 @@
-{createReactClassFactory} = require '../utils/react'
-{div, button, span} = require 'react-dom-factories'
+{div, button, span} = ReactDOMFactories
 
 getQueryParam = require '../utils/get-query-param'
 getHashParam = require '../utils/get-hash-param'
