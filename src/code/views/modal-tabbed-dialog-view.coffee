@@ -1,5 +1,3 @@
-{createReactClass, createReactFactory} = require '../utils/react'
-
 ModalDialog = createReactFactory require './modal-dialog-view'
 TabbedPanel = createReactFactory require './tabbed-panel-view'
 

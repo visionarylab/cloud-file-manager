@@ -196,6 +196,7 @@ class CloudFileManagerClient
       @_listeners.push listener
 
   log: (event, eventData) ->
+    @_event 'log', {logEvent: event, logEventData: eventData}
     if (@appOptions.log)
       @appOptions.log event, eventData
 

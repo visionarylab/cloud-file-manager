@@ -1,5 +1,4 @@
-{createReactClass, createReactFactory} = require '../utils/react'
-{div, input, a, button} = require 'react-dom-factories'
+{div, input, a, button} = ReactDOMFactories
 
 ModalDialog = createReactFactory require './modal-dialog-view'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata

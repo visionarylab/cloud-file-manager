@@ -13,8 +13,6 @@ var production  = require('../config').production;
 var config      = require('../config').browserify;
 var flags       = require('../config').flags;
 var noMap       = flags && flags.noMap;
-var nojQuery    = flags && flags.nojQuery;
-var noReact     = flags && flags.noReact;
 var codap       = flags && flags.codap;
 var beep        = require('beepbeep');
 
@@ -61,27 +59,12 @@ gulp.task('browserify-globals', function(){
   var b = browserify({
     debug: !production && !noMap,
   });
-  if(nojQuery) {
-    b.exclude('jquery');
-  }
-  if(noReact) {
-    b.exclude('react');
-    b.exclude('react-dom');
-  }
   b.transform(coffeeify);
   b.add(config.globals.src);
   return b.bundle()
     .on('error', errorHandler)
     .pipe(source('globals.js'))
     .pipe(buffer())
-    .pipe(gulpif(nojQuery, replace(/.*?(jQuery|global\.\$)\s*=.*\n?/g,
-                                    function(iMatch) {
-                                      return '//' + iMatch;
-                                    })))
-    .pipe(gulpif(noReact, replace(/.*?(React|ReactDOM)\s*=.*\n?/g,
-                                    function(iMatch) {
-                                      return '//' + iMatch;
-                                    })))
     // add .ignore to the name for CODAP to hide it from the SproutCore build system
     .pipe(gulpif(codap, rename({ extname: '.js.ignore' })))
     // for ease of debugging when loaded dynamically (e.g CODAP)
