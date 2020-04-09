@@ -1,5 +1,3 @@
-{createReactClass, createReactFactory} = require '../utils/react'
-
 ModalTabbedDialog = createReactFactory require './modal-tabbed-dialog-view'
 TabbedPanel = require './tabbed-panel-view'
 CloudMetadata = (require '../providers/provider-interface').CloudMetadata
