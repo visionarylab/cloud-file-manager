@@ -1,7 +1,7 @@
 # Built files
 dist/
 .publish/
-
+dist-original/
 # Packages folder.
 node_modules/
 
