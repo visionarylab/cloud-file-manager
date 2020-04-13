@@ -9,7 +9,7 @@ The Cloud File Manager is a Javascript library that enables applications to save
 
 ## Development Setup
 
-    yarn install    # [or npm install]
+    npm install
     gulp default
     live-server
 
