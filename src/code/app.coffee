@@ -66,4 +66,6 @@ class CloudFileManager
     @client.iframe = anchor.getElementsByTagName('iframe')[0]
     @client.rendered()
 
-module.exports = new CloudFileManager()
+instance = new  CloudFileManager()
+module.exports = instance
+global.CloudFileManager = instance

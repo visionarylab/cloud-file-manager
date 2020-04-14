@@ -1,15 +1,18 @@
 const path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
   context: path.resolve(__dirname, 'src'),
   mode: 'development',
   entry: {
-    app: ['./code/app.coffee', './style/app.styl'],
-    globals: './code/globals.coffee'
+    'js/app.js': './code/app.coffee',
+    'js/globals.js': './code/globals.coffee',
+    'css/app': './style/app.styl'
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, './dist/js')
+    filename: '[name]',
+    path: path.resolve(__dirname, './dist/')
   },
   module: {
     rules: [
@@ -20,21 +23,33 @@ module.exports = {
       {
         test: /\.styl$/,
         use: [
+          /*
+             TODO: When we want to put CSS into JS bundled resource, turn this on:
+            {
+              loader: 'style-loader' // creates style nodes from JS strings
+            },
+            {
+              loader: 'file-loader' // translates CSS into CommonJS
+            },
+          */
+          MiniCssExtractPlugin.loader,
           {
-            loader: 'style-loader' // creates style nodes from JS strings
-          },
-          {
-            loader: 'css-loader' // translates CSS into CommonJS
+            loader: 'css-loader', // translates CSS into CommonJS
+            options: {
+              url: false
+            }
           },
           {
             loader: 'stylus-loader' // compiles Stylus to CSS
           }
         ]
-      },
+      }
+      /*
+         TODO:  Right now we are just using CopyPlugin to move assetts:
       {
         test: /\.(png|svg|jpg|gif)$/,
         use: [{
-          loader: 'file-loader',
+          loader: 'file-loader'
           // options: {
           //   context: path.resolve(__dirname, './src/assets')
           // }
@@ -49,6 +64,7 @@ module.exports = {
           // }
         }]
       }
+      */
     ]
   },
   resolve: {
@@ -57,5 +73,16 @@ module.exports = {
       'img': path.resolve(__dirname, './src/assets/img')
     },
     extensions: [ '.coffee', '.js', '.json', '.styl' ]
-  }
+  },
+  plugins: [
+    new CopyPlugin(['examples', 'fonts', 'img']
+      .map(name => {
+        return ({
+          from: path.resolve(__dirname, `./src/assets/${name}`),
+          to: path.resolve(__dirname, `./dist/${name}`)
+        })
+      })
+    ),
+    new MiniCssExtractPlugin()
+  ]
 }
