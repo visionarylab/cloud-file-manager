@@ -34,6 +34,8 @@
     "coffeescript": "^1.12.7",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.5.2",
+    "cypress": "^4.4.0",
+    "cypress-commands": "^1.1.0",
     "del": "^2.1.0",
     "event-stream": "3.3.4",
     "file-loader": "^6.0.0",
