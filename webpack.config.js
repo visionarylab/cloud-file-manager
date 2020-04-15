@@ -1,6 +1,19 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const buildOpts = require('./build-opts.js')
+
+// TODO: load this function from somewhere else …
+const macroExpansion = (content, path) => {
+  let contentString = content.toString()
+  // Only process html files ... TBD
+  if (path.match(/\.html$/)) {
+    buildOpts.replacementStrings.forEach(replacement => {
+      contentString = contentString.replace(replacement.pattern, replacement.value)
+    })
+  }
+  return contentString
+}
 
 module.exports = {
   context: path.resolve(__dirname, 'src'),
@@ -75,11 +88,12 @@ module.exports = {
     extensions: [ '.coffee', '.js', '.json', '.styl' ]
   },
   plugins: [
-    new CopyPlugin(['examples', 'fonts', 'img']
+    new CopyPlugin(['examples', 'fonts', 'img', 'index.html']
       .map(name => {
         return ({
           from: path.resolve(__dirname, `./src/assets/${name}`),
-          to: path.resolve(__dirname, `./dist/${name}`)
+          to: path.resolve(__dirname, `./dist/${name}`),
+          transform: macroExpansion
         })
       })
     ),

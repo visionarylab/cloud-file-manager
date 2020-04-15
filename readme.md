@@ -8,10 +8,9 @@ The Cloud File Manager is a Javascript library that enables applications to save
 * Browser LocalStorage (used mostly for development/testing)
 
 ## Development Setup
-
     npm install
-    gulp default
-    live-server
+    npm build
+    live-server ./dist
 
 and navigate to `http://localhost:8080/dist/examples/`
 
