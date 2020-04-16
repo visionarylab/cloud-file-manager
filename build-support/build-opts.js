@@ -1,6 +1,5 @@
 const execSync = require('sync-exec')
 const { env } = process
-const { CodapOutputFilename } = require('./codap-output-file-name')
 const production = !!env.production
 const src = './src'
 const dest = env.dest ? env.dest : './dist'
@@ -12,6 +11,11 @@ const assetsDst = codap ? dest + '/img/' : dest
 
 const commit = execSync('git log -1 --pretty=format:"%H"').stdout
 const date = new Date()
+
+// CODAP builds append '.ignore' to js filenames to avoid CODAP compilation
+const codapOutputFileName = (webpackChunk) => {
+  return webpackChunk.chunk.name.match(/\.js$/) ? '[name].ignore': '[name]';
+}
 
 const replacementStrings = [
   {
@@ -40,7 +44,7 @@ const assets = codap
   : ['examples', 'fonts', 'img', 'index.html']
 
 const outputFileName = codap
-  ? CodapOutputFilename
+  ? codapOutputFileName
   : '[name]'
 
 module.exports = {
