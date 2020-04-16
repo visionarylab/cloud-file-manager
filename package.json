@@ -71,6 +71,6 @@
     "strings:pull": "./bin/strings-pull-project.sh",
     "strings:push:usage": "echo Usage: `npm run strings:push -- -a <poeditor_api_key>`",
     "strings:push": "./bin/strings-push-project.sh",
-    "serve": "webpack-dev-server"
+    "start": "webpack-dev-server"
   }
 }

@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 language: node_js
 node_js:
-  - "12"
+  - lts/*
 cache:
   bundler: true
   pip: true

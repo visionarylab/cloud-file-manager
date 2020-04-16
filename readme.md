@@ -10,7 +10,7 @@ The Cloud File Manager is a Javascript library that enables applications to save
 ## Development Setup
     npm install
     npm run build
-    npm run serve
+    npm run start
 
 and navigate to `http://localhost:8080/examples/`
 
