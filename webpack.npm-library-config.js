@@ -10,6 +10,8 @@ const {
   outputFileName
 } = require('./build-support/build-opts')
 
+// TODO: This is just a placeholder for a webpack config for publishing the CFM
+// as a set of NPM modules. ( TBD obviously)
 module.exports = (env) => ({
   performance: { hints: false },
   context: path.resolve(__dirname, 'src'),
@@ -27,7 +29,12 @@ module.exports = (env) => ({
       {
         test: /\.styl$/,
         use: [
-          MiniCssExtractPlugin.loader,
+          {
+            loader: 'style-loader' // creates style nodes from JS strings
+          },
+          {
+            loader: 'file-loader' // translates CSS into CommonJS
+          },
           {
             loader: 'css-loader', // translates CSS into CommonJS
             options: {
@@ -38,25 +45,29 @@ module.exports = (env) => ({
             loader: 'stylus-loader' // compiles Stylus to CSS
           }
         ]
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        use: [{
+          loader: 'file-loader'
+          // options: {
+          //   context: path.resolve(__dirname, './src/assets')
+          // }
+        }]
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: [{
+          loader: 'file-loader'
+          // options: {
+          //   context: path.resolve(__dirname, './src/assets')
+          // }
+        }]
       }
     ]
   },
   resolve: {
     extensions: [ '.coffee', '.js', '.json', '.styl' ]
   },
-  plugins: [
-    new MiniCssExtractPlugin(),
-    new CopyPlugin(
-      assets.map(name => {
-        return ({
-          from: path.resolve(__dirname, `./src/assets/${name}`),
-          to: path.resolve(__dirname, `${dest}/${name}`),
-          transform: stringReplacement
-        })
-      })
-    )
-  ],
-  devServer: {
-    port: 8080
-  }
+  plugins: []
 })
