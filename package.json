@@ -36,6 +36,7 @@
     "css-loader": "^3.5.2",
     "cypress": "^4.4.0",
     "cypress-commands": "^1.1.0",
+    "cypress-xpath": "^1.4.0",
     "del": "^2.1.0",
     "event-stream": "3.3.4",
     "file-loader": "^6.0.0",
@@ -74,6 +75,7 @@
     "strings:pull": "./bin/strings-pull-project.sh",
     "strings:push:usage": "echo Usage: `npm run strings:push -- -a <poeditor_api_key>`",
     "strings:push": "./bin/strings-push-project.sh",
-    "serve": "live-server --open=dist/examples"
+    "serve": "live-server --open=dist/examples",
+    "test:local": "cypress open --env testEnv=local "
   }
 }
