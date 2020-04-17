@@ -1,31 +1,22 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const buildOpts = require('./build-opts.js')
+const stringReplacement = require('./build-support/string-replacement')
+const {
+  entry,
+  dest,
+  assetDest,
+  assets,
+  outputFileName
+} = require('./build-support/build-opts')
 
-// TODO: load this function from somewhere else …
-const macroExpansion = (content, path) => {
-  let contentString = content.toString()
-  // Only process html files ... TBD
-  if (path.match(/\.html$/)) {
-    buildOpts.replacementStrings.forEach(replacement => {
-      contentString = contentString.replace(replacement.pattern, replacement.value)
-    })
-  }
-  return contentString
-}
-
-module.exports = {
+module.exports = (env) => ({
+  performance: { hints: false },
   context: path.resolve(__dirname, 'src'),
-  mode: 'development',
-  entry: {
-    'js/app.js': './code/app.coffee',
-    'js/globals.js': './code/globals.coffee',
-    'css/app': './style/app.styl'
-  },
+  entry: entry,
   output: {
-    filename: '[name]',
-    path: path.resolve(__dirname, './dist/')
+    filename: outputFileName,
+    path: path.resolve(__dirname, dest)
   },
   module: {
     rules: [
@@ -81,22 +72,21 @@ module.exports = {
     ]
   },
   resolve: {
-    alias: {
-      'fonts': path.resolve(__dirname, './src/assets/fonts'),
-      'img': path.resolve(__dirname, './src/assets/img')
-    },
     extensions: [ '.coffee', '.js', '.json', '.styl' ]
   },
   plugins: [
-    new CopyPlugin(['examples', 'fonts', 'img', 'index.html']
-      .map(name => {
+    new MiniCssExtractPlugin(),
+    new CopyPlugin(
+      assets.map(name => {
         return ({
           from: path.resolve(__dirname, `./src/assets/${name}`),
-          to: path.resolve(__dirname, `./dist/${name}`),
-          transform: macroExpansion
+          to: path.resolve(__dirname, `${dest}/${name}`),
+          transform: stringReplacement
         })
       })
-    ),
-    new MiniCssExtractPlugin()
-  ]
-}
+    )
+  ],
+  devServer: {
+    port: 8080
+  }
+})

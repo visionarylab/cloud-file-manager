@@ -9,16 +9,19 @@ The Cloud File Manager is a Javascript library that enables applications to save
 
 ## Development Setup
     npm install
-    npm build
-    live-server ./dist
+    npm run build
+    npm run start
 
-and navigate to `http://localhost:8080/dist/examples/`
+and navigate to `http://localhost:8080/examples/`
 
 ## Deployment
 
-    gulp deploy
+This repository will automatically deploy to S3 using Travis build hooks.
+See `s3_deploy.sh` and `s3_website.yml`
 
-This will clean and re-build the `dist/` folder, and push the result to [http://concord-consortium.github.io/cloud-file-manager/](http://concord-consortium.github.io/cloud-file-manager/).  The examples directory highlighting the different ways Cloud File Manager can be configurated will then be available at [http://concord-consortium.github.io/cloud-file-manager/examples/](http://concord-consortium.github.io/cloud-file-manager/examples/).
+By default this deploys to models-resources/cloud-file-manager/branch/<branch-name>/
+You can preview thse deployments from a web browser at:
+https://cloud-file-manager.concord.org/branch/<branch-name>/
 
 ## Integrating Cloud File Manager
 
