@@ -17,16 +17,41 @@ const codapOutputFileName = (webpackChunk) => {
   return webpackChunk.chunk.name.match(/\.js$/) ? '[name].codap': '[name]';
 }
 
-const replacementStrings = [
-  {
-    pattern: /__COMMIT__/g,
-    value: commitHash
-  },
-  {
-    pattern: /__DATE__/g,
-    value: date
-  }
-]
+const replacementStrings = {
+  html: [
+    {
+      search: /__COMMIT__/g,
+      replace: commitHash
+    },
+    {
+      search: /__DATE__/g,
+      replace: date.toString()
+    }
+  ],
+  css: [],
+  js: []
+}
+
+if (codap) {
+  replacementStrings.css.push(
+    {
+      search: /url\(/,
+      replace: 'static_url('
+    },
+    {
+      search: /\.\.\/fonts/,
+      replace: 'webfonts'
+    },
+    {
+      search: /MuseoSans_500_italic/,
+      replace: 'MuseoSans_500_Italic'
+    },
+    {
+      search: /\.\.\/img/,
+      replace: 'cloud-file-manager/img'
+    }
+  )
+}
 
 const appEntries = {
   'js/app.js': './code/app.coffee',

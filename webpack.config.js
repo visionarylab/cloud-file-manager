@@ -1,13 +1,14 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const stringReplacement = require('./build-support/string-replacement')
+const ReplaceInFileWebpackPlugin = require('replace-in-file-webpack-plugin')
 const {
   entry,
   dest,
   assetDest,
   assets,
-  outputFileName
+  outputFileName,
+  replacementStrings
 } = require('./build-support/build-opts')
 
 module.exports = (env) => ({
@@ -50,11 +51,27 @@ module.exports = (env) => ({
       assets.map(name => {
         return ({
           from: path.resolve(__dirname, `./src/assets/${name}`),
-          to: path.resolve(__dirname, `${dest}/${name}`),
-          transform: stringReplacement
+          to: path.resolve(__dirname, `${dest}/${name}`)
         })
       })
-    )
+    ),
+    new ReplaceInFileWebpackPlugin([
+      {
+        dir: path.resolve(__dirname, dest),
+        test: /.html/,
+        rules: replacementStrings.html
+      },
+      {
+        dir: path.resolve(__dirname, dest),
+        test: /.css/,
+        rules: replacementStrings.css
+      },
+      {
+        dir: path.resolve(__dirname, dest),
+        test: /.js/,
+        rules: replacementStrings.js
+      }
+    ])
   ],
   devServer: {
     port: 8080
