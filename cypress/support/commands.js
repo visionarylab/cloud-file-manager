@@ -109,23 +109,20 @@ Cypress.Commands.add("getAppIframe", () => {
       return cy.get(selector).then((subject) => {
           return cy.fixture(filename)
               .then((blob) => {
-                  console.log(blob)
-                  // console.log(subject[0])
-              const el = subject[0]
-              // // const nameSegments = filename.split('/')
-              // // const name = nameSegments[nameSegments.length - 1]
-              const testFile = new File([blob], filename, { type });
-              const dataTransfer = new DataTransfer();
-              console.log(testFile)
-              dataTransfer.items.add(testFile);
-              // dataTransfer.items.add(blob);
-              console.log(dataTransfer)
-              el.files = dataTransfer.files;
-              console.log(subject)
-              return subject;
-          })
-      })
-  })
+                console.log(blob)
+                const el = subject[0]
+                const testFile = new File([blob], filename, { type });
+                const dataTransfer = new DataTransfer();
+                console.log(testFile)
+                dataTransfer.items.add(testFile);
+                // dataTransfer.items.add(blob);
+                console.log(dataTransfer)
+                el.files = dataTransfer.files;
+                console.log(subject)
+                return subject;
+            })
+        })
+    })
 
 Cypress.Commands.add("saveLocalStorageCache", () => {
   Object.keys(localStorage).forEach(key => {
