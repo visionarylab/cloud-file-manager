@@ -72,8 +72,5 @@ module.exports = (env) => ({
         rules: replacementStrings.js
       }
     ])
-  ],
-  devServer: {
-    port: 8080
-  }
+  ]
 })
