@@ -12,7 +12,7 @@ const assetsDst = codap ? dest + '/img/' : dest
 const commitHash = execSync('git log -1 --pretty=format:"%H"').stdout
 const date = new Date()
 
-// CODAP builds append '.codap' to js filenames to avoid CODAP compilation
+// CODAP builds append '.ignore' to js filenames to avoid CODAP compilation
 const codapOutputFileName = (webpackChunk) => {
   return webpackChunk.chunk.name.match(/\.js$/) ? '[name].ignore': '[name]';
 }
