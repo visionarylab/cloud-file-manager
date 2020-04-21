@@ -60,7 +60,7 @@
     "strings:push": "./bin/strings-push-project.sh",
     "start": "npm-run-all --parallel watch:server watch:build",
     "watch:build": "webpack --watch",
-    "watch:server": "live-server --open=dist/examples",
-    "test:local": "cypress open --env testEnv=local "
+    "watch:server": "live-server ./dist --open=examples",
+    "test:local": "cypress open --env testEnv=local"
   }
 }
