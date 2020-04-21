@@ -14,7 +14,7 @@ const date = new Date()
 
 // CODAP builds append '.codap' to js filenames to avoid CODAP compilation
 const codapOutputFileName = (webpackChunk) => {
-  return webpackChunk.chunk.name.match(/\.js$/) ? '[name].codap': '[name]';
+  return webpackChunk.chunk.name.match(/\.js$/) ? '[name].ignore': '[name]';
 }
 
 const replacementStrings = {
@@ -35,19 +35,19 @@ const replacementStrings = {
 if (codap) {
   replacementStrings.css.push(
     {
-      search: /url\(/,
+      search: /url\(/g,
       replace: 'static_url('
     },
     {
-      search: /\.\.\/fonts/,
+      search: /\.\.\/fonts/g,
       replace: 'webfonts'
     },
     {
-      search: /MuseoSans_500_italic/,
+      search: /MuseoSans_500_italic/g,
       replace: 'MuseoSans_500_Italic'
     },
     {
-      search: /\.\.\/img/,
+      search: /\.\.\/img/g,
       replace: 'cloud-file-manager/img'
     }
   )
