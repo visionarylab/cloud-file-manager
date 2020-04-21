@@ -5,21 +5,21 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div} = ReactDOMFactories;
+const {div} = ReactDOMFactories
 
-const Modal = createReactFactory(require('./modal-view'));
+const Modal = createReactFactory(require('./modal-view'))
 
 module.exports = createReactClass({
 
   displayName: 'BlockingModal',
 
   close() {
-    return (typeof this.props.close === 'function' ? this.props.close() : undefined);
+    return (typeof this.props.close === 'function' ? this.props.close() : undefined)
   },
 
   // used by CODAP to dismiss the startup dialog if a file is dropped on it
   drop(e) {
-    return (typeof this.props.onDrop === 'function' ? this.props.onDrop(e) : undefined);
+    return (typeof this.props.onDrop === 'function' ? this.props.onDrop(e) : undefined)
   },
 
   render() {
@@ -34,6 +34,6 @@ module.exports = createReactClass({
           ))
         ))
       ))
-    ));
+    ))
   }
-});
+})

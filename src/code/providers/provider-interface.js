@@ -11,27 +11,27 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div} = ReactDOMFactories;
+const {div} = ReactDOMFactories
 
-const isString = require('../utils/is-string');
+const isString = require('../utils/is-string')
 
 class CloudFile {
   constructor(options) {
-    ({content: this.content, metadata: this.metadata} = options);
+    ({content: this.content, metadata: this.metadata} = options)
   }
 }
 
 class CloudMetadata {
   static initClass() {
   
-    this.Folder = 'folder';
-    this.File = 'file';
-    this.Label = 'label';
+    this.Folder = 'folder'
+    this.File = 'file'
+    this.Label = 'label'
   
-    this.Extension = null;
+    this.Extension = null
   }
   constructor(options) {
-    let val, val1, val2;
+    let val, val1, val2
     this.name = options.name,
       this.type = options.type,
       this.description = options.description,
@@ -46,88 +46,88 @@ class CloudMetadata {
       this.overwritable = options.overwritable,
       this.sharedContentId = options.sharedContentId,
       this.sharedContentSecretKey = options.sharedContentSecretKey,
-      this.mimeType = options.mimeType;
-    this._updateFilename();
+      this.mimeType = options.mimeType
+    this._updateFilename()
   }
 
   static mapTypeToCloudMetadataType(iType) {
     // for now mapping is 1-to-1 defaulting to 'file'
-    return iType || this.File;
+    return iType || this.File
   }
 
   static withExtension(name, defaultExtension, keepOriginalExtension) {
     if (keepOriginalExtension && ~name.indexOf(".")) {
-      return name;
+      return name
     }
-    const extension = CloudMetadata.Extension || defaultExtension;
+    const extension = CloudMetadata.Extension || defaultExtension
     if (extension) {
-      return this.newExtension(name, extension);
+      return this.newExtension(name, extension)
     } else {
-      return name;
+      return name
     }
   }
 
   static newExtension(name, extension) {
     // drop last extension, if there is one
-    name = name.substr(0, name.lastIndexOf('.')) || name;
-    return name + "." + extension;
+    name = name.substr(0, name.lastIndexOf('.')) || name
+    return name + "." + extension
   }
 
   path() {
-    const _path = [];
-    let { parent } = this;
+    const _path = []
+    let { parent } = this
     while (parent !== null) {
       _path.unshift(parent);
-      ({ parent } = parent);
+      ({ parent } = parent)
     }
-    return _path;
+    return _path
   }
 
   rename(newName) {
-    this.name = newName;
-    return this._updateFilename();
+    this.name = newName
+    return this._updateFilename()
   }
 
   _updateFilename() {
-    this.filename = this.name;
+    this.filename = this.name
     if (((this.name != null ? this.name.substr : undefined) != null) && (CloudMetadata.Extension != null) && (this.type === CloudMetadata.File)) {
-      const extLen = CloudMetadata.Extension.length;
+      const extLen = CloudMetadata.Extension.length
       if (extLen > 0) {
         // at this point the filename and name are the same so we now check for a file extension
-        const hasCurrentExtension = this.name.substr(-extLen-1) === `.${CloudMetadata.Extension}`;
+        const hasCurrentExtension = this.name.substr(-extLen-1) === `.${CloudMetadata.Extension}`
         if (hasCurrentExtension) {
           // remove extension from name for display purposes
-          return this.name = this.name.substr(0, this.name.length - (extLen+1));
+          return this.name = this.name.substr(0, this.name.length - (extLen+1))
         } else {
           // add extension to filename for saving purposes
-          return this.filename += `.${CloudMetadata.Extension}`;
+          return this.filename += `.${CloudMetadata.Extension}`
         }
       }
     }
   }
 }
-CloudMetadata.initClass();
+CloudMetadata.initClass()
 
 // singleton that can create CloudContent wrapped with global options
 class CloudContentFactory {
   constructor() {
-    this.envelopeMetadata = {};
+    this.envelopeMetadata = {}
   }
 
   // set initial envelopeMetadata or update individual properties
   setEnvelopeMetadata(envelopeMetadata) {
     return (() => {
-      const result = [];
+      const result = []
       for (let key in envelopeMetadata) {
-        result.push(this.envelopeMetadata[key] = envelopeMetadata[key]);
+        result.push(this.envelopeMetadata[key] = envelopeMetadata[key])
       }
-      return result;
-    })();
+      return result
+    })()
   }
 
   // returns new CloudContent containing enveloped data
   createEnvelopedCloudContent(content) {
-    return new CloudContent((this.envelopContent(content)), (this._identifyContentFormat(content)));
+    return new CloudContent((this.envelopContent(content)), (this._identifyContentFormat(content)))
   }
 
   // envelops content with metadata, returns an object.
@@ -136,43 +136,43 @@ class CloudContentFactory {
   // Note: calling `envelopContent` may be safely called on something that
   // has already had `envelopContent` called on it, and will be a no-op.
   envelopContent(content) {
-    const envelopedCloudContent = this._wrapIfNeeded(content);
+    const envelopedCloudContent = this._wrapIfNeeded(content)
     for (let key in this.envelopeMetadata) {
-      if (envelopedCloudContent[key] == null) { envelopedCloudContent[key] = this.envelopeMetadata[key]; }
+      if (envelopedCloudContent[key] == null) { envelopedCloudContent[key] = this.envelopeMetadata[key] }
     }
-    return envelopedCloudContent;
+    return envelopedCloudContent
   }
 
   _identifyContentFormat(content) {
-    if ((content == null)) { return; }
-    const result = { isCfmWrapped: false, isPreCfmFormat: false };
+    if ((content == null)) { return }
+    const result = { isCfmWrapped: false, isPreCfmFormat: false }
     if (isString(content)) {
-      try { content = JSON.parse(content); } catch (error) {}
+      try { content = JSON.parse(content) } catch (error) {}
     }
     // Currently, we assume 'metadata' is top-level property in
     // non-CFM-wrapped documents. Could put in a client callback
     // that would identify whether the document required
     // conversion to eliminate this assumption from the CFM.
     if (content.metadata) {
-      return result;
+      return result
     }
     if ((content.cfmVersion != null) || (content.content != null)) {
-      result.isCfmWrapped = true;
+      result.isCfmWrapped = true
     } else {
-      result.isPreCfmFormat = true;
+      result.isPreCfmFormat = true
     }
-    return result;
+    return result
   }
 
   // envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded(content) {
     if (isString(content)) {
-      try { content = JSON.parse(content); } catch (error) {}
+      try { content = JSON.parse(content) } catch (error) {}
     }
     if (content.content != null) {
-      return content;
+      return content
     } else {
-      return {content};
+      return {content}
     }
   }
 }
@@ -180,180 +180,180 @@ class CloudContentFactory {
 class CloudContent {
   static initClass() {
     // wrapping defaults to true but can be overridden by client via appOptions
-    this.wrapFileContent = true;
+    this.wrapFileContent = true
   }
 
   constructor(_, _contentFormat) {
-    if (_ == null) { _ = {}; }
-    this._ = _;
-    this._contentFormat = _contentFormat;
+    if (_ == null) { _ = {} }
+    this._ = _
+    this._contentFormat = _contentFormat
   }
 
   // getContent and getContentAsJSON return the file content as stored on disk
   getContent() {
-    if (CloudContent.wrapFileContent) { return this._; } else { return this._.content; }
+    if (CloudContent.wrapFileContent) { return this._ } else { return this._.content }
   }
   getContentAsJSON() {
-    return JSON.stringify(CloudContent.wrapFileContent ? this._ : this._.content);
+    return JSON.stringify(CloudContent.wrapFileContent ? this._ : this._.content)
   }
 
   // returns the client-visible content (excluding wrapper for wrapped clients)
   getClientContent() {
-    return this._.content;
+    return this._.content
   }
 
   requiresConversion() {
-    return (CloudContent.wrapFileContent !== (this._contentFormat != null ? this._contentFormat.isCfmWrapped : undefined)) || (this._contentFormat != null ? this._contentFormat.isPreCfmFormat : undefined);
+    return (CloudContent.wrapFileContent !== (this._contentFormat != null ? this._contentFormat.isCfmWrapped : undefined)) || (this._contentFormat != null ? this._contentFormat.isPreCfmFormat : undefined)
   }
 
-  clone() { return new CloudContent((_.cloneDeep(this._)), (_.cloneDeep(this._contentFormat))); }
+  clone() { return new CloudContent((_.cloneDeep(this._)), (_.cloneDeep(this._contentFormat))) }
 
-  setText(text) { return this._.content = text; }
-  getText() { if (this._.content === null) { return ''; } else if (isString(this._.content)) { return this._.content; } else { return JSON.stringify(this._.content); } }
+  setText(text) { return this._.content = text }
+  getText() { if (this._.content === null) { return '' } else if (isString(this._.content)) { return this._.content } else { return JSON.stringify(this._.content) } }
 
   addMetadata(metadata) { return (() => {
-    const result = [];
+    const result = []
     for (let key in metadata) {
-      result.push(this._[key] = metadata[key]);
+      result.push(this._[key] = metadata[key])
     }
-    return result;
-  })(); }
-  get(prop) { return this._[prop]; }
-  set(prop, value) { return this._[prop] = value; }
-  remove(prop) { return delete this._[prop]; }
+    return result
+  })() }
+  get(prop) { return this._[prop] }
+  set(prop, value) { return this._[prop] = value }
+  remove(prop) { return delete this._[prop] }
 
   getSharedMetadata() {
     // only include necessary fields
-    const shared = {};
-    if (this._._permissions != null) { shared._permissions = this._._permissions; }
-    if (this._.shareEditKey != null) { shared.shareEditKey = this._.shareEditKey; }
-    if (this._.sharedDocumentId != null) { shared.sharedDocumentId = this._.sharedDocumentId; }
-    if (this._.accessKeys != null) { shared.accessKeys = this._.accessKeys; }
-    return shared;
+    const shared = {}
+    if (this._._permissions != null) { shared._permissions = this._._permissions }
+    if (this._.shareEditKey != null) { shared.shareEditKey = this._.shareEditKey }
+    if (this._.sharedDocumentId != null) { shared.sharedDocumentId = this._.sharedDocumentId }
+    if (this._.accessKeys != null) { shared.accessKeys = this._.accessKeys }
+    return shared
   }
 
   copyMetadataTo(to) {
-    const metadata = {};
+    const metadata = {}
     for (let key of Object.keys(this._ || {})) {
-      const value = this._[key];
+      const value = this._[key]
       if (key !== 'content') {
-        metadata[key] = value;
+        metadata[key] = value
       }
     }
-    return to.addMetadata(metadata);
+    return to.addMetadata(metadata)
   }
 }
-CloudContent.initClass();
+CloudContent.initClass()
 
 class ProviderInterface {
 
   constructor(options) {
-    ({name: this.name, displayName: this.displayName, urlDisplayName: this.urlDisplayName, capabilities: this.capabilities} = options);
+    ({name: this.name, displayName: this.displayName, urlDisplayName: this.urlDisplayName, capabilities: this.capabilities} = options)
   }
 
-  static Available() { return true; }
+  static Available() { return true }
 
   can(capability) {
-    return !!this.capabilities[capability];
+    return !!this.capabilities[capability]
   }
 
   canAuto(capability) {
-    return this.capabilities[capability] === 'auto';
+    return this.capabilities[capability] === 'auto'
   }
 
   isAuthorizationRequired() {
-    return false;
+    return false
   }
 
   authorized(callback) {
     if (callback) {
-      return callback(true);
+      return callback(true)
     } else {
-      return true;
+      return true
     }
   }
 
   renderAuthorizationDialog() {
-    return (AuthorizationNotImplementedDialog({provider: this}));
+    return (AuthorizationNotImplementedDialog({provider: this}))
   }
 
   renderUser() {
-    return null;
+    return null
   }
 
   filterTabComponent(capability, defaultComponent) {
-    return defaultComponent;
+    return defaultComponent
   }
 
   matchesExtension(name) {
-    if (!name) { return false; }
+    if (!name) { return false }
     if ((CloudMetadata.ReadableExtensions != null) && (CloudMetadata.ReadableExtensions.length > 0)) {
       for (let extension of Array.from(CloudMetadata.ReadableExtensions)) {
-        if (name.substr(-extension.length) === extension) { return true; }
+        if (name.substr(-extension.length) === extension) { return true }
         if (extension === "") {
-          if (!~name.indexOf(".")) { return true; }
+          if (!~name.indexOf(".")) { return true }
         }
       }
-      return false;
+      return false
     } else {
       // may seem weird but it means that without an extension specified all files match
-      return true;
+      return true
     }
   }
 
   handleUrlParams() {
-    return false; // by default, no additional URL handling
+    return false // by default, no additional URL handling
   }
 
   dialog(callback) {
-    return this._notImplemented('dialog');
+    return this._notImplemented('dialog')
   }
 
   save(content, metadata, callback) {
-    return this._notImplemented('save');
+    return this._notImplemented('save')
   }
 
   saveAsExport(content, metadata, callback) {
     // default implementation invokes save
     if (this.can('save', metadata)) {
-      return this.save(content, metadata, callback);
+      return this.save(content, metadata, callback)
     } else {
-      return this._notImplemented('saveAsExport');
+      return this._notImplemented('saveAsExport')
     }
   }
 
   load(callback) {
-    return this._notImplemented('load');
+    return this._notImplemented('load')
   }
 
   list(metadata, callback) {
-    return this._notImplemented('list');
+    return this._notImplemented('list')
   }
 
   remove(metadata, callback) {
-    return this._notImplemented('remove');
+    return this._notImplemented('remove')
   }
 
   rename(metadata, newName, callback) {
-    return this._notImplemented('rename');
+    return this._notImplemented('rename')
   }
 
   close(metadata, callback) {
-    return this._notImplemented('close');
+    return this._notImplemented('close')
   }
 
   setFolder(metadata) {
-    return this._notImplemented('setFolder');
+    return this._notImplemented('setFolder')
   }
 
-  canOpenSaved() { return false; }
+  canOpenSaved() { return false }
 
   openSaved(openSavedParams, callback) {
-    return this._notImplemented('openSaved');
+    return this._notImplemented('openSaved')
   }
 
   getOpenSavedParams(metadata) {
-    return this._notImplemented('getOpenSavedParams');
+    return this._notImplemented('getOpenSavedParams')
   }
 
   fileOpened() {}
@@ -361,7 +361,7 @@ class ProviderInterface {
 
   _notImplemented(methodName) {
     // this uses a browser alert instead of client.alert because this is just here for debugging
-    return alert(`${methodName} not implemented for ${this.name} provider`);
+    return alert(`${methodName} not implemented for ${this.name} provider`)
   }
 }
 
@@ -371,4 +371,4 @@ module.exports = {
   CloudContent,
   cloudContentFactory: new CloudContentFactory(),
   ProviderInterface
-};
+}

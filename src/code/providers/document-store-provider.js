@@ -10,37 +10,35 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, button, span} = ReactDOMFactories;
+const {div, button, span} = ReactDOMFactories
 
-const getQueryParam = require('../utils/get-query-param');
-const getHashParam = require('../utils/get-hash-param');
-const tr = require('../utils/translate');
-const isString = require('../utils/is-string');
-const jiff = require('jiff');
-const pako = require('pako');
+const getQueryParam = require('../utils/get-query-param')
+const getHashParam = require('../utils/get-hash-param')
+const tr = require('../utils/translate')
+const pako = require('pako')
 
-const { ProviderInterface } = (require('./provider-interface'));
-const { cloudContentFactory } = (require('./provider-interface'));
-const { CloudMetadata } = (require('./provider-interface'));
+const { ProviderInterface } = (require('./provider-interface'))
+const { cloudContentFactory } = (require('./provider-interface'))
+const { CloudMetadata } = (require('./provider-interface'))
 
-const DocumentStoreUrl = require('./document-store-url');
-const PatchableContent = require('./patchable-content');
+const DocumentStoreUrl = require('./document-store-url')
+const PatchableContent = require('./patchable-content')
 
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',
 
   getInitialState() {
-    return {docStoreAvailable: false};
+    return {docStoreAvailable: false}
   },
 
   UNSAFE_componentWillMount() {
     return this.props.provider._onDocStoreLoaded(() => {
-      return this.setState({docStoreAvailable: true});
-    });
+      return this.setState({docStoreAvailable: true})
+    })
   },
 
   authenticate() {
-    return this.props.provider.authorize();
+    return this.props.provider.authorize()
   },
 
   render() {
@@ -52,112 +50,116 @@ const DocumentStoreAuthorizationDialog = createReactClassFactory({
         :
           'Trying to log into Concord...'
       ))
-    ));
+    ))
   }
-});
+})
 
 class DocumentStoreProvider extends ProviderInterface {
   static initClass() {
   
-    this.Name = 'documentStore';
+    this.Name = 'documentStore'
   
-    this.prototype._loginWindow = null;
+    this.prototype._loginWindow = null
   }
 
-  constructor(options, client) {
-    {
-      // Hack: trick Babel/TypeScript into allowing this before super.
-      if (false) { super(); }
-      let thisFn = (() => { return this; }).toString();
-      let thisName = thisFn.slice(thisFn.indexOf('return') + 6 + 1, thisFn.indexOf(';')).trim();
-      eval(`${thisName} = this;`);
+  static get deprecationPhase() {
+    return 3
+  }
+
+  static isNotDeprecated(capability) {
+    if (capability === 'save') {
+      return DocumentStoreProvider.deprecationPhase < 2
+    } else {
+      return DocumentStoreProvider.deprecationPhase < 3
     }
-    if (options == null) { options = {}; }
-    this.options = options;
-    this.client = client;
-    this.options.deprecationPhase = 3;
+  }
+  constructor(options, client) {
+    const opts = options || {}
+
     super({
       name: DocumentStoreProvider.Name,
-      displayName: this.options.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
-      urlDisplayName: this.options.urlDisplayName,
+      displayName: opts.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
+      urlDisplayName: opts.urlDisplayName,
       capabilities: {
-        save: this.isNotDeprecated('save'),
-        resave: this.isNotDeprecated('save'),
-        export: false,
-        load: this.isNotDeprecated('load'),
-        list: this.isNotDeprecated('list'),
-        remove: this.isNotDeprecated('remove'),
-        rename: this.isNotDeprecated('rename'),
+        save: DocumentStoreProvider.isNotDeprecated('save'),
+        resave: DocumentStoreProvider.isNotDeprecated('save'),
+        "export": false,
+        load: DocumentStoreProvider.isNotDeprecated('load'),
+        list: DocumentStoreProvider.isNotDeprecated('list'),
+        remove: DocumentStoreProvider.isNotDeprecated('remove'),
+        rename: DocumentStoreProvider.isNotDeprecated('rename'),
         close: false
       }
-    });
+    })
 
+    this.options = opts
+    this.client = client
     this.urlParams = {
       documentServer: getQueryParam("documentServer"),
       recordid: getQueryParam("recordid"),
       runKey: getQueryParam("runKey"),
       docName: getQueryParam("doc"),
       docOwner: getQueryParam("owner")
-    };
+    }
     // query params that can be removed after initial processing
-    this.removableQueryParams = ['recordid', 'doc', 'owner'];
+    this.removableQueryParams = ['recordid', 'doc', 'owner']
 
-    this.docStoreUrl = new DocumentStoreUrl(this.urlParams.documentServer);
+    this.docStoreUrl = new DocumentStoreUrl(this.urlParams.documentServer)
 
-    this.user = null;
+    this.user = null
 
-    this.savedContent = new PatchableContent(this.options.patchObjectHash);
+    this.savedContent = new PatchableContent(this.options.patchObjectHash)
   }
 
   can(capability, metadata) {
     // legacy sharing support - can't save to old-style shared documents
-    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata != null ? metadata.providerData : undefined, x => x.owner)) { return false; }
-    return super.can(capability, metadata);
+    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata != null ? metadata.providerData : undefined, x => x.owner)) { return false }
+    return super.can(capability, metadata)
   }
 
   // if a runKey is specified, we don't need to authenticate at all
   isAuthorizationRequired() {
-    return !(this.urlParams.runKey || (this.urlParams.docName && this.urlParams.docOwner));
+    return !(this.urlParams.runKey || (this.urlParams.docName && this.urlParams.docOwner))
   }
 
   authorized(authCallback) {
-    this.authCallback = authCallback;
+    this.authCallback = authCallback
     if (this.authCallback) {
       if (this.user) {
-        return this.authCallback(true);
+        return this.authCallback(true)
       } else {
-        return this._checkLogin();
+        return this._checkLogin()
       }
     } else {
-      return this.user !== null;
+      return this.user !== null
     }
   }
 
   authorize(completionCallback) {
-    return this._showLoginWindow(completionCallback);
+    return this._showLoginWindow(completionCallback)
   }
 
   _onDocStoreLoaded(docStoreLoadedCallback) {
-    this.docStoreLoadedCallback = docStoreLoadedCallback;
+    this.docStoreLoadedCallback = docStoreLoadedCallback
     if (this._docStoreLoaded) {
-      return this.docStoreLoadedCallback();
+      return this.docStoreLoadedCallback()
     }
   }
 
   _checkLogin() {
     const loggedIn = user => {
-      this.user = user;
-      this._docStoreLoaded = true;
+      this.user = user
+      this._docStoreLoaded = true
       if (typeof this.docStoreLoadedCallback === 'function') {
-        this.docStoreLoadedCallback();
+        this.docStoreLoadedCallback()
       }
       if (user) {
         if (this._loginWindow != null) {
-          this._loginWindow.close();
+          this._loginWindow.close()
         }
       }
-      if (this.authCallback) { return this.authCallback((user !== null)); }
-    };
+      if (this.authCallback) { return this.authCallback((user !== null)) }
+    }
 
     return $.ajax({
       dataType: 'json',
@@ -165,30 +167,30 @@ class DocumentStoreProvider extends ProviderInterface {
       xhrFields: {
         withCredentials: true
       },
-      success(data) { return loggedIn(data); },
-      error() { return loggedIn(null); }
-    });
+      success(data) { return loggedIn(data) },
+      error() { return loggedIn(null) }
+    })
   }
 
   _showLoginWindow(completionCallback) {
     if (this._loginWindow && !this._loginWindow.closed) {
-      this._loginWindow.focus();
+      this._loginWindow.focus()
     } else {
 
       const computeScreenLocation = function(w, h) {
-        const screenLeft = window.screenLeft || screen.left;
-        const screenTop  = window.screenTop  || screen.top;
-        const width  = window.innerWidth  || document.documentElement.clientWidth  || screen.width;
-        const height = window.innerHeight || document.documentElement.clientHeight || screen.height;
+        const screenLeft = window.screenLeft || screen.left
+        const screenTop  = window.screenTop  || screen.top
+        const width  = window.innerWidth  || document.documentElement.clientWidth  || screen.width
+        const height = window.innerHeight || document.documentElement.clientHeight || screen.height
 
-        const left = ((width / 2) - (w / 2)) + screenLeft;
-        const top = ((height / 2) - (h / 2)) + screenTop;
-        return {left, top};
-      };
+        const left = ((width / 2) - (w / 2)) + screenLeft
+        const top = ((height / 2) - (h / 2)) + screenTop
+        return {left, top}
+      }
 
-      const width = 1000;
-      const height = 480;
-      const position = computeScreenLocation(width, height);
+      const width = 1000
+      const height = 480
+      const position = computeScreenLocation(width, height)
       const windowFeatures = [
         `width=${width}`,
         `height=${height}`,
@@ -199,59 +201,53 @@ class DocumentStoreProvider extends ProviderInterface {
         'location=no',
         'dialog=yes',
         'menubar=no'
-      ];
+      ]
 
-      this._loginWindow = window.open(this.docStoreUrl.authorize(), 'auth', windowFeatures.join());
+      this._loginWindow = window.open(this.docStoreUrl.authorize(), 'auth', windowFeatures.join())
 
       if (this._loginWindow) {
         const pollAction = () => {
           try {
             if (this._loginWindow.location.host === window.location.host) {
-              clearInterval(poll);
-              this._loginWindow.close();
-              this._checkLogin();
-              if (completionCallback) { return completionCallback(); }
+              clearInterval(poll)
+              this._loginWindow.close()
+              this._checkLogin()
+              if (completionCallback) { return completionCallback() }
             }
           } catch (e) {}
-        };
+        }
             // console.log e
 
-        var poll = setInterval(pollAction, 200);
+        var poll = setInterval(pollAction, 200)
       }
     }
 
-    return this._loginWindow;
+    return this._loginWindow
   }
 
   renderAuthorizationDialog() {
-    return (DocumentStoreAuthorizationDialog({provider: this, authCallback: this.authCallback}));
+    return (DocumentStoreAuthorizationDialog({provider: this, authCallback: this.authCallback}))
   }
 
   renderUser() {
     if (this.user) {
-      return (span({}, (span({className: 'document-store-icon'})), this.user.name));
+      return (span({}, (span({className: 'document-store-icon'})), this.user.name))
     } else {
-      return null;
+      return null
     }
   }
 
   filterTabComponent(capability, defaultComponent) {
     // allow the save elsewhere button to hide the document provider tab in save
     if ((capability === 'save') && this.disableForNextSave) {
-      this.disableForNextSave = false;
-      return null;
+      this.disableForNextSave = false
+      return null
     } else {
-      return defaultComponent;
+      return defaultComponent
     }
   }
 
-  isNotDeprecated(capability) {
-    if (capability === 'save') {
-      return this.options.deprecationPhase < 2;
-    } else {
-      return this.options.deprecationPhase < 3;
-    }
-  }
+
 
   deprecationMessage() {
     return `\
@@ -263,24 +259,24 @@ class DocumentStoreProvider extends ProviderInterface {
     ${tr(~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE)}
   </p>
 </div>\
-`;
+`
   }
 
   onProviderTabSelected(capability) {
     if ((capability === 'save') && this.deprecationMessage()) {
-      return this.client.alert(this.deprecationMessage(), (tr('~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')));
+      return this.client.alert(this.deprecationMessage(), (tr('~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')))
     }
   }
 
   handleUrlParams() {
     if (this.urlParams.recordid) {
-      this.client.openProviderFile(this.name, { id: this.urlParams.recordid });
-      return true; // signal that the provider is handling the params
+      this.client.openProviderFile(this.name, { id: this.urlParams.recordid })
+      return true // signal that the provider is handling the params
     } else if (this.urlParams.docName && this.urlParams.docOwner) {
-      this.client.openProviderFile(this.name, { name: this.urlParams.docName, owner: this.urlParams.docOwner });
-      return true; // signal that the provider is handling the params
+      this.client.openProviderFile(this.name, { name: this.urlParams.docName, owner: this.urlParams.docOwner })
+      return true // signal that the provider is handling the params
     } else {
-      return false;
+      return false
     }
   }
 
@@ -293,9 +289,9 @@ class DocumentStoreProvider extends ProviderInterface {
         withCredentials: true
       },
       success(data) {
-        const list = [];
+        const list = []
         for (let key of Object.keys(data || {})) {
-          const file = data[key];
+          const file = data[key]
           if (this.matchesExtension(file.name)) {
             list.push(new CloudMetadata({
               name: file.name,
@@ -303,32 +299,32 @@ class DocumentStoreProvider extends ProviderInterface {
               type: CloudMetadata.File,
               provider: this
             })
-            );
+            )
           }
         }
-        return callback(null, list);
+        return callback(null, list)
       },
       error() {
-        return callback(null, []);
+        return callback(null, [])
       },
       statusCode: {
         403: () => {
-          this.user = null;
-          return this.authCallback(false);
+          this.user = null
+          return this.authCallback(false)
         }
       }
-    });
+    })
   }
 
   load(metadata, callback) {
-    const withCredentials = !metadata.sharedContentId ? true : false;
-    const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId;
-    const requestData = {};
-    if (recordid) { requestData.recordid = recordid; }
-    if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey; }
+    const withCredentials = !metadata.sharedContentId
+    const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId
+    const requestData = {}
+    if (recordid) { requestData.recordid = recordid }
+    if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey }
     if (!recordid) {
-      if (metadata.providerData != null ? metadata.providerData.name : undefined) { requestData.recordname = metadata.providerData != null ? metadata.providerData.name : undefined; }
-      if (metadata.providerData != null ? metadata.providerData.owner : undefined) { requestData.owner = metadata.providerData != null ? metadata.providerData.owner : undefined; }
+      if (metadata.providerData != null ? metadata.providerData.name : undefined) { requestData.recordname = metadata.providerData != null ? metadata.providerData.name : undefined }
+      if (metadata.providerData != null ? metadata.providerData.owner : undefined) { requestData.owner = metadata.providerData != null ? metadata.providerData.owner : undefined }
     }
     return $.ajax({
       url: this.docStoreUrl.loadDocument(),
@@ -338,7 +334,7 @@ class DocumentStoreProvider extends ProviderInterface {
       xhrFields:
         {withCredentials},
       success(data) {
-        const content = cloudContentFactory.createEnvelopedCloudContent(data);
+        const content = cloudContentFactory.createEnvelopedCloudContent(data)
 
         // for documents loaded by id or other means (besides name),
         // capture the name for use in the CFM interface.
@@ -347,48 +343,48 @@ class DocumentStoreProvider extends ProviderInterface {
         // 'name' at the top level of 'content' for wrapped CODAP documents
         metadata.rename(metadata.name || metadata.providerData.name ||
                         data.docName || data.name || (data.content != null ? data.content.name : undefined)
-        );
+        )
         if (metadata.name) {
-          content.addMetadata({docName: metadata.filename});
+          content.addMetadata({docName: metadata.filename})
         }
 
-        return callback(null, content);
+        return callback(null, content)
       },
       statusCode: {
         403: () => {
-          this.user = null;
-          return callback(tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name || 'the file'}), 403);
+          this.user = null
+          return callback(tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name || 'the file'}), 403)
         }
       },
 
       error(jqXHR) {
-        if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
+        if (jqXHR.status === 403) { return } // let statusCode handler deal with it
         const message = metadata.sharedContentId ?
           tr("~DOCSTORE.LOAD_SHARED_404_ERROR")
         :
-          tr("~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name || (metadata.providerData != null ? metadata.providerData.id : undefined) || 'the file'});
-        return callback(message);
+          tr("~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name || (metadata.providerData != null ? metadata.providerData.id : undefined) || 'the file'})
+        return callback(message)
       }
-    });
+    })
   }
 
   save(cloudContent, metadata, callback) {
-    const content = cloudContent.getContent();
+    const content = cloudContent.getContent()
 
     // See if we can patch
-    const patchResults = this.savedContent.createPatch(content, this.options.patch && metadata.overwritable);
+    const patchResults = this.savedContent.createPatch(content, this.options.patch && metadata.overwritable)
 
     if (patchResults.shouldPatch && !patchResults.diffLength) {
       // no reason to patch if there are no diffs
-      callback(null); // no error indicates success
-      return;
+      callback(null) // no error indicates success
+      return
     }
 
-    const params = {};
-    if (metadata.providerData.id) { params.recordid = metadata.providerData.id; }
+    const params = {}
+    if (metadata.providerData.id) { params.recordid = metadata.providerData.id }
 
     if (!patchResults.shouldPatch && metadata.filename) {
-      params.recordname = metadata.filename;
+      params.recordname = metadata.filename
     }
 
     // If we are saving for the first time as a student in a LARA activity, then we do not have
@@ -399,13 +395,13 @@ class DocumentStoreProvider extends ProviderInterface {
     // When we successfully save, we will get the id of the new document in the response, and use
     // this id for future saving. We can then save via patches, and don't need the runKey.
     if (this.urlParams.runKey) {
-      params.runKey = this.urlParams.runKey;
+      params.runKey = this.urlParams.runKey
     }
 
-    const method = 'POST';
+    const method = 'POST'
     const url = patchResults.shouldPatch 
             ? this.docStoreUrl.patchDocument(params) 
-            : this.docStoreUrl.saveDocument(params);
+            : this.docStoreUrl.saveDocument(params)
 
     const logData = {
       operation: 'save',
@@ -415,8 +411,8 @@ class DocumentStoreProvider extends ProviderInterface {
       url,
       params: JSON.stringify(params),
       content: patchResults.sendContent.substr(0, 512)
-    };
-    this.client.log('save', logData);
+    }
+    this.client.log('save', logData)
 
     return $.ajax({
       dataType: 'json',
@@ -426,37 +422,37 @@ class DocumentStoreProvider extends ProviderInterface {
       contentType: patchResults.mimeType,
       processData: false,
       beforeSend(xhr) {
-        return xhr.setRequestHeader('Content-Encoding', 'deflate');
+        return xhr.setRequestHeader('Content-Encoding', 'deflate')
       },
       context: this,
       xhrFields: {
         withCredentials: true
       },
       success(data) {
-        this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null);
-        if (data.id) { metadata.providerData.id = data.id; }
+        this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null)
+        if (data.id) { metadata.providerData.id = data.id }
 
-        return callback(null, data);
+        return callback(null, data)
       },
       statusCode: {
         403: () => {
-          this.user = null;
-          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403);
+          this.user = null
+          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
         try {
-          if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
-          const responseJson = JSON.parse(jqXHR.responseText);
+          if (jqXHR.status === 403) { return } // let statusCode handler deal with it
+          const responseJson = JSON.parse(jqXHR.responseText)
           if (responseJson.message === 'error.duplicate') {
-            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}));
+            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}))
           } else {
-            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}));
+            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}))
           }
         } catch (error) {
-          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}));
+          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}))
         }
-      }});
+      }})
   }
 
   remove(metadata, callback) {
@@ -470,18 +466,18 @@ class DocumentStoreProvider extends ProviderInterface {
         withCredentials: true
       },
       success(data) {
-        return callback(null, data);
+        return callback(null, data)
       },
       statusCode: {
         403: () => {
-          this.user = null;
-          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403);
+          this.user = null
+          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
-        if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
-        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}));
-      }});
+        if (jqXHR.status === 403) { return } // let statusCode handler deal with it
+        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}))
+      }})
   }
 
   rename(metadata, newName, callback) {
@@ -496,47 +492,47 @@ class DocumentStoreProvider extends ProviderInterface {
         withCredentials: true
       },
       success(data) {
-        metadata.rename(newName);
-        return callback(null, metadata);
+        metadata.rename(newName)
+        return callback(null, metadata)
       },
       statusCode: {
         403: () => {
-          this.user = null;
-          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403);
+          this.user = null
+          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403)
         }
       },
       error(jqXHR) {
-        if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
-        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}));
-      }});
+        if (jqXHR.status === 403) { return } // let statusCode handler deal with it
+        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}))
+      }})
   }
 
-  canOpenSaved() { return true; }
+  canOpenSaved() { return true }
 
   openSaved(openSavedParams, callback) {
     const providerData = typeof openSavedParams === "object" 
                       ? openSavedParams 
-                      : { id: openSavedParams };
+                      : { id: openSavedParams }
     const metadata = new CloudMetadata({
       type: CloudMetadata.File,
       provider: this,
       providerData
-    });
+    })
 
     return this.load(metadata, (err, content) => {
-      this.client.removeQueryParams(this.removableQueryParams);
-      return callback(err, content, metadata);
-    });
+      this.client.removeQueryParams(this.removableQueryParams)
+      return callback(err, content, metadata)
+    })
   }
 
   getOpenSavedParams(metadata) {
-    return metadata.providerData.id;
+    return metadata.providerData.id
   }
 
   fileOpened(content, metadata) {
-    const deprecationPhase = this.options.deprecationPhase || 0;
-    const fromLara = !!getQueryParam("launchFromLara") || !!getHashParam("lara");
-    if (!deprecationPhase || fromLara) { return; }
+    const deprecationPhase = this.options.deprecationPhase || 0
+    const fromLara = !!getQueryParam("launchFromLara") || !!getHashParam("lara")
+    if (!deprecationPhase || fromLara) { return }
     return this.client.confirmDialog({
       title: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'),
       message: this.deprecationMessage(),
@@ -544,21 +540,21 @@ class DocumentStoreProvider extends ProviderInterface {
       noTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'),
       hideNoButton: deprecationPhase >= 3,
       callback: () => {
-        this.disableForNextSave = true;
-        return this.client.saveFileAsDialog();
+        this.disableForNextSave = true
+        return this.client.saveFileAsDialog()
       },
       rejectCallback: () => {
         if (deprecationPhase > 1) {
-          return this.client.appOptions.autoSaveInterval = null;
+          return this.client.appOptions.autoSaveInterval = null
         }
       }
-    });
+    })
   }
 }
-DocumentStoreProvider.initClass();
+DocumentStoreProvider.initClass()
 
-module.exports = DocumentStoreProvider;
+module.exports = DocumentStoreProvider
 
 function __guard__(value, transform) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

@@ -1,0 +1,97 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "amd": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "globals": {
+    "$": false,
+    "createReactClassFactory": false,
+    "createReactFactory":false,
+    "ReactDOMFactories": false,
+    "ReactDOM":false,
+    "createReactClass": false,
+    "_": false
+    // "DG": false, "Raphael": false, "$": false, "SC": false, "sc_require": false,
+    // "sc_super": false, "static_url": false, "NO": false, "YES": false,
+    // "module": false, "require": false
+  },
+  "plugins": ["react"],
+  "extends": [ "eslint:recommended", "plugin:react/recommended" ],
+  "settings": {
+    "react": {
+      "createClass": "createReactClass", // Regex for Component Factory to use,
+                                         // default to "createReactClass"
+      "pragma": "React",  // Pragma to use, default to "React"
+      "version": "detect" // React version. "detect" automatically picks the version you have installed.
+                          // You can also use `16.0`, `16.3`, etc, if you want to override the detected value.
+                          // default to latest and warns if missing
+                          // It will default to "detect" in the future
+    }
+  },
+  "rules": {
+    // possible errors
+    // "no-console": "off",    // 19 console statements
+    "no-extra-parens": "off",   // liberal use of extra parens
+    "no-unreachable": "error",
+    "no-unsafe-negation": "error",
+
+    // best practices
+    "array-callback-return": "error",
+    "block-scoped-var": "warn",
+    "consistent-return": "off", // liberal use of inconsistent returns, e.g. SproutCore properties
+    "dot-notation": ["warn", { "allowKeywords": false }],
+    "eqeqeq": ["error", "allow-null"],
+    "no-alert": "error",
+    "no-caller": "error",
+    "no-eval": "error",
+    // "no-extra-bind": "off", // 18 extra binds
+    "no-global-assign": "error",
+    "no-invalid-this": "error",
+    "no-loop-func": "warn",
+    "no-new-wrappers": "error",
+    "no-proto": "error",
+    "no-sequences": "error",
+    "no-unmodified-loop-condition": "error",
+    "no-unused-expressions": ["error", { "allowShortCircuit": true }],
+    "no-useless-call": "error",
+    "no-useless-concat": "warn",
+    "no-useless-escape": "off", // 34 unnecessary escapes
+    "no-useless-return": "error",
+    "no-with": "error",
+    "radix": "error",
+    "wrap-iife": ["warn", "any"],
+
+    // strict mode
+    "strict": "off",
+
+    // variables
+    "no-shadow-restricted-names": "error",
+    "no-unused-vars": ["warn", { "vars": "all", "args": "none" }],
+    "no-use-before-define": "off",  // 169 used before defined
+
+    // node.js/CommonJS
+    "no-mixed-requires": "warn",
+
+    // stylistic issues
+    "eol-last": "off",  // 13 files missing final EOLs
+    "func-name-matching": "error",
+    "new-cap": ["warn", { "capIsNew": false }],
+    "new-parens": "warn",
+    "no-bitwise": "warn",
+    "no-lonely-if": "off",  // 8 lonely ifs
+    "no-underscore-dangle": "off",  // liberal use of leading underscores
+    "no-unneeded-ternary": "warn",
+    "no-whitespace-before-property": "warn",
+    "quote-props": ["error", "as-needed", { "keywords": true, "unnecessary": false }],
+    "quotes": "off",
+    "semi": ["error", "never"],
+    "react/display-name": "off",
+    "react/prop-types": "off", // TODO: FIX THIS
+    "react/no-find-dom-node": "off" // TODO: Fix this!!!
+  }
+}

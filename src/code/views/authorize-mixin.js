@@ -7,8 +7,8 @@
  */
 const AuthorizeMixin = {
   getInitialState() {
-    this._isAuthorized = false;
-    return {authorized: false};
+    this._isAuthorized = false
+    return {authorized: false}
   },
 
   // The constraints here are somewhat subtle. We want to try to
@@ -39,33 +39,33 @@ const AuthorizeMixin = {
     // code should be prepared for either eventuality.
     return this.props.provider.authorized(authorized => {
       // always set the instance variable
-      this._isAuthorized = authorized;
+      this._isAuthorized = authorized
       // set the state if we can
       if (this._isMounted) {
-        return this.setState({authorized});
+        return this.setState({authorized})
       }
-    });
+    })
   },
 
   componentDidMount() {
-    this._isMounted = true;
+    this._isMounted = true
     // synchronize state if necessary
     if (this.state.authorized !== this._isAuthorized) {
-      return this.setState({authorized: this._isAuthorized});
+      return this.setState({authorized: this._isAuthorized})
     }
   },
 
   componentWillUnmount() {
-    return this._isMounted = false;
+    return this._isMounted = false
   },
 
   render() {
     if (this._isAuthorized || this.state.authorized) {
-      return this.renderWhenAuthorized();
+      return this.renderWhenAuthorized()
     } else {
-      return this.props.provider.renderAuthorizationDialog();
+      return this.props.provider.renderAuthorizationDialog()
     }
   }
-};
+}
 
-module.exports = AuthorizeMixin;
+module.exports = AuthorizeMixin

@@ -5,14 +5,14 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view'));
-const TabbedPanel = require('./tabbed-panel-view');
-const LocalFileTab = createReactFactory(require('./local-file-tab-list-view'));
-const UrlTab = createReactFactory(require('./url-tab-view'));
+const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view'))
+const TabbedPanel = require('./tabbed-panel-view')
+const LocalFileTab = createReactFactory(require('./local-file-tab-list-view'))
+const UrlTab = createReactFactory(require('./url-tab-view'))
 
-const tr = require('../utils/translate');
+const tr = require('../utils/translate')
 
-const LocalFileImportTab = createReactClassFactory;
+const LocalFileImportTab = createReactClassFactory
 
 module.exports = createReactClass({
   displayName: 'ImportTabbedDialog',
@@ -20,7 +20,7 @@ module.exports = createReactClass({
   importFile(metadata, via) {
     switch (metadata.provider) {
       case 'localFile':
-        var reader = new FileReader();
+        var reader = new FileReader()
         reader.onload = loaded => {
           const data = {
             file: {
@@ -29,15 +29,15 @@ module.exports = createReactClass({
               object: metadata.providerData.file
             },
             via
-          };
-          return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback(data) : undefined);
-        };
-        return reader.readAsText(metadata.providerData.file);
+          }
+          return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback(data) : undefined)
+        }
+        return reader.readAsText(metadata.providerData.file)
     }
   },
 
   importUrl(url, via) {
-    return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback({url, via}) : undefined);
+    return (typeof this.props.dialog.callback === 'function' ? this.props.dialog.callback({url, via}) : undefined)
   },
 
   render() {
@@ -65,7 +65,7 @@ module.exports = createReactClass({
           close: this.props.close
         })
       })
-    ];
-    return (ModalTabbedDialog({title: (tr("~DIALOG.IMPORT_DATA")), close: this.props.close, tabs, selectedTabIndex: 0}));
+    ]
+    return (ModalTabbedDialog({title: (tr("~DIALOG.IMPORT_DATA")), close: this.props.close, tabs, selectedTabIndex: 0}))
   }
-});
+})

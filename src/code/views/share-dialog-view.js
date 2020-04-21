@@ -7,29 +7,29 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = ReactDOMFactories;
+const {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = ReactDOMFactories
 
-const SHOW_LONGEVITY_WARNING = false;
+const SHOW_LONGEVITY_WARNING = false
 
-const ModalDialog = createReactFactory(require('./modal-dialog-view'));
-const getQueryParam = require('../utils/get-query-param');
+const ModalDialog = createReactFactory(require('./modal-dialog-view'))
+const getQueryParam = require('../utils/get-query-param')
 
 // This function is named "tr" elsewhere in this codeline.
 // Using the fullname, "translate" here, to avoid the potential overloading
 // of the react function, "tr".
-const translate = require('../utils/translate');
-const socialIcons = require('svg-social-icons/lib/icons.json');
+const translate = require('../utils/translate')
+const socialIcons = require('svg-social-icons/lib/icons.json')
 
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',
 
   getInitialState() {
-    return {data: socialIcons[this.props.icon]};
+    return {data: socialIcons[this.props.icon]}
   },
 
   clicked() {
-    return window.open(this.props.url);
+    return window.open(this.props.url)
   },
 
   render() {
@@ -47,9 +47,9 @@ const SocialIcon = createReactClassFactory({
           ))
         ))
       ))
-    ));
+    ))
   }
-});
+})
 
 module.exports = createReactClass({
 
@@ -66,165 +66,165 @@ module.exports = createReactClass({
       fullscreenScaling: true,
       graphVisToggles: false,
       tabSelected: 'link'
-    };
+    }
   },
 
   getSharedDocumentId() {
     // extract sharedDocumentId from CloudContent
     if (this.props.client.isShared()) {
-      return (this.props.client.state.currentContent != null ? this.props.client.state.currentContent.get("sharedDocumentId") : undefined);
+      return (this.props.client.state.currentContent != null ? this.props.client.state.currentContent.get("sharedDocumentId") : undefined)
     } else {
-      return null;
+      return null
     }
   },
 
   getShareLink() {
-    const sharedDocumentId = this.getSharedDocumentId();
+    const sharedDocumentId = this.getSharedDocumentId()
     if (sharedDocumentId) {
       // share link combines document URL with sharedDocumentId
-      return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`;
+      return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`
     } else {
-      return null;
+      return null
     }
   },
 
   getEmbed() {
     if (this.getShareLink()) {
-      return `<iframe width="398px" height="313px" frameborder="no" scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" src="${this.getShareLink()}"></iframe>`;
+      return `<iframe width="398px" height="313px" frameborder="no" scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" src="${this.getShareLink()}"></iframe>`
     } else {
-      return null;
+      return null
     }
   },
 
   getLara() {
-    const sharedDocumentId = this.getSharedDocumentId();
+    const sharedDocumentId = this.getSharedDocumentId()
     if (sharedDocumentId) {
-      let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org';
-      while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1); }  // remove trailing slash
-      const graphVisToggles = this.state.graphVisToggles ? '?app=is' : '';
+      let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
+      while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1) }  // remove trailing slash
+      const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
       // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-      const server = encodeURIComponent(this.state.serverUrl + graphVisToggles);
+      const server = encodeURIComponent(this.state.serverUrl + graphVisToggles)
       // Other params are handled by document server itself:
-      const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : '';
-      const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : '';
-      return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`;
+      const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
+      const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
+      return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`
     } else {
-      return null;
+      return null
     }
   },
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy(e) {
-    let mark, range, selection;
-    e.preventDefault();
-    let copied = false;
+    let mark, range, selection
+    e.preventDefault()
+    let copied = false
     const toCopy = (() => { switch (this.state.tabSelected) {
-      case 'embed': return this.getEmbed();
-      case 'link': return this.getShareLink();
-      case 'lara': return this.getLara();
-    } })();
+      case 'embed': return this.getEmbed()
+      case 'link': return this.getShareLink()
+      case 'lara': return this.getLara()
+    } })()
     try {
-      mark = document.createElement('mark');
-      mark.textContent = toCopy;
+      mark = document.createElement('mark')
+      mark.textContent = toCopy
       // reset user styles for span element
-      mark.style.all = 'unset';
+      mark.style.all = 'unset'
       // prevents scrolling to the end of the page
-      mark.style.position = 'fixed';
-      mark.style.top = 0;
-      mark.style.clip = 'rect(0, 0, 0, 0)';
+      mark.style.position = 'fixed'
+      mark.style.top = 0
+      mark.style.clip = 'rect(0, 0, 0, 0)'
       // used to preserve spaces and line breaks
-      mark.style.whiteSpace = 'pre';
+      mark.style.whiteSpace = 'pre'
       // do not inherit user-select (it may be `none`)
-      mark.style.webkitUserSelect = 'text';
-      mark.style.MozUserSelect = 'text';
-      mark.style.msUserSelect = 'text';
-      mark.style.userSelect = 'text';
-      document.body.appendChild(mark);
+      mark.style.webkitUserSelect = 'text'
+      mark.style.MozUserSelect = 'text'
+      mark.style.msUserSelect = 'text'
+      mark.style.userSelect = 'text'
+      document.body.appendChild(mark)
 
-      selection = document.getSelection();
-      selection.removeAllRanges();
+      selection = document.getSelection()
+      selection.removeAllRanges()
 
-      range = document.createRange();
-      range.selectNode(mark);
-      selection.addRange(range);
+      range = document.createRange()
+      range.selectNode(mark)
+      selection.addRange(range)
 
-      return copied = document.execCommand('copy');
+      return copied = document.execCommand('copy')
     } catch (error) {
       try {
-        window.clipboardData.setData('text', toCopy);
-        return copied = true;
+        window.clipboardData.setData('text', toCopy)
+        return copied = true
       } catch (error1) {
-        return copied = false;
+        return copied = false
       }
     }
     finally {
       if (selection) {
         if (typeof selection.removeRange === 'function') {
-          selection.removeRange(range);
+          selection.removeRange(range)
         } else {
-          selection.removeAllRanges();
+          selection.removeAllRanges()
         }
       }
       if (mark) {
-        document.body.removeChild(mark);
+        document.body.removeChild(mark)
       }
-      this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"), (translate("~SHARE_DIALOG.COPY_TITLE")));
+      this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"), (translate("~SHARE_DIALOG.COPY_TITLE")))
     }
   },
 
   updateShare() {
-    return this.props.client.shareUpdate();
+    return this.props.client.shareUpdate()
   },
 
   toggleShare(e) {
-    e.preventDefault();
+    e.preventDefault()
     return this.props.client.toggleShare(() => {
       return this.setState({
         link: this.getShareLink(),
         embed: this.getEmbed()
-      });
-    });
+      })
+    })
   },
 
   selectLinkTab() {
-    return this.setState({tabSelected: 'link'});
+    return this.setState({tabSelected: 'link'})
   },
 
   selectEmbedTab() {
-    return this.setState({tabSelected: 'embed'});
+    return this.setState({tabSelected: 'embed'})
   },
 
   selectLaraTab() {
-    return this.setState({tabSelected: 'lara'});
+    return this.setState({tabSelected: 'lara'})
   },
 
   changedServerUrl(event) {
     return this.setState({
-      serverUrl: event.target.value});
+      serverUrl: event.target.value})
   },
 
   changedLaunchButtonText(event) {
     return this.setState({
-      launchButtonText: event.target.value});
+      launchButtonText: event.target.value})
   },
 
   changedAutoscalingPage(event) {
     return this.setState({
-      pageType: event.target.checked ? 'autolaunch' : 'launch'});
+      pageType: event.target.checked ? 'autolaunch' : 'launch'})
   },
 
   changedFullscreenScaling(event) {
     return this.setState({
-      fullscreenScaling: event.target.checked});
+      fullscreenScaling: event.target.checked})
   },
 
   changedGraphVisToggles(event) {
     return this.setState({
-      graphVisToggles: event.target.checked});
+      graphVisToggles: event.target.checked})
   },
 
   render() {
-    const sharing = this.state.link !== null;
+    const sharing = this.state.link !== null
 
     return (ModalDialog({title: (translate('~DIALOG.SHARED')), close: this.props.close},
       (div({className: 'share-dialog'},
@@ -271,7 +271,7 @@ module.exports = createReactClass({
                     (div({},
                       (textarea({value: this.state.embed, readOnly: true}))
                     ))
-                  ));
+                  ))
                 case 'lara':
                   return (div({},
                     translate("~SHARE_DIALOG.LARA_MESSAGE"),
@@ -306,7 +306,7 @@ module.exports = createReactClass({
                         translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")
                       ))
                     ))
-                  ));
+                  ))
                 default:
                   return (div({},
                     translate("~SHARE_DIALOG.LINK_MESSAGE"),
@@ -320,7 +320,7 @@ module.exports = createReactClass({
                       (SocialIcon({icon: 'twitter', url: `https://twitter.com/home?status=${encodeURIComponent(this.state.link)}`})))
                       // not working with url parameter: (SocialIcon {icon: 'google', url: "https://plus.google.com/share?url=#{encodeURIComponent @state.link}"})
                     )
-                  ));
+                  ))
               } })()
             ))
           )) : undefined,
@@ -330,6 +330,6 @@ module.exports = createReactClass({
         )),
         SHOW_LONGEVITY_WARNING ? (div({className: 'longevity-warning'}, translate('~SHARE_DIALOG.LONGEVITY_WARNING'))) : undefined
       ))
-    ));
+    ))
   }
-});
+})

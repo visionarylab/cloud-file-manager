@@ -5,11 +5,11 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, button} = ReactDOMFactories;
+const {div, button} = ReactDOMFactories
 
-const ModalDialog = createReactFactory(require('./modal-dialog-view'));
+const ModalDialog = createReactFactory(require('./modal-dialog-view'))
 
-const tr = require('../utils/translate');
+const tr = require('../utils/translate')
 
 module.exports = createReactClass({
 
@@ -17,9 +17,9 @@ module.exports = createReactClass({
 
   close() {
     if (typeof this.props.close === 'function') {
-      this.props.close();
+      this.props.close()
     }
-    return (typeof this.props.callback === 'function' ? this.props.callback() : undefined);
+    return (typeof this.props.callback === 'function' ? this.props.callback() : undefined)
   },
 
   render() {
@@ -30,6 +30,6 @@ module.exports = createReactClass({
           (button({onClick: this.close}, tr('~ALERT_DIALOG.CLOSE')))
         ))
       ))
-    ));
+    ))
   }
-});
+})

@@ -5,7 +5,6 @@ const ReplaceInFileWebpackPlugin = require('replace-in-file-webpack-plugin')
 const {
   entry,
   dest,
-  assetDest,
   assets,
   outputFileName,
   replacementStrings
@@ -21,9 +20,14 @@ module.exports = (env) => ({
   },
   module: {
     rules: [
+      // {
+      //   test: /\.coffee$/,
+      //   use: ['coffee-loader']
+      // },
       {
-        test: /\.coffee$/,
-        use: ['coffee-loader']
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       },
       {
         test: /\.styl$/,
@@ -43,7 +47,7 @@ module.exports = (env) => ({
     ]
   },
   resolve: {
-    extensions: [ '.coffee', '.js', '.json', '.styl' ]
+    extensions: ['.tsx', '.ts', '.js', '.json', '.styl']
   },
   plugins: [
     new MiniCssExtractPlugin(),
