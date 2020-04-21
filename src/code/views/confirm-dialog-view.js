@@ -1,28 +1,41 @@
-{div, button} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, button} = ReactDOMFactories;
 
-ModalDialog = createReactFactory require './modal-dialog-view'
+const ModalDialog = createReactFactory(require('./modal-dialog-view'));
 
-tr = require '../utils/translate'
+const tr = require('../utils/translate');
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'ConfirmDialogView'
+  displayName: 'ConfirmDialogView',
 
-  confirm: ->
-    @props.callback?()
-    @props.close?()
+  confirm() {
+    if (typeof this.props.callback === 'function') {
+      this.props.callback();
+    }
+    return (typeof this.props.close === 'function' ? this.props.close() : undefined);
+  },
 
-  reject: ->
-    @props.rejectCallback?()
-    @props.close?()
+  reject() {
+    if (typeof this.props.rejectCallback === 'function') {
+      this.props.rejectCallback();
+    }
+    return (typeof this.props.close === 'function' ? this.props.close() : undefined);
+  },
 
-  render: ->
-    (ModalDialog {title: (@props.title or tr '~CONFIRM_DIALOG.TITLE'), close: @reject, zIndex: 500},
-      (div {className: 'confirm-dialog'},
-        (div {className: 'confirm-dialog-message', dangerouslySetInnerHTML: {__html: @props.message}})
-        (div {className: 'buttons'},
-          (button {onClick: @confirm}, @props.yesTitle or tr '~CONFIRM_DIALOG.YES')
-          ((button {onClick: @reject}, @props.noTitle or tr '~CONFIRM_DIALOG.NO') if not @props.hideNoButton)
-        )
-      )
-    )
+  render() {
+    return (ModalDialog({title: (this.props.title || tr('~CONFIRM_DIALOG.TITLE')), close: this.reject, zIndex: 500},
+      (div({className: 'confirm-dialog'},
+        (div({className: 'confirm-dialog-message', dangerouslySetInnerHTML: {__html: this.props.message}})),
+        (div({className: 'buttons'},
+          (button({onClick: this.confirm}, this.props.yesTitle || tr('~CONFIRM_DIALOG.YES'))),
+          (!this.props.hideNoButton ? (button({onClick: this.reject}, this.props.noTitle || tr('~CONFIRM_DIALOG.NO'))) : undefined)
+        ))
+      ))
+    ));
+  }
+});

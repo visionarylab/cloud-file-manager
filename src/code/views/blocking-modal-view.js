@@ -1,28 +1,37 @@
-{div} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div} = ReactDOMFactories;
 
-Modal = createReactFactory require './modal-view'
+const Modal = createReactFactory(require('./modal-view'));
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'BlockingModal'
+  displayName: 'BlockingModal',
 
-  close: ->
-    @props.close?()
+  close() {
+    return (typeof this.props.close === 'function' ? this.props.close() : undefined);
+  },
 
-  # used by CODAP to dismiss the startup dialog if a file is dropped on it
-  drop: (e) ->
-    @props.onDrop? e
+  // used by CODAP to dismiss the startup dialog if a file is dropped on it
+  drop(e) {
+    return (typeof this.props.onDrop === 'function' ? this.props.onDrop(e) : undefined);
+  },
 
-  render: ->
-    (Modal {close: @props.close},
-      (div {className: 'modal-dialog', onDrop: @drop},
-        (div {className: 'modal-dialog-wrapper'},
-          (div {className: 'modal-dialog-title'},
-            @props.title or 'Untitled Dialog'
-          )
-          (div {className: 'modal-dialog-workspace'},
-            (div {className: 'modal-dialog-blocking-message'}, @props.message)
-          )
-        )
-      )
-    )
+  render() {
+    return (Modal({close: this.props.close},
+      (div({className: 'modal-dialog', onDrop: this.drop},
+        (div({className: 'modal-dialog-wrapper'},
+          (div({className: 'modal-dialog-title'},
+            this.props.title || 'Untitled Dialog'
+          )),
+          (div({className: 'modal-dialog-workspace'},
+            (div({className: 'modal-dialog-blocking-message'}, this.props.message))
+          ))
+        ))
+      ))
+    ));
+  }
+});

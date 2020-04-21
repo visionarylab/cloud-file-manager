@@ -1,72 +1,91 @@
-{div, input, button} = ReactDOMFactories
-tr = require '../utils/translate'
-CloudMetadata = (require '../providers/provider-interface').CloudMetadata
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, input, button} = ReactDOMFactories;
+const tr = require('../utils/translate');
+const { CloudMetadata } = (require('../providers/provider-interface'));
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'LocalFileListTab'
+  displayName: 'LocalFileListTab',
 
-  # Standard React 'drop' event handlers are triggered after client 'drop' event handlers.
-  # By explicitly installing DOM event handlers we get first crack at the 'drop' event.
-  componentDidMount: ->
-    @dropZoneRef.addEventListener 'drop', @drop
-    return
+  // Standard React 'drop' event handlers are triggered after client 'drop' event handlers.
+  // By explicitly installing DOM event handlers we get first crack at the 'drop' event.
+  componentDidMount() {
+    this.dropZoneRef.addEventListener('drop', this.drop);
+  },
 
-  componentWillUnmount: ->
-    @dropZoneRef.removeEventListener 'drop', @drop
-    return
+  componentWillUnmount() {
+    this.dropZoneRef.removeEventListener('drop', this.drop);
+  },
 
-  getInitialState: ->
-    hover: false
+  getInitialState() {
+    return {hover: false};
+  },
 
-  changed: (e) ->
-    files = e.target.files
-    if files.length > 1
-      @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"
-    else if files.length is 1
-      @openFile files[0], 'select'
+  changed(e) {
+    const { files } = e.target;
+    if (files.length > 1) {
+      return this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_SELECTED"));
+    } else if (files.length === 1) {
+      return this.openFile(files[0], 'select');
+    }
+  },
 
-  openFile: (file, via) ->
-    metadata = new CloudMetadata
-      name: file.name.split('.')[0]
-      type: CloudMetadata.File
-      parent: null
-      provider: @props.provider
-      providerData:
-        file: file
-    @props.dialog.callback? metadata, via
-    @props.close()
+  openFile(file, via) {
+    const metadata = new CloudMetadata({
+      name: file.name.split('.')[0],
+      type: CloudMetadata.File,
+      parent: null,
+      provider: this.props.provider,
+      providerData: {
+        file
+      }
+    });
+    if (typeof this.props.dialog.callback === 'function') {
+      this.props.dialog.callback(metadata, via);
+    }
+    return this.props.close();
+  },
 
-  cancel: ->
-    @props.close()
+  cancel() {
+    return this.props.close();
+  },
 
-  dragEnter: (e) ->
-    e.preventDefault()
-    @setState hover: true
+  dragEnter(e) {
+    e.preventDefault();
+    return this.setState({hover: true});
+  },
 
-  dragLeave: (e) ->
-    e.preventDefault()
-    @setState hover: false
+  dragLeave(e) {
+    e.preventDefault();
+    return this.setState({hover: false});
+  },
 
-  drop: (e) ->
-    e.preventDefault()
-    e.stopPropagation()
-    droppedFiles = if e.dataTransfer then e.dataTransfer.files else e.target.files
-    if droppedFiles.length > 1
-      @props.client.alert tr "~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"
-    else if droppedFiles.length is 1
-      @openFile droppedFiles[0], 'drop'
-    return
+  drop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFiles = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+    if (droppedFiles.length > 1) {
+      this.props.client.alert(tr("~LOCAL_FILE_DIALOG.MULTIPLE_FILES_DROPPED"));
+    } else if (droppedFiles.length === 1) {
+      this.openFile(droppedFiles[0], 'drop');
+    }
+  },
 
-  render: ->
-    dropClass = "dropArea#{if @state.hover then ' dropHover' else ''}"
-    (div {className: 'dialogTab localFileLoad'},
-      # 'drop' event handler installed as DOM event handler in componentDidMount()
-      (div {ref: ((elt) => @dropZoneRef = elt), className: dropClass, onDragEnter: @dragEnter, onDragLeave: @dragLeave},
-        (tr "~LOCAL_FILE_DIALOG.DROP_FILE_HERE")
-        (input {type: 'file', onChange: @changed})
-      )
-      (div {className: 'buttons'},
-        (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
-      )
-    )
+  render() {
+    const dropClass = `dropArea${this.state.hover ? ' dropHover' : ''}`;
+    return (div({className: 'dialogTab localFileLoad'},
+      // 'drop' event handler installed as DOM event handler in componentDidMount()
+      (div({ref: (elt => { return this.dropZoneRef = elt; }), className: dropClass, onDragEnter: this.dragEnter, onDragLeave: this.dragLeave},
+        (tr("~LOCAL_FILE_DIALOG.DROP_FILE_HERE")),
+        (input({type: 'file', onChange: this.changed}))
+      )),
+      (div({className: 'buttons'},
+        (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
+      ))
+    ));
+  }
+});

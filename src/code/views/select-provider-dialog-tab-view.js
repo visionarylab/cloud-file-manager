@@ -1,7 +1,8 @@
-{div} = ReactDOMFactories
+const {div} = ReactDOMFactories;
 
-SelectProviderDialogTab = createReactClassFactory
-  displayName: 'SelectProviderDialogTab'
-  render: -> (div {}, "TODO: SelectProviderDialogTab: #{@props.provider.displayName}")
+const SelectProviderDialogTab = createReactClassFactory({
+  displayName: 'SelectProviderDialogTab',
+  render() { return (div({}, `TODO: SelectProviderDialogTab: ${this.props.provider.displayName}`)); }
+});
 
-module.exports = SelectProviderDialogTab
+module.exports = SelectProviderDialogTab;

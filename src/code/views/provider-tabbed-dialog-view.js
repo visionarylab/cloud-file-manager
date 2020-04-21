@@ -1,36 +1,58 @@
-ModalTabbedDialog = createReactFactory require './modal-tabbed-dialog-view'
-TabbedPanel = require './tabbed-panel-view'
-CloudMetadata = (require '../providers/provider-interface').CloudMetadata
-FileDialogTab = createReactFactory require './file-dialog-tab-view'
-SelectProviderDialogTab = createReactFactory require './select-provider-dialog-tab-view'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view'));
+const TabbedPanel = require('./tabbed-panel-view');
+const { CloudMetadata } = (require('../providers/provider-interface'));
+const FileDialogTab = createReactFactory(require('./file-dialog-tab-view'));
+const SelectProviderDialogTab = createReactFactory(require('./select-provider-dialog-tab-view'));
 
-tr = require '../utils/translate'
+const tr = require('../utils/translate');
 
-module.exports = createReactClass
-  displayName: 'ProviderTabbedDialog'
+module.exports = createReactClass({
+  displayName: 'ProviderTabbedDialog',
 
-  render:  ->
-    [capability, TabComponent] = switch @props.dialog.action
-      when 'openFile' then ['list', FileDialogTab]
-      when 'saveFile', 'saveFileAs' then ['save', FileDialogTab]
-      when 'saveSecondaryFileAs' then ['export', FileDialogTab]
-      when 'createCopy' then ['save', FileDialogTab]
-      when 'selectProvider' then [null, SelectProviderDialogTab]
+  render() {
+    const [capability, TabComponent] = Array.from((() => { switch (this.props.dialog.action) {
+      case 'openFile': return ['list', FileDialogTab];
+      case 'saveFile': case 'saveFileAs': return ['save', FileDialogTab];
+      case 'saveSecondaryFileAs': return ['export', FileDialogTab];
+      case 'createCopy': return ['save', FileDialogTab];
+      case 'selectProvider': return [null, SelectProviderDialogTab];
+    } })());
 
-    tabs = []
-    selectedTabIndex = 0
-    for provider, i in @props.client.state.availableProviders
-      if not capability or provider.capabilities[capability]
-        filteredTabComponent = provider.filterTabComponent capability, TabComponent
-        if filteredTabComponent
-          component = filteredTabComponent
-            client: @props.client
-            dialog: @props.dialog
-            close: @props.close
-            provider: provider
-          onSelected = if provider.onProviderTabSelected then provider.onProviderTabSelected.bind(provider) else null
-          tabs.push TabbedPanel.Tab {key: i, label: (tr provider.displayName), component: component, capability: capability, onSelected: onSelected}
-          if provider.name is @props.client.state.metadata?.provider?.name
-            selectedTabIndex = tabs.length - 1
+    const tabs = [];
+    let selectedTabIndex = 0;
+    for (let i = 0; i < this.props.client.state.availableProviders.length; i++) {
+      const provider = this.props.client.state.availableProviders[i];
+      if (!capability || provider.capabilities[capability]) {
+        const filteredTabComponent = provider.filterTabComponent(capability, TabComponent);
+        if (filteredTabComponent) {
+          const component = filteredTabComponent({
+            client: this.props.client,
+            dialog: this.props.dialog,
+            close: this.props.close,
+            provider
+          });
+          const onSelected = provider.onProviderTabSelected ? provider.onProviderTabSelected.bind(provider) : null;
+          tabs.push(TabbedPanel.Tab({key: i, label: (tr(provider.displayName)), component, capability, onSelected}));
+          if (provider.name === __guard__(this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined, x => x.name)) {
+            selectedTabIndex = tabs.length - 1;
+          }
+        }
+      }
+    }
 
-    (ModalTabbedDialog {title: (tr @props.dialog.title), close: @props.close, tabs: tabs, selectedTabIndex: selectedTabIndex})
+    return (ModalTabbedDialog({title: (tr(this.props.dialog.title)), close: this.props.close, tabs, selectedTabIndex}));
+  }
+});
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

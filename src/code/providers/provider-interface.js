@@ -1,257 +1,372 @@
-{div} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS201: Simplify complex destructure assignments
+ * DS203: Remove `|| {}` from converted for-own loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div} = ReactDOMFactories;
 
-isString = require '../utils/is-string'
+const isString = require('../utils/is-string');
 
-class CloudFile
-  constructor: (options) ->
-    {@content, @metadata} = options
+class CloudFile {
+  constructor(options) {
+    ({content: this.content, metadata: this.metadata} = options);
+  }
+}
 
-class CloudMetadata
-  constructor: (options) ->
-    {@name, @type, @description, @content, @url, @provider = null, @parent = null, @providerData={}, @overwritable, @sharedContentId, @sharedContentSecretKey, @mimeType} = options
-    @_updateFilename()
+class CloudMetadata {
+  static initClass() {
+  
+    this.Folder = 'folder';
+    this.File = 'file';
+    this.Label = 'label';
+  
+    this.Extension = null;
+  }
+  constructor(options) {
+    let val, val1, val2;
+    this.name = options.name,
+      this.type = options.type,
+      this.description = options.description,
+      this.content = options.content,
+      this.url = options.url,
+      val = options.provider,
+      this.provider = val != null ? val : null,
+      val1 = options.parent,
+      this.parent = val1 != null ? val1 : null,
+      val2 = options.providerData,
+      this.providerData = val2 != null ? val2 : {},
+      this.overwritable = options.overwritable,
+      this.sharedContentId = options.sharedContentId,
+      this.sharedContentSecretKey = options.sharedContentSecretKey,
+      this.mimeType = options.mimeType;
+    this._updateFilename();
+  }
 
-  @Folder: 'folder'
-  @File: 'file'
-  @Label: 'label'
+  static mapTypeToCloudMetadataType(iType) {
+    // for now mapping is 1-to-1 defaulting to 'file'
+    return iType || this.File;
+  }
 
-  @Extension: null
+  static withExtension(name, defaultExtension, keepOriginalExtension) {
+    if (keepOriginalExtension && ~name.indexOf(".")) {
+      return name;
+    }
+    const extension = CloudMetadata.Extension || defaultExtension;
+    if (extension) {
+      return this.newExtension(name, extension);
+    } else {
+      return name;
+    }
+  }
 
-  @mapTypeToCloudMetadataType: (iType) ->
-    # for now mapping is 1-to-1 defaulting to 'file'
-    iType or @File
+  static newExtension(name, extension) {
+    // drop last extension, if there is one
+    name = name.substr(0, name.lastIndexOf('.')) || name;
+    return name + "." + extension;
+  }
 
-  @withExtension: (name, defaultExtension, keepOriginalExtension) ->
-    if keepOriginalExtension and ~name.indexOf(".")
-      return name
-    extension = CloudMetadata.Extension or defaultExtension
-    if extension
-      @newExtension name, extension
-    else
-      name
+  path() {
+    const _path = [];
+    let { parent } = this;
+    while (parent !== null) {
+      _path.unshift(parent);
+      ({ parent } = parent);
+    }
+    return _path;
+  }
 
-  @newExtension: (name, extension) ->
-    # drop last extension, if there is one
-    name = name.substr(0, name.lastIndexOf('.')) or name
-    name + "." + extension
+  rename(newName) {
+    this.name = newName;
+    return this._updateFilename();
+  }
 
-  path: ->
-    _path = []
-    parent = @parent
-    while parent isnt null
-      _path.unshift parent
-      parent = parent.parent
-    _path
+  _updateFilename() {
+    this.filename = this.name;
+    if (((this.name != null ? this.name.substr : undefined) != null) && (CloudMetadata.Extension != null) && (this.type === CloudMetadata.File)) {
+      const extLen = CloudMetadata.Extension.length;
+      if (extLen > 0) {
+        // at this point the filename and name are the same so we now check for a file extension
+        const hasCurrentExtension = this.name.substr(-extLen-1) === `.${CloudMetadata.Extension}`;
+        if (hasCurrentExtension) {
+          // remove extension from name for display purposes
+          return this.name = this.name.substr(0, this.name.length - (extLen+1));
+        } else {
+          // add extension to filename for saving purposes
+          return this.filename += `.${CloudMetadata.Extension}`;
+        }
+      }
+    }
+  }
+}
+CloudMetadata.initClass();
 
-  rename: (newName) ->
-    @name = newName
-    @_updateFilename()
+// singleton that can create CloudContent wrapped with global options
+class CloudContentFactory {
+  constructor() {
+    this.envelopeMetadata = {};
+  }
 
-  _updateFilename: ->
-    @filename = @name
-    if @name?.substr? and CloudMetadata.Extension? and @type is CloudMetadata.File
-      extLen = CloudMetadata.Extension.length
-      if extLen > 0
-        # at this point the filename and name are the same so we now check for a file extension
-        hasCurrentExtension = @name.substr(-extLen-1) is ".#{CloudMetadata.Extension}"
-        if hasCurrentExtension
-          # remove extension from name for display purposes
-          @name = @name.substr(0, @name.length - (extLen+1))
-        else
-          # add extension to filename for saving purposes
-          @filename += "." + CloudMetadata.Extension
+  // set initial envelopeMetadata or update individual properties
+  setEnvelopeMetadata(envelopeMetadata) {
+    return (() => {
+      const result = [];
+      for (let key in envelopeMetadata) {
+        result.push(this.envelopeMetadata[key] = envelopeMetadata[key]);
+      }
+      return result;
+    })();
+  }
 
-# singleton that can create CloudContent wrapped with global options
-class CloudContentFactory
-  constructor: ->
-    @envelopeMetadata = {}
+  // returns new CloudContent containing enveloped data
+  createEnvelopedCloudContent(content) {
+    return new CloudContent((this.envelopContent(content)), (this._identifyContentFormat(content)));
+  }
 
-  # set initial envelopeMetadata or update individual properties
-  setEnvelopeMetadata: (envelopeMetadata) ->
-    for key of envelopeMetadata
-      @envelopeMetadata[key] = envelopeMetadata[key]
+  // envelops content with metadata, returns an object.
+  // If content was already an object (Object or JSON) with metadata,
+  // any existing metadata will be retained.
+  // Note: calling `envelopContent` may be safely called on something that
+  // has already had `envelopContent` called on it, and will be a no-op.
+  envelopContent(content) {
+    const envelopedCloudContent = this._wrapIfNeeded(content);
+    for (let key in this.envelopeMetadata) {
+      if (envelopedCloudContent[key] == null) { envelopedCloudContent[key] = this.envelopeMetadata[key]; }
+    }
+    return envelopedCloudContent;
+  }
 
-  # returns new CloudContent containing enveloped data
-  createEnvelopedCloudContent: (content) ->
-    new CloudContent (@envelopContent content), (@_identifyContentFormat content)
+  _identifyContentFormat(content) {
+    if ((content == null)) { return; }
+    const result = { isCfmWrapped: false, isPreCfmFormat: false };
+    if (isString(content)) {
+      try { content = JSON.parse(content); } catch (error) {}
+    }
+    // Currently, we assume 'metadata' is top-level property in
+    // non-CFM-wrapped documents. Could put in a client callback
+    // that would identify whether the document required
+    // conversion to eliminate this assumption from the CFM.
+    if (content.metadata) {
+      return result;
+    }
+    if ((content.cfmVersion != null) || (content.content != null)) {
+      result.isCfmWrapped = true;
+    } else {
+      result.isPreCfmFormat = true;
+    }
+    return result;
+  }
 
-  # envelops content with metadata, returns an object.
-  # If content was already an object (Object or JSON) with metadata,
-  # any existing metadata will be retained.
-  # Note: calling `envelopContent` may be safely called on something that
-  # has already had `envelopContent` called on it, and will be a no-op.
-  envelopContent: (content) ->
-    envelopedCloudContent = @_wrapIfNeeded content
-    for key of @envelopeMetadata
-      envelopedCloudContent[key] ?= @envelopeMetadata[key]
-    return envelopedCloudContent
+  // envelops content in {content: content} if needed, returns an object
+  _wrapIfNeeded(content) {
+    if (isString(content)) {
+      try { content = JSON.parse(content); } catch (error) {}
+    }
+    if (content.content != null) {
+      return content;
+    } else {
+      return {content};
+    }
+  }
+}
 
-  _identifyContentFormat: (content) ->
-    return if not content?
-    result = { isCfmWrapped: false, isPreCfmFormat: false }
-    if isString content
-      try content = JSON.parse content
-    # Currently, we assume 'metadata' is top-level property in
-    # non-CFM-wrapped documents. Could put in a client callback
-    # that would identify whether the document required
-    # conversion to eliminate this assumption from the CFM.
-    if content.metadata
-      return result
-    if content.cfmVersion? or content.content?
-      result.isCfmWrapped = true
-    else
-      result.isPreCfmFormat = true
-    result
+class CloudContent {
+  static initClass() {
+    // wrapping defaults to true but can be overridden by client via appOptions
+    this.wrapFileContent = true;
+  }
 
-  # envelops content in {content: content} if needed, returns an object
-  _wrapIfNeeded: (content) ->
-    if isString content
-      try content = JSON.parse content
-    if content.content?
-      return content
-    else
-      return {content}
+  constructor(_, _contentFormat) {
+    if (_ == null) { _ = {}; }
+    this._ = _;
+    this._contentFormat = _contentFormat;
+  }
 
-class CloudContent
-  # wrapping defaults to true but can be overridden by client via appOptions
-  @wrapFileContent: true
+  // getContent and getContentAsJSON return the file content as stored on disk
+  getContent() {
+    if (CloudContent.wrapFileContent) { return this._; } else { return this._.content; }
+  }
+  getContentAsJSON() {
+    return JSON.stringify(CloudContent.wrapFileContent ? this._ : this._.content);
+  }
 
-  constructor: (@_ = {}, @_contentFormat) ->
+  // returns the client-visible content (excluding wrapper for wrapped clients)
+  getClientContent() {
+    return this._.content;
+  }
 
-  # getContent and getContentAsJSON return the file content as stored on disk
-  getContent: ->
-    if CloudContent.wrapFileContent then @_ else @_.content
-  getContentAsJSON: ->
-    JSON.stringify if CloudContent.wrapFileContent then @_ else @_.content
+  requiresConversion() {
+    return (CloudContent.wrapFileContent !== (this._contentFormat != null ? this._contentFormat.isCfmWrapped : undefined)) || (this._contentFormat != null ? this._contentFormat.isPreCfmFormat : undefined);
+  }
 
-  # returns the client-visible content (excluding wrapper for wrapped clients)
-  getClientContent: ->
-    @_.content
+  clone() { return new CloudContent((_.cloneDeep(this._)), (_.cloneDeep(this._contentFormat))); }
 
-  requiresConversion: ->
-    (CloudContent.wrapFileContent isnt @_contentFormat?.isCfmWrapped) or @_contentFormat?.isPreCfmFormat
+  setText(text) { return this._.content = text; }
+  getText() { if (this._.content === null) { return ''; } else if (isString(this._.content)) { return this._.content; } else { return JSON.stringify(this._.content); } }
 
-  clone: -> new CloudContent (_.cloneDeep @_), (_.cloneDeep @_contentFormat)
+  addMetadata(metadata) { return (() => {
+    const result = [];
+    for (let key in metadata) {
+      result.push(this._[key] = metadata[key]);
+    }
+    return result;
+  })(); }
+  get(prop) { return this._[prop]; }
+  set(prop, value) { return this._[prop] = value; }
+  remove(prop) { return delete this._[prop]; }
 
-  setText: (text) -> @_.content = text
-  getText: -> if @_.content is null then '' else if isString(@_.content) then @_.content else JSON.stringify @_.content
+  getSharedMetadata() {
+    // only include necessary fields
+    const shared = {};
+    if (this._._permissions != null) { shared._permissions = this._._permissions; }
+    if (this._.shareEditKey != null) { shared.shareEditKey = this._.shareEditKey; }
+    if (this._.sharedDocumentId != null) { shared.sharedDocumentId = this._.sharedDocumentId; }
+    if (this._.accessKeys != null) { shared.accessKeys = this._.accessKeys; }
+    return shared;
+  }
 
-  addMetadata: (metadata) -> @_[key] = metadata[key] for key of metadata
-  get: (prop) -> @_[prop]
-  set: (prop, value) -> @_[prop] = value
-  remove: (prop) -> delete @_[prop]
+  copyMetadataTo(to) {
+    const metadata = {};
+    for (let key of Object.keys(this._ || {})) {
+      const value = this._[key];
+      if (key !== 'content') {
+        metadata[key] = value;
+      }
+    }
+    return to.addMetadata(metadata);
+  }
+}
+CloudContent.initClass();
 
-  getSharedMetadata: ->
-    # only include necessary fields
-    shared = {}
-    shared._permissions = @_._permissions if @_._permissions?
-    shared.shareEditKey = @_.shareEditKey if @_.shareEditKey?
-    shared.sharedDocumentId = @_.sharedDocumentId if @_.sharedDocumentId?
-    shared.accessKeys = @_.accessKeys if @_.accessKeys?
-    shared
+class ProviderInterface {
 
-  copyMetadataTo: (to) ->
-    metadata = {}
-    for own key, value of @_
-      if key isnt 'content'
-        metadata[key] = value
-    to.addMetadata metadata
+  constructor(options) {
+    ({name: this.name, displayName: this.displayName, urlDisplayName: this.urlDisplayName, capabilities: this.capabilities} = options);
+  }
 
-class ProviderInterface
+  static Available() { return true; }
 
-  constructor: (options) ->
-    {@name, @displayName, @urlDisplayName, @capabilities} = options
+  can(capability) {
+    return !!this.capabilities[capability];
+  }
 
-  @Available: -> true
+  canAuto(capability) {
+    return this.capabilities[capability] === 'auto';
+  }
 
-  can: (capability) ->
-    !!@capabilities[capability]
+  isAuthorizationRequired() {
+    return false;
+  }
 
-  canAuto: (capability) ->
-    @capabilities[capability] is 'auto'
+  authorized(callback) {
+    if (callback) {
+      return callback(true);
+    } else {
+      return true;
+    }
+  }
 
-  isAuthorizationRequired: ->
-    false
+  renderAuthorizationDialog() {
+    return (AuthorizationNotImplementedDialog({provider: this}));
+  }
 
-  authorized: (callback) ->
-    if callback
-      callback true
-    else
-      true
+  renderUser() {
+    return null;
+  }
 
-  renderAuthorizationDialog: ->
-    (AuthorizationNotImplementedDialog {provider: @})
+  filterTabComponent(capability, defaultComponent) {
+    return defaultComponent;
+  }
 
-  renderUser: ->
-    null
+  matchesExtension(name) {
+    if (!name) { return false; }
+    if ((CloudMetadata.ReadableExtensions != null) && (CloudMetadata.ReadableExtensions.length > 0)) {
+      for (let extension of Array.from(CloudMetadata.ReadableExtensions)) {
+        if (name.substr(-extension.length) === extension) { return true; }
+        if (extension === "") {
+          if (!~name.indexOf(".")) { return true; }
+        }
+      }
+      return false;
+    } else {
+      // may seem weird but it means that without an extension specified all files match
+      return true;
+    }
+  }
 
-  filterTabComponent: (capability, defaultComponent) ->
-    defaultComponent
+  handleUrlParams() {
+    return false; // by default, no additional URL handling
+  }
 
-  matchesExtension: (name) ->
-    return false if not name
-    if CloudMetadata.ReadableExtensions? and CloudMetadata.ReadableExtensions.length > 0
-      for extension in CloudMetadata.ReadableExtensions
-        return true if name.substr(-extension.length) is extension
-        if extension is ""
-          return true if !~name.indexOf(".")
-      return false
-    else
-      # may seem weird but it means that without an extension specified all files match
-      true
+  dialog(callback) {
+    return this._notImplemented('dialog');
+  }
 
-  handleUrlParams: ->
-    false # by default, no additional URL handling
+  save(content, metadata, callback) {
+    return this._notImplemented('save');
+  }
 
-  dialog: (callback) ->
-    @_notImplemented 'dialog'
+  saveAsExport(content, metadata, callback) {
+    // default implementation invokes save
+    if (this.can('save', metadata)) {
+      return this.save(content, metadata, callback);
+    } else {
+      return this._notImplemented('saveAsExport');
+    }
+  }
 
-  save: (content, metadata, callback) ->
-    @_notImplemented 'save'
+  load(callback) {
+    return this._notImplemented('load');
+  }
 
-  saveAsExport: (content, metadata, callback) ->
-    # default implementation invokes save
-    if @can 'save', metadata
-      @save content, metadata, callback
-    else
-      @_notImplemented 'saveAsExport'
+  list(metadata, callback) {
+    return this._notImplemented('list');
+  }
 
-  load: (callback) ->
-    @_notImplemented 'load'
+  remove(metadata, callback) {
+    return this._notImplemented('remove');
+  }
 
-  list: (metadata, callback) ->
-    @_notImplemented 'list'
+  rename(metadata, newName, callback) {
+    return this._notImplemented('rename');
+  }
 
-  remove: (metadata, callback) ->
-    @_notImplemented 'remove'
+  close(metadata, callback) {
+    return this._notImplemented('close');
+  }
 
-  rename: (metadata, newName, callback) ->
-    @_notImplemented 'rename'
+  setFolder(metadata) {
+    return this._notImplemented('setFolder');
+  }
 
-  close: (metadata, callback) ->
-    @_notImplemented 'close'
+  canOpenSaved() { return false; }
 
-  setFolder: (metadata) ->
-    @_notImplemented 'setFolder'
+  openSaved(openSavedParams, callback) {
+    return this._notImplemented('openSaved');
+  }
 
-  canOpenSaved: -> false
+  getOpenSavedParams(metadata) {
+    return this._notImplemented('getOpenSavedParams');
+  }
 
-  openSaved: (openSavedParams, callback) ->
-    @_notImplemented 'openSaved'
+  fileOpened() {}
+    // do nothing by default
 
-  getOpenSavedParams: (metadata) ->
-    @_notImplemented 'getOpenSavedParams'
+  _notImplemented(methodName) {
+    // this uses a browser alert instead of client.alert because this is just here for debugging
+    return alert(`${methodName} not implemented for ${this.name} provider`);
+  }
+}
 
-  fileOpened: ->
-    # do nothing by default
-
-  _notImplemented: (methodName) ->
-    # this uses a browser alert instead of client.alert because this is just here for debugging
-    alert "#{methodName} not implemented for #{@name} provider"
-
-module.exports =
-  CloudFile: CloudFile
-  CloudMetadata: CloudMetadata
-  CloudContent: CloudContent
-  cloudContentFactory: new CloudContentFactory()
-  ProviderInterface: ProviderInterface
+module.exports = {
+  CloudFile,
+  CloudMetadata,
+  CloudContent,
+  cloudContentFactory: new CloudContentFactory(),
+  ProviderInterface
+};

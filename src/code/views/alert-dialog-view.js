@@ -1,23 +1,33 @@
-{div, button} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, button} = ReactDOMFactories;
 
-ModalDialog = createReactFactory require './modal-dialog-view'
+const ModalDialog = createReactFactory(require('./modal-dialog-view'));
 
-tr = require '../utils/translate'
+const tr = require('../utils/translate');
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'AlertDialogView'
+  displayName: 'AlertDialogView',
 
-  close: ->
-    @props.close?()
-    @props.callback?()
+  close() {
+    if (typeof this.props.close === 'function') {
+      this.props.close();
+    }
+    return (typeof this.props.callback === 'function' ? this.props.callback() : undefined);
+  },
 
-  render: ->
-    (ModalDialog {title: @props.title or (tr '~ALERT_DIALOG.TITLE'), close: @close, zIndex: 500},
-      (div {className: 'alert-dialog'},
-        (div {className: 'alert-dialog-message', dangerouslySetInnerHTML: {__html: @props.message}})
-        (div {className: 'buttons'},
-          (button {onClick: @close}, tr '~ALERT_DIALOG.CLOSE')
-        )
-      )
-    )
+  render() {
+    return (ModalDialog({title: this.props.title || (tr('~ALERT_DIALOG.TITLE')), close: this.close, zIndex: 500},
+      (div({className: 'alert-dialog'},
+        (div({className: 'alert-dialog-message', dangerouslySetInnerHTML: {__html: this.props.message}})),
+        (div({className: 'buttons'},
+          (button({onClick: this.close}, tr('~ALERT_DIALOG.CLOSE')))
+        ))
+      ))
+    ));
+  }
+});

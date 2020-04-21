@@ -1,52 +1,81 @@
-{div, input, button} = ReactDOMFactories
-tr = require '../utils/translate'
+/*
+ * decaffeinate suggestions:
+ * DS001: Remove Babel/TypeScript constructor workaround
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, input, button} = ReactDOMFactories;
+const tr = require('../utils/translate');
 
-ProviderInterface = (require './provider-interface').ProviderInterface
-cloudContentFactory = (require './provider-interface').cloudContentFactory
-LocalFileListTab = createReactFactory require '../views/local-file-tab-list-view'
-LocalFileSaveTab = createReactFactory require '../views/local-file-tab-save-view'
+const { ProviderInterface } = (require('./provider-interface'));
+const { cloudContentFactory } = (require('./provider-interface'));
+const LocalFileListTab = createReactFactory(require('../views/local-file-tab-list-view'));
+const LocalFileSaveTab = createReactFactory(require('../views/local-file-tab-save-view'));
 
-class LocalFileProvider extends ProviderInterface
+class LocalFileProvider extends ProviderInterface {
+  static initClass() {
+  
+    this.Name = 'localFile';
+  }
 
-  constructor: (@options = {}, @client) ->
-    super
-      name: LocalFileProvider.Name
-      displayName: @options.displayName or (tr '~PROVIDER.LOCAL_FILE')
-      capabilities:
-        save: true
-        resave: false
-        export: true
-        load: true
-        list: true
-        remove: false
-        rename: false
+  constructor(options, client) {
+    {
+      // Hack: trick Babel/TypeScript into allowing this before super.
+      if (false) { super(); }
+      let thisFn = (() => { return this; }).toString();
+      let thisName = thisFn.slice(thisFn.indexOf('return') + 6 + 1, thisFn.indexOf(';')).trim();
+      eval(`${thisName} = this;`);
+    }
+    if (options == null) { options = {}; }
+    this.options = options;
+    this.client = client;
+    super({
+      name: LocalFileProvider.Name,
+      displayName: this.options.displayName || (tr('~PROVIDER.LOCAL_FILE')),
+      capabilities: {
+        save: true,
+        resave: false,
+        export: true,
+        load: true,
+        list: true,
+        remove: false,
+        rename: false,
         close: false
+      }
+    });
+  }
 
-  @Name: 'localFile'
+  filterTabComponent(capability, defaultComponent) {
+    if (capability === 'list') {
+      return LocalFileListTab;
+    } else if ((capability === 'save') || (capability === 'export')) {
+      return LocalFileSaveTab;
+    } else {
+      return defaultComponent;
+    }
+  }
 
-  filterTabComponent: (capability, defaultComponent) ->
-    if capability is 'list'
-      LocalFileListTab
-    else if (capability is 'save') or (capability is 'export')
-      LocalFileSaveTab
-    else
-      defaultComponent
+  list(metadata, callback) {}
+    // not really implemented - we flag it as implemented so we show in the list dialog
 
-  list: (metadata, callback) ->
-    # not really implemented - we flag it as implemented so we show in the list dialog
+  save(content, metadata, callback) {
+    // not really implemented - we flag it as implemented so we can add the download button to the save dialog
+    return (typeof callback === 'function' ? callback(null) : undefined);
+  }
 
-  save: (content, metadata, callback) ->
-    # not really implemented - we flag it as implemented so we can add the download button to the save dialog
-    callback? null
+  load(metadata, callback) {
+    const reader = new FileReader();
+    reader.onload = loaded => callback(null, cloudContentFactory.createEnvelopedCloudContent(loaded.target.result));
+    return reader.readAsText(metadata.providerData.file);
+  }
 
-  load: (metadata, callback) ->
-    reader = new FileReader()
-    reader.onload = (loaded) ->
-      callback null, cloudContentFactory.createEnvelopedCloudContent loaded.target.result
-    reader.readAsText metadata.providerData.file
+  canOpenSaved() {
+    // this prevents the hash to be updated
+    return false;
+  }
+}
+LocalFileProvider.initClass();
 
-  canOpenSaved: ->
-    # this prevents the hash to be updated
-    false
-
-module.exports = LocalFileProvider
+module.exports = LocalFileProvider;

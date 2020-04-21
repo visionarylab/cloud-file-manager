@@ -1,440 +1,542 @@
-ProviderInterface = (require './provider-interface').ProviderInterface
-cloudContentFactory = (require './provider-interface').cloudContentFactory
-CloudMetadata = (require './provider-interface').CloudMetadata
-DocumentStoreUrl = require './document-store-url'
-PatchableContent = require './patchable-content'
-getQueryParam = require '../utils/get-query-param'
-base64 = (require 'js-base64').Base64
-pako = require 'pako'
+/*
+ * decaffeinate suggestions:
+ * DS001: Remove Babel/TypeScript constructor workaround
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const { ProviderInterface } = (require('./provider-interface'));
+const { cloudContentFactory } = (require('./provider-interface'));
+const { CloudMetadata } = (require('./provider-interface'));
+const DocumentStoreUrl = require('./document-store-url');
+const PatchableContent = require('./patchable-content');
+const getQueryParam = require('../utils/get-query-param');
+const base64 = (require('js-base64')).Base64;
+const pako = require('pako');
 
-# This provider supports the lara:... protocol used for documents launched
-# from LARA. It looks up the document ID and access keys from the LARA
-# interactive run state and then uses the V2 DocStore API to read/write
-# documents from the Concord Document Store. It does not support arbitrary
-# opening/saving of documents and so should not appear in the list of
-# places users can choose to open/save files like Google Drive does.
+// This provider supports the lara:... protocol used for documents launched
+// from LARA. It looks up the document ID and access keys from the LARA
+// interactive run state and then uses the V2 DocStore API to read/write
+// documents from the Concord Document Store. It does not support arbitrary
+// opening/saving of documents and so should not appear in the list of
+// places users can choose to open/save files like Google Drive does.
 
-class LaraProvider extends ProviderInterface
+class LaraProvider extends ProviderInterface {
+  static initClass() {
+  
+    this.Name = 'lara';
+  }
 
-  @Name: 'lara'
-
-  constructor: (@options = {}, @client) ->
-    super
-      name: LaraProvider.Name
-      capabilities:
-        save: true
-        resave: true
-        export: false
-        load: true
-        list: false
-        remove: false
-        rename: false
-        close: false
-
-    @urlParams = {
-      documentServer: getQueryParam "documentServer"
-      launchFromLara: getQueryParam "launchFromLara"
+  constructor(options, client) {
+    {
+      // Hack: trick Babel/TypeScript into allowing this before super.
+      if (false) { super(); }
+      let thisFn = (() => { return this; }).toString();
+      let thisName = thisFn.slice(thisFn.indexOf('return') + 6 + 1, thisFn.indexOf(';')).trim();
+      eval(`${thisName} = this;`);
     }
-    @removableQueryParams = ['launchFromLara', 'runAsGuest']
+    if (options == null) { options = {}; }
+    this.options = options;
+    this.client = client;
+    super({
+      name: LaraProvider.Name,
+      capabilities: {
+        save: true,
+        resave: true,
+        export: false,
+        load: true,
+        list: false,
+        remove: false,
+        rename: false,
+        close: false
+      }
+    });
 
-    @laraParams = if @urlParams.launchFromLara then @decodeParams(@urlParams.launchFromLara) else null
-    @openSavedParams = null
-    @collaboratorUrls = []
+    this.urlParams = {
+      documentServer: getQueryParam("documentServer"),
+      launchFromLara: getQueryParam("launchFromLara")
+    };
+    this.removableQueryParams = ['launchFromLara', 'runAsGuest'];
 
-    @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
+    this.laraParams = this.urlParams.launchFromLara ? this.decodeParams(this.urlParams.launchFromLara) : null;
+    this.openSavedParams = null;
+    this.collaboratorUrls = [];
 
-    @savedContent = new PatchableContent(@options.patchObjectHash)
+    this.docStoreUrl = new DocumentStoreUrl(this.urlParams.documentServer);
 
-  encodeParams: (params) ->
-    base64.encodeURI(JSON.stringify(params))
+    this.savedContent = new PatchableContent(this.options.patchObjectHash);
+  }
 
-  decodeParams: (params) ->
-    try
-      decoded = JSON.parse(base64.decode(params))
-    catch e
-      decoded = null
-    decoded
+  encodeParams(params) {
+    return base64.encodeURI(JSON.stringify(params));
+  }
 
-  handleUrlParams: ->
-    if @laraParams
-      @client.openProviderFile @name, @laraParams
-      true # signal that the provider is handling the params
-    else
-      false
+  decodeParams(params) {
+    let decoded;
+    try {
+      decoded = JSON.parse(base64.decode(params));
+    } catch (e) {
+      decoded = null;
+    }
+    return decoded;
+  }
 
-  logLaraData: (laraData) ->
-    laraData.collaboratorUrls = @collaboratorUrls if @collaboratorUrls?.length
-    @options.logLaraData laraData if @options.logLaraData
-    @client.log 'logLaraData', laraData
+  handleUrlParams() {
+    if (this.laraParams) {
+      this.client.openProviderFile(this.name, this.laraParams);
+      return true; // signal that the provider is handling the params
+    } else {
+      return false;
+    }
+  }
 
-  # don't show in provider open/save dialogs
-  filterTabComponent: (capability, defaultComponent) ->
-    null
+  logLaraData(laraData) {
+    if (this.collaboratorUrls != null ? this.collaboratorUrls.length : undefined) { laraData.collaboratorUrls = this.collaboratorUrls; }
+    if (this.options.logLaraData) { this.options.logLaraData(laraData); }
+    return this.client.log('logLaraData', laraData);
+  }
 
-  extractRawDataFromRunState: (runState) ->
-    rawData = runState?.raw_data or {}
-    if typeof rawData is "string"
-      try
-        rawData = JSON.parse(rawData)
-      catch e
-        rawData = {}
-    rawData
+  // don't show in provider open/save dialogs
+  filterTabComponent(capability, defaultComponent) {
+    return null;
+  }
 
-  can: (capability, metadata) ->
-    hasReadOnlyAccess = metadata?.providerData?.accessKeys?.readOnly? and
-                        not metadata?.providerData?.accessKeys?.readWrite?
-    requiresWriteAccess = ['save', 'resave', 'remove', 'rename'].indexOf(capability) >= 0
-    super(capability, metadata) and not (requiresWriteAccess and hasReadOnlyAccess)
+  extractRawDataFromRunState(runState) {
+    let rawData = (runState != null ? runState.raw_data : undefined) || {};
+    if (typeof rawData === "string") {
+      try {
+        rawData = JSON.parse(rawData);
+      } catch (e) {
+        rawData = {};
+      }
+    }
+    return rawData;
+  }
 
-  load: (metadata, callback) ->
-    {method, url} = @docStoreUrl.v2LoadDocument(metadata.providerData?.recordid)
+  can(capability, metadata) {
+    const hasReadOnlyAccess = (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, x1 => x1.accessKeys), x => x.readOnly) != null) &&
+                        (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, x3 => x3.accessKeys), x2 => x2.readWrite) == null);
+    const requiresWriteAccess = ['save', 'resave', 'remove', 'rename'].indexOf(capability) >= 0;
+    return super.can(capability, metadata) && !(requiresWriteAccess && hasReadOnlyAccess);
+  }
 
-    if metadata.providerData?.accessKeys?.readOnly
-      accessKey = 'RO::' + metadata.providerData.accessKeys.readOnly
-    else if metadata.providerData?.accessKeys?.readWrite
-      accessKey = 'RW::' + metadata.providerData.accessKeys.readWrite
+  load(metadata, callback) {
+    let accessKey;
+    const {method, url} = this.docStoreUrl.v2LoadDocument(metadata.providerData != null ? metadata.providerData.recordid : undefined);
 
-    $.ajax
-      type: method
-      url: url
-      dataType: 'json'
-      data:
-        accessKey: accessKey
-      context: @
+    if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, x => x.readOnly)) {
+      accessKey = `RO::${metadata.providerData.accessKeys.readOnly}`;
+    } else if (__guard__(metadata.providerData != null ? metadata.providerData.accessKeys : undefined, x1 => x1.readWrite)) {
+      accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`;
+    }
 
-      success: (data) =>
-        @logLaraData {
-          operation: 'open'
-          documentID: metadata.providerData?.recordid
+    return $.ajax({
+      type: method,
+      url,
+      dataType: 'json',
+      data: {
+        accessKey
+      },
+      context: this,
+
+      success: data => {
+        this.logLaraData({
+          operation: 'open',
+          documentID: (metadata.providerData != null ? metadata.providerData.recordid : undefined),
           documentUrl: url
+        });
+        const content = cloudContentFactory.createEnvelopedCloudContent(data);
+
+        // for documents loaded by id or other means (besides name),
+        // capture the name for use in the CFM interface.
+        // 'docName' at the top level for CFM-wrapped documents
+        // 'name' at the top level for unwrapped documents (e.g. CODAP)
+        // 'name' at the top level of 'content' for wrapped CODAP documents
+        metadata.rename(metadata.name || data.docName || data.name || (data.content != null ? data.content.name : undefined));
+        if (metadata.name) {
+          content.addMetadata({docName: metadata.filename});
         }
-        content = cloudContentFactory.createEnvelopedCloudContent data
 
-        # for documents loaded by id or other means (besides name),
-        # capture the name for use in the CFM interface.
-        # 'docName' at the top level for CFM-wrapped documents
-        # 'name' at the top level for unwrapped documents (e.g. CODAP)
-        # 'name' at the top level of 'content' for wrapped CODAP documents
-        metadata.rename metadata.name or data.docName or data.name or data.content?.name
-        if metadata.name
-          content.addMetadata docName: metadata.filename
+        return callback(null, content);
+      },
 
-        callback null, content
+      error(jqXHR) {
+        return callback(`Unable to load ${metadata.name || (metadata.providerData != null ? metadata.providerData.recordid : undefined) || 'file'}`);
+      }
+    });
+  }
 
-      error: (jqXHR) ->
-        callback "Unable to load #{metadata.name or metadata.providerData?.recordid or 'file'}"
+  save(cloudContent, metadata, callback, disablePatch) {
+    const content = cloudContent.getContent();
 
-  save: (cloudContent, metadata, callback, disablePatch) ->
-    content = cloudContent.getContent()
+    // See if we can patch
+    const canPatch = this.options.patch && metadata.overwritable && !disablePatch;
+    const patchResults = this.savedContent.createPatch(content, canPatch);
 
-    # See if we can patch
-    canPatch = @options.patch and metadata.overwritable and not disablePatch
-    patchResults = @savedContent.createPatch(content, canPatch)
+    if (patchResults.shouldPatch && !patchResults.diffLength) {
+      // no reason to patch if there are no diffs
+      callback(null); // no error indicates success
+      return;
+    }
 
-    if patchResults.shouldPatch and not patchResults.diffLength
-      # no reason to patch if there are no diffs
-      callback null # no error indicates success
-      return
+    const params = {};
+    if (!patchResults.shouldPatch && metadata.filename) {
+      params.recordname = metadata.filename;
+    }
 
-    params = {}
-    if not patchResults.shouldPatch and metadata.filename
-      params.recordname = metadata.filename
+    if (__guard__(__guard__(metadata != null ? metadata.providerData : undefined, x1 => x1.accessKeys), x => x.readWrite) != null) {
+      params.accessKey = `RW::${metadata.providerData.accessKeys.readWrite}`;
+    }
 
-    if (metadata?.providerData?.accessKeys?.readWrite?)
-      params.accessKey = 'RW::' + metadata.providerData.accessKeys.readWrite
+    const {method, url} = patchResults.shouldPatch 
+                      ? this.docStoreUrl.v2PatchDocument(metadata.providerData.recordid, params) 
+                      : this.docStoreUrl.v2SaveDocument(metadata.providerData.recordid, params);
 
-    {method, url} = if patchResults.shouldPatch \
-                      then @docStoreUrl.v2PatchDocument(metadata.providerData.recordid, params) \
-                      else @docStoreUrl.v2SaveDocument(metadata.providerData.recordid, params)
-
-    logData =
-      operation: 'save'
-      provider: 'LaraProvider'
-      shouldPatch: patchResults.shouldPatch
-      method: method
-      # elide all but first two chars of accessKey
-      url: url.substr(0, url.indexOf('accessKey') + 16) + '...'
-      params: JSON.stringify({ recordname: params.recordname })
+    const logData = {
+      operation: 'save',
+      provider: 'LaraProvider',
+      shouldPatch: patchResults.shouldPatch,
+      method,
+      // elide all but first two chars of accessKey
+      url: url.substr(0, url.indexOf('accessKey') + 16) + '...',
+      params: JSON.stringify({ recordname: params.recordname }),
       content: patchResults.sendContent.substr(0, 512)
-    @client.log 'save', logData
+    };
+    this.client.log('save', logData);
 
-    $.ajax
-      dataType: 'json'
-      type: method
-      url: url
-      data: pako.deflate patchResults.sendContent
-      contentType: patchResults.mimeType
-      processData: false
-      beforeSend: (xhr) ->
-        xhr.setRequestHeader('Content-Encoding', 'deflate')
-      context: @
-      success: (data) ->
-        @savedContent.updateContent(if @options.patch then _.cloneDeep(content) else null)
-        if data.recordid then metadata.providerData.recordid = data.recordid
+    return $.ajax({
+      dataType: 'json',
+      type: method,
+      url,
+      data: pako.deflate(patchResults.sendContent),
+      contentType: patchResults.mimeType,
+      processData: false,
+      beforeSend(xhr) {
+        return xhr.setRequestHeader('Content-Encoding', 'deflate');
+      },
+      context: this,
+      success(data) {
+        this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null);
+        if (data.recordid) { metadata.providerData.recordid = data.recordid; }
 
-        callback null, data
+        return callback(null, data);
+      },
 
-      error: (jqXHR) ->
-        # if patch fails, try a full save
-        if patchResults.shouldPatch
-          @save(cloudContent, metadata, callback, true)
-        # if full save fails, return error message
-        else
-          try
-            responseJson = JSON.parse jqXHR.responseText
-            if responseJson.message is 'error.duplicate'
-              callback "Unable to create #{metadata.name}. File already exists."
-            else
-              callback "Unable to save #{metadata.name}: [#{responseJson.message}]"
-          catch
-            callback "Unable to save #{metadata.name}"
-
-  canOpenSaved: -> true
-
-  openSaved: (openSavedParams, callback) ->
-    metadata = new CloudMetadata
-      type: CloudMetadata.File
-      provider: @
-
-    if typeof openSavedParams is "string"
-      openSavedParams = @decodeParams openSavedParams
-
-    @openSavedParams = openSavedParams
-    @collaboratorUrls = if openSavedParams?.collaboratorUrls?.length > 0 then openSavedParams.collaboratorUrls else []
-
-    loadProviderFile = (providerData, callback) =>
-      metadata.providerData = providerData
-      @load metadata, (err, content) =>
-        @client.removeQueryParams @removableQueryParams
-        callback err, content, metadata
-
-    #
-    # if we have a document ID we can just load the document
-    #
-    return loadProviderFile openSavedParams, callback if openSavedParams?.recordid
-
-    #
-    # Process the initial run state response
-    #
-    processInitialRunState = (runStateUrl, sourceID, readOnlyKey, runState) =>
-      existingRunState = @extractRawDataFromRunState runState
-      docStore = existingRunState.docStore
-
-      haveCollaborators = @collaboratorUrls.length > 0
-
-      updateInteractiveRunStates = (urls, newDocStore, callback) ->
-
-        newRunState = _.cloneDeep existingRunState
-        newRunState.docStore = newDocStore
-
-        rawData = JSON.stringify(newRunState)
-        learnerUrl = if newRunState.learner_url? and typeof newRunState.learner_url is "string" then newRunState.learner_url else null
-        learnerParam = if learnerUrl then "&learner_url=#{encodeURIComponent(learnerUrl)}" else ""
-
-        updateRunState = (url, done) ->
-          $.ajax({
-            type: 'PUT'
-            url: "#{url}?raw_data=#{encodeURIComponent(rawData)}#{learnerParam}"
-            dataType: 'json'
-            xhrFields:
-              withCredentials: true
-          })
-          .done (data, status, jqXHR) ->
-            if data?.success is false
-              done("Could not open the specified document because an error occurred [updateState] (#{data.message})")
-            else
-              done(null)
-          .fail (jqXHR, status, error) ->
-            done("Could not open the specified document because an error occurred [updateState]")
-
-        urlQueue = urls.slice()
-        processQueue = ->
-          if urlQueue.length is 0
-            callback null
-          else
-            url = urlQueue.shift()
-            updateRunState url, (err) ->
-              if err
-                callback err
-              else
-                processQueue()
-        processQueue()
-
-      processCreateResponse = (createResponse) =>
-        docStore =
-          recordid: createResponse.id
-          accessKeys:
-            readOnly: createResponse.readAccessKey
-            readWrite: createResponse.readWriteAccessKey
-
-        codapUrl = if window.location.origin \
-                    then "#{window.location.origin}#{window.location.pathname}" \
-                    else "#{window.location.protocol}//#{window.location.host}#{window.location.pathname}"
-        reportUrlLaraParams =
-          recordid: createResponse.id
-          accessKeys:
-            readOnly: createResponse.readAccessKey
-        encodedLaraParams = @encodeParams reportUrlLaraParams
-        existingRunState.lara_options ?= {}
-        existingRunState.lara_options.reporting_url = "#{codapUrl}?launchFromLara=#{encodedLaraParams}"
-
-      # Check if we have a document associated with this run state already (2a) or not (2b)
-      if docStore?.recordid? and (docStore.accessKeys?.readOnly? or docStore.accessKeys?.readWrite?)
-
-        cloneDoc = (callback) =>
-          createParams =
-            source: docStore.recordid
-            accessKey: "RO::#{docStore.accessKeys.readOnly}"
-          {method, url} = @docStoreUrl.v2CreateDocument(createParams)
-          $.ajax({
-            type: method
-            url: url,
-            dataType: 'json'
-          })
-          .done (createResponse, status, jqXHR) =>
-            laraData = {
-              operation: 'clone'
-              documentID: docStore.recordid
-              documentUrl: url
+      error(jqXHR) {
+        // if patch fails, try a full save
+        if (patchResults.shouldPatch) {
+          return this.save(cloudContent, metadata, callback, true);
+        // if full save fails, return error message
+        } else {
+          try {
+            const responseJson = JSON.parse(jqXHR.responseText);
+            if (responseJson.message === 'error.duplicate') {
+              return callback(`Unable to create ${metadata.name}. File already exists.`);
+            } else {
+              return callback(`Unable to save ${metadata.name}: [${responseJson.message}]`);
             }
-            laraData.run_remote_endpoint = existingRunState.run_remote_endpoint if existingRunState?.run_remote_endpoint?
-            @logLaraData laraData
-            processCreateResponse createResponse
-            callback null
-          .fail (jqXHR, status, error) ->
-            callback "Could not open the specified document because an error occurred [createCopy]"
-
-        setFollowers = (err, callback) =>
-          if err
-            callback err
-          else
-            collaboratorParams = _.cloneDeep docStore
-            collaboratorParams.collaborator = 'follower'
-            updateInteractiveRunStates @collaboratorUrls, collaboratorParams, callback
-
-        becomeLeader = (err, callback) ->
-          if err
-            callback err
-          else
-            docStore.collaborator = 'leader'
-            updateInteractiveRunStates [runStateUrl], docStore, callback
-
-        removeCollaborator = (err, callback) ->
-          if err
-            callback err
-          else
-            delete docStore.collaborator
-            updateInteractiveRunStates [runStateUrl], docStore, callback
-
-        finished = (err) ->
-          if err
-            callback err
-          else
-            loadProviderFile _.cloneDeep(docStore), callback
-
-        # is this an existing collaborated document?
-        if docStore.collaborator
-          if docStore.collaborator is 'leader'
-            if haveCollaborators
-              # the current user is still the leader so update the collaborator states to follow the leader (in case there are new collaborators) and load the existing document
-              return setFollowers null, finished
-            else
-              # the current user has gone from leader to solo mode so clone the document to preserve the collaborated document and update the run state to remove collaborator
-              return cloneDoc (err) -> removeCollaborator(err, finished)
-          else
-            if haveCollaborators
-              # the current user has switched from follower to leader so clone the existing leader document, become the new leader and update the followers and load the new document
-              return cloneDoc (err) -> becomeLeader(err, ((err) -> setFollowers(err, finished)))
-            else
-              # the current user has switched from follower to solo mode so clone the existing leader document, update the run state to remove the collaborator and load the new document
-              return cloneDoc (err) -> removeCollaborator(err, finished)
-        else
-          if haveCollaborators
-            # the current user has switched from solo mode to leader so update both the user's and the collaborators run states using the existing document
-            return becomeLeader null, (err) -> setFollowers(err, finished)
-          else
-            # the current user has opened an existing solo mode file so just open it
-            return finished()
-
-      # we need a sourceID to be able to create a copy
-      if not sourceID
-        callback "Could not open the specified document because an error occurred [noSource]"
-        return
-
-      # (2b) request a copy of the shared document
-      createParams = { source: sourceID }
-      # add a key if given (for copying linked run states)
-      if readOnlyKey
-        createParams.accessKey = "RO::#{readOnlyKey}"
-      {method, url} = @docStoreUrl.v2CreateDocument(createParams)
-      $.ajax({
-        type: method
-        url: url,
-        dataType: 'json'
-      })
-      .done (createResponse, status, jqXHR) =>
-
-        processCreateResponse createResponse
-        if haveCollaborators
-          docStore.collaborator = 'leader'
-
-        providerData = _.merge({}, docStore, { url: runStateUrl })
-        updateFinished = -> loadProviderFile providerData, callback
-
-        # update the owners interactive run state
-        updateInteractiveRunStates [runStateUrl], docStore, (err) =>
-          if err
-            callback err
-          else if haveCollaborators
-            docStore.collaborator = 'follower'
-            updateInteractiveRunStates @collaboratorUrls, docStore, (err) ->
-              if err
-                callback err
-              else
-                updateFinished()
-          else
-            updateFinished()
-
-      .fail (jqXHR, status, error) ->
-        callback "Could not open the specified document because an error occurred [createCopy]"
-
-    #
-    # We have a run state URL and a source document. We must copy the source
-    # document and update the run state before opening the copied document.
-    #
-    if openSavedParams and openSavedParams.url
-      # (1) request the interactive run state
-      $.ajax({
-        type: 'GET'
-        url: openSavedParams.url
-        dataType: 'json'
-        xhrFields:
-          withCredentials: true
-      })
-      .done (data, status, jqXHR) =>
-        laraData = {
-          operation: 'open'
-          runStateUrl: openSavedParams.url
-          documentID: openSavedParams.source
+          } catch (error) {
+            return callback(`Unable to save ${metadata.name}`);
+          }
         }
-        laraData.run_remote_endpoint = data.run_remote_endpoint if data?.run_remote_endpoint?
-        @logLaraData laraData
-        processInitialRunState openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data
-      .fail (jqXHR, status, error) ->
-        callback "Could not open the specified document because an error occurred [getState]"
+      }
+    });
+  }
 
-      return
+  canOpenSaved() { return true; }
 
-    callback "Cannot open the specified document"
+  openSaved(openSavedParams, callback) {
+    const metadata = new CloudMetadata({
+      type: CloudMetadata.File,
+      provider: this
+    });
 
-  getOpenSavedParams: (metadata) ->
-    params = if @openSavedParams
-      @openSavedParams
-    else if @laraParams
-      url: @laraParams.url
-      source: @laraParams.source
-    else
-      metadata
-    @encodeParams params
+    if (typeof openSavedParams === "string") {
+      openSavedParams = this.decodeParams(openSavedParams);
+    }
 
-module.exports = LaraProvider
+    this.openSavedParams = openSavedParams;
+    this.collaboratorUrls = __guard__(openSavedParams != null ? openSavedParams.collaboratorUrls : undefined, x => x.length) > 0 ? openSavedParams.collaboratorUrls : [];
+
+    const loadProviderFile = (providerData, callback) => {
+      metadata.providerData = providerData;
+      return this.load(metadata, (err, content) => {
+        this.client.removeQueryParams(this.removableQueryParams);
+        return callback(err, content, metadata);
+      });
+    };
+
+    //
+    // if we have a document ID we can just load the document
+    //
+    if (openSavedParams != null ? openSavedParams.recordid : undefined) { return loadProviderFile(openSavedParams, callback); }
+
+    //
+    // Process the initial run state response
+    //
+    const processInitialRunState = (runStateUrl, sourceID, readOnlyKey, runState) => {
+      const existingRunState = this.extractRawDataFromRunState(runState);
+      let { docStore } = existingRunState;
+
+      const haveCollaborators = this.collaboratorUrls.length > 0;
+
+      const updateInteractiveRunStates = function(urls, newDocStore, callback) {
+
+        const newRunState = _.cloneDeep(existingRunState);
+        newRunState.docStore = newDocStore;
+
+        const rawData = JSON.stringify(newRunState);
+        const learnerUrl = (newRunState.learner_url != null) && (typeof newRunState.learner_url === "string") ? newRunState.learner_url : null;
+        const learnerParam = learnerUrl ? `&learner_url=${encodeURIComponent(learnerUrl)}` : "";
+
+        const updateRunState = (url, done) =>
+          $.ajax({
+            type: 'PUT',
+            url: `${url}?raw_data=${encodeURIComponent(rawData)}${learnerParam}`,
+            dataType: 'json',
+            xhrFields: {
+              withCredentials: true
+            }
+          })
+          .done(function(data, status, jqXHR) {
+            if ((data != null ? data.success : undefined) === false) {
+              return done(`Could not open the specified document because an error occurred [updateState] (${data.message})`);
+            } else {
+              return done(null);
+            }}).fail((jqXHR, status, error) => done("Could not open the specified document because an error occurred [updateState]"))
+        ;
+
+        const urlQueue = urls.slice();
+        var processQueue = function() {
+          if (urlQueue.length === 0) {
+            return callback(null);
+          } else {
+            const url = urlQueue.shift();
+            return updateRunState(url, function(err) {
+              if (err) {
+                return callback(err);
+              } else {
+                return processQueue();
+              }
+            });
+          }
+        };
+        return processQueue();
+      };
+
+      const processCreateResponse = createResponse => {
+        docStore = {
+          recordid: createResponse.id,
+          accessKeys: {
+            readOnly: createResponse.readAccessKey,
+            readWrite: createResponse.readWriteAccessKey
+          }
+        };
+
+        const codapUrl = window.location.origin 
+                    ? `${window.location.origin}${window.location.pathname}` 
+                    : `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+        const reportUrlLaraParams = {
+          recordid: createResponse.id,
+          accessKeys: {
+            readOnly: createResponse.readAccessKey
+          }
+        };
+        const encodedLaraParams = this.encodeParams(reportUrlLaraParams);
+        if (existingRunState.lara_options == null) { existingRunState.lara_options = {}; }
+        return existingRunState.lara_options.reporting_url = `${codapUrl}?launchFromLara=${encodedLaraParams}`;
+      };
+
+      // Check if we have a document associated with this run state already (2a) or not (2b)
+      if (((docStore != null ? docStore.recordid : undefined) != null) && (((docStore.accessKeys != null ? docStore.accessKeys.readOnly : undefined) != null) || ((docStore.accessKeys != null ? docStore.accessKeys.readWrite : undefined) != null))) {
+
+        const cloneDoc = callback => {
+          const createParams = {
+            source: docStore.recordid,
+            accessKey: `RO::${docStore.accessKeys.readOnly}`
+          };
+          const {method, url} = this.docStoreUrl.v2CreateDocument(createParams);
+          return $.ajax({
+            type: method,
+            url,
+            dataType: 'json'
+          })
+          .done((createResponse, status, jqXHR) => {
+            const laraData = {
+              operation: 'clone',
+              documentID: docStore.recordid,
+              documentUrl: url
+            };
+            if ((existingRunState != null ? existingRunState.run_remote_endpoint : undefined) != null) { laraData.run_remote_endpoint = existingRunState.run_remote_endpoint; }
+            this.logLaraData(laraData);
+            processCreateResponse(createResponse);
+            return callback(null);
+        }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [createCopy]"));
+        };
+
+        const setFollowers = (err, callback) => {
+          if (err) {
+            return callback(err);
+          } else {
+            const collaboratorParams = _.cloneDeep(docStore);
+            collaboratorParams.collaborator = 'follower';
+            return updateInteractiveRunStates(this.collaboratorUrls, collaboratorParams, callback);
+          }
+        };
+
+        const becomeLeader = function(err, callback) {
+          if (err) {
+            return callback(err);
+          } else {
+            docStore.collaborator = 'leader';
+            return updateInteractiveRunStates([runStateUrl], docStore, callback);
+          }
+        };
+
+        const removeCollaborator = function(err, callback) {
+          if (err) {
+            return callback(err);
+          } else {
+            delete docStore.collaborator;
+            return updateInteractiveRunStates([runStateUrl], docStore, callback);
+          }
+        };
+
+        const finished = function(err) {
+          if (err) {
+            return callback(err);
+          } else {
+            return loadProviderFile(_.cloneDeep(docStore), callback);
+          }
+        };
+
+        // is this an existing collaborated document?
+        if (docStore.collaborator) {
+          if (docStore.collaborator === 'leader') {
+            if (haveCollaborators) {
+              // the current user is still the leader so update the collaborator states to follow the leader (in case there are new collaborators) and load the existing document
+              return setFollowers(null, finished);
+            } else {
+              // the current user has gone from leader to solo mode so clone the document to preserve the collaborated document and update the run state to remove collaborator
+              return cloneDoc(err => removeCollaborator(err, finished));
+            }
+          } else {
+            if (haveCollaborators) {
+              // the current user has switched from follower to leader so clone the existing leader document, become the new leader and update the followers and load the new document
+              return cloneDoc(err => becomeLeader(err, (err => setFollowers(err, finished))));
+            } else {
+              // the current user has switched from follower to solo mode so clone the existing leader document, update the run state to remove the collaborator and load the new document
+              return cloneDoc(err => removeCollaborator(err, finished));
+            }
+          }
+        } else {
+          if (haveCollaborators) {
+            // the current user has switched from solo mode to leader so update both the user's and the collaborators run states using the existing document
+            return becomeLeader(null, err => setFollowers(err, finished));
+          } else {
+            // the current user has opened an existing solo mode file so just open it
+            return finished();
+          }
+        }
+      }
+
+      // we need a sourceID to be able to create a copy
+      if (!sourceID) {
+        callback("Could not open the specified document because an error occurred [noSource]");
+        return;
+      }
+
+      // (2b) request a copy of the shared document
+      const createParams = { source: sourceID };
+      // add a key if given (for copying linked run states)
+      if (readOnlyKey) {
+        createParams.accessKey = `RO::${readOnlyKey}`;
+      }
+      const {method, url} = this.docStoreUrl.v2CreateDocument(createParams);
+      return $.ajax({
+        type: method,
+        url,
+        dataType: 'json'
+      })
+      .done((createResponse, status, jqXHR) => {
+
+        processCreateResponse(createResponse);
+        if (haveCollaborators) {
+          docStore.collaborator = 'leader';
+        }
+
+        const providerData = _.merge({}, docStore, { url: runStateUrl });
+        const updateFinished = () => loadProviderFile(providerData, callback);
+
+        // update the owners interactive run state
+        return updateInteractiveRunStates([runStateUrl], docStore, err => {
+          if (err) {
+            return callback(err);
+          } else if (haveCollaborators) {
+            docStore.collaborator = 'follower';
+            return updateInteractiveRunStates(this.collaboratorUrls, docStore, function(err) {
+              if (err) {
+                return callback(err);
+              } else {
+                return updateFinished();
+              }
+            });
+          } else {
+            return updateFinished();
+          }
+        });
+    }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [createCopy]"));
+    };
+
+    //
+    // We have a run state URL and a source document. We must copy the source
+    // document and update the run state before opening the copied document.
+    //
+    if (openSavedParams && openSavedParams.url) {
+      // (1) request the interactive run state
+      $.ajax({
+        type: 'GET',
+        url: openSavedParams.url,
+        dataType: 'json',
+        xhrFields: {
+          withCredentials: true
+        }
+      })
+      .done((data, status, jqXHR) => {
+        const laraData = {
+          operation: 'open',
+          runStateUrl: openSavedParams.url,
+          documentID: openSavedParams.source
+        };
+        if ((data != null ? data.run_remote_endpoint : undefined) != null) { laraData.run_remote_endpoint = data.run_remote_endpoint; }
+        this.logLaraData(laraData);
+        return processInitialRunState(openSavedParams.url, openSavedParams.source, openSavedParams.readOnlyKey, data);
+    }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [getState]"));
+
+      return;
+    }
+
+    return callback("Cannot open the specified document");
+  }
+
+  getOpenSavedParams(metadata) {
+    const params = this.openSavedParams ?
+      this.openSavedParams
+    : this.laraParams ?{
+      url: this.laraParams.url,
+      source: this.laraParams.source
+    }
+    :
+      metadata;
+    return this.encodeParams(params);
+  }
+}
+LaraProvider.initClass();
+
+module.exports = LaraProvider;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

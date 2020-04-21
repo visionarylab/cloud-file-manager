@@ -1,66 +1,91 @@
-{div, ul, li, a} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, ul, li, a} = ReactDOMFactories;
 
-class TabInfo
-  constructor: (settings={}) ->
-    {@label, @component, @capability, @onSelected} = settings
+class TabInfo {
+  constructor(settings) {
+    if (settings == null) { settings = {}; }
+    ({label: this.label, component: this.component, capability: this.capability, onSelected: this.onSelected} = settings);
+  }
+}
 
-Tab = createReactClassFactory
+const Tab = createReactClassFactory({
 
-  displayName: 'TabbedPanelTab'
+  displayName: 'TabbedPanelTab',
 
-  clicked: (e) ->
-    e.preventDefault()
-    @props.onSelected @props.index
+  clicked(e) {
+    e.preventDefault();
+    return this.props.onSelected(this.props.index);
+  },
 
-  render: ->
-    classname = if @props.selected then 'tab-selected' else ''
-    (li {className: classname, onClick: @clicked}, @props.label)
+  render() {
+    const classname = this.props.selected ? 'tab-selected' : '';
+    return (li({className: classname, onClick: this.clicked}, this.props.label));
+  }
+});
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'TabbedPanelView'
+  displayName: 'TabbedPanelView',
 
-  getInitialState: ->
-    selectedTabIndex: @props.selectedTabIndex or 0
+  getInitialState() {
+    return {selectedTabIndex: this.props.selectedTabIndex || 0};
+  },
 
-  componentDidMount: ->
-    @props.tabs[@state.selectedTabIndex].onSelected?(@props.tabs[@state.selectedTabIndex].capability)
+  componentDidMount() {
+    return (typeof this.props.tabs[this.state.selectedTabIndex].onSelected === 'function' ? this.props.tabs[this.state.selectedTabIndex].onSelected(this.props.tabs[this.state.selectedTabIndex].capability) : undefined);
+  },
 
-  statics:
-    Tab: (settings) -> new TabInfo settings
+  statics: {
+    Tab(settings) { return new TabInfo(settings); }
+  },
 
-  selectedTab: (index) ->
-    @props.tabs[index].onSelected?(@props.tabs[index].capability)
-    @setState selectedTabIndex: index
+  selectedTab(index) {
+    if (typeof this.props.tabs[index].onSelected === 'function') {
+      this.props.tabs[index].onSelected(this.props.tabs[index].capability);
+    }
+    return this.setState({selectedTabIndex: index});
+  },
 
-  renderTab: (tab, index) ->
-    (Tab
-      label: tab.label
-      key: index
-      index: index
-      selected: (index is @state.selectedTabIndex)
-      onSelected: @selectedTab
-    )
+  renderTab(tab, index) {
+    return (Tab({
+      label: tab.label,
+      key: index,
+      index,
+      selected: (index === this.state.selectedTabIndex),
+      onSelected: this.selectedTab
+    }));
+  },
 
-  renderTabs: ->
-    (div {className: 'workspace-tabs'},
-      (ul {key: index}, @renderTab(tab, index) for tab, index in @props.tabs)
-    )
+  renderTabs() {
+    return (div({className: 'workspace-tabs'},
+      (Array.from(this.props.tabs).map((tab, index) => ul({key: index}, this.renderTab(tab, index))))
+    ));
+  },
 
-  renderSelectedPanel: ->
-    (div {className: 'workspace-tab-component'},
-      for tab, index in @props.tabs
-        (div {
-          key: index
-          style:
-            display: if index is @state.selectedTabIndex then 'block' else 'none'
+  renderSelectedPanel() {
+    return (div({className: 'workspace-tab-component'},
+      Array.from(this.props.tabs).map((tab, index) =>
+        (div({
+          key: index,
+          style: {
+            display: index === this.state.selectedTabIndex ? 'block' : 'none'
+          }
           },
           tab.component
-        )
-    )
+        )))
+    ));
+  },
 
-  render: ->
-    (div {className: "tabbed-panel"},
-      @renderTabs()
-      @renderSelectedPanel()
-    )
+  render() {
+    return (div({className: "tabbed-panel"},
+      this.renderTabs(),
+      this.renderSelectedPanel()
+    ));
+  }
+});

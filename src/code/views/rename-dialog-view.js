@@ -1,47 +1,65 @@
-{div, input, a, button} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, input, a, button} = ReactDOMFactories;
 
-ModalDialog = createReactFactory require './modal-dialog-view'
+const ModalDialog = createReactFactory(require('./modal-dialog-view'));
 
-tr = require '../utils/translate'
+const tr = require('../utils/translate');
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'RenameDialogView'
+  displayName: 'RenameDialogView',
 
-  getInitialState: ->
-    filename = @props.filename or ''
-    state =
-      filename: filename
-      trimmedFilename: @trim filename
+  getInitialState() {
+    let state;
+    const filename = this.props.filename || '';
+    return state = {
+      filename,
+      trimmedFilename: this.trim(filename)
+    };
+  },
 
-  componentDidMount: ->
-    @filename = ReactDOM.findDOMNode @filenameRef
-    @filename.focus()
+  componentDidMount() {
+    this.filename = ReactDOM.findDOMNode(this.filenameRef);
+    return this.filename.focus();
+  },
 
-  updateFilename: ->
-    filename = @filename.value
-    @setState
-      filename: filename
-      trimmedFilename: @trim filename
+  updateFilename() {
+    const filename = this.filename.value;
+    return this.setState({
+      filename,
+      trimmedFilename: this.trim(filename)
+    });
+  },
 
-  trim: (s) ->
-    s.replace /^\s+|\s+$/, ''
+  trim(s) {
+    return s.replace(/^\s+|\s+$/, '');
+  },
 
-  rename: (e) ->
-    if @state.trimmedFilename.length > 0
-      @props.callback? @state.filename
-      @props.close()
-    else
-      e.preventDefault()
-      @filename.focus()
+  rename(e) {
+    if (this.state.trimmedFilename.length > 0) {
+      if (typeof this.props.callback === 'function') {
+        this.props.callback(this.state.filename);
+      }
+      return this.props.close();
+    } else {
+      e.preventDefault();
+      return this.filename.focus();
+    }
+  },
 
-  render: ->
-    (ModalDialog {title: (tr '~DIALOG.RENAME'), close: @props.close},
-      (div {className: 'rename-dialog'},
-        (input {ref: ((elt) => @filenameRef = elt), placeholder: 'Filename', value: @state.filename, onChange: @updateFilename})
-        (div {className: 'buttons'},
-          (button {className: (if @state.trimmedFilename.length is 0 then 'disabled' else ''), onClick: @rename}, tr '~RENAME_DIALOG.RENAME')
-          (button {onClick: @props.close}, tr '~RENAME_DIALOG.CANCEL')
-        )
-      )
-    )
+  render() {
+    return (ModalDialog({title: (tr('~DIALOG.RENAME')), close: this.props.close},
+      (div({className: 'rename-dialog'},
+        (input({ref: (elt => { return this.filenameRef = elt; }), placeholder: 'Filename', value: this.state.filename, onChange: this.updateFilename})),
+        (div({className: 'buttons'},
+          (button({className: (this.state.trimmedFilename.length === 0 ? 'disabled' : ''), onClick: this.rename}, tr('~RENAME_DIALOG.RENAME'))),
+          (button({onClick: this.props.close}, tr('~RENAME_DIALOG.CANCEL')))
+        ))
+      ))
+    ));
+  }
+});

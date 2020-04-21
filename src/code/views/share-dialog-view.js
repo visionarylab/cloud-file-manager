@@ -1,287 +1,333 @@
-{div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = ReactDOMFactories;
 
-SHOW_LONGEVITY_WARNING = false
+const SHOW_LONGEVITY_WARNING = false;
 
-ModalDialog = createReactFactory require './modal-dialog-view'
-getQueryParam = require '../utils/get-query-param'
+const ModalDialog = createReactFactory(require('./modal-dialog-view'));
+const getQueryParam = require('../utils/get-query-param');
 
-# This function is named "tr" elsewhere in this codeline.
-# Using the fullname, "translate" here, to avoid the potential overloading
-# of the react function, "tr".
-translate = require '../utils/translate'
-socialIcons = require 'svg-social-icons/lib/icons.json'
+// This function is named "tr" elsewhere in this codeline.
+// Using the fullname, "translate" here, to avoid the potential overloading
+// of the react function, "tr".
+const translate = require('../utils/translate');
+const socialIcons = require('svg-social-icons/lib/icons.json');
 
-SocialIcon = createReactClassFactory
+const SocialIcon = createReactClassFactory({
 
-  displayName: 'SocialIcon'
+  displayName: 'SocialIcon',
 
-  getInitialState: ->
-    data: socialIcons[@props.icon]
+  getInitialState() {
+    return {data: socialIcons[this.props.icon]};
+  },
 
-  clicked: ->
-    window.open @props.url
+  clicked() {
+    return window.open(this.props.url);
+  },
 
-  render: ->
-    (a {className: 'social-icon', href: @props.url, target: '_blank'},
-      (div {className: 'social-container'},
-        (svg {className: 'social-svg', viewBox: '0 0 64 64'},
-          (g {className: 'social-svg-background'},
-            (circle {cx: 32, cy: 32, r: 31})
-          )
-          (g {className: 'social-svg-icon'},
-            (path {d: @state.data.icon})
-          )
-          (g {className: 'social-svg-mask', style: {fill: @state.data.color}},
-            (path {d: @state.data.mask})
-          )
-        )
-      )
-    )
+  render() {
+    return (a({className: 'social-icon', href: this.props.url, target: '_blank'},
+      (div({className: 'social-container'},
+        (svg({className: 'social-svg', viewBox: '0 0 64 64'},
+          (g({className: 'social-svg-background'},
+            (circle({cx: 32, cy: 32, r: 31}))
+          )),
+          (g({className: 'social-svg-icon'},
+            (path({d: this.state.data.icon}))
+          )),
+          (g({className: 'social-svg-mask', style: {fill: this.state.data.color}},
+            (path({d: this.state.data.mask}))
+          ))
+        ))
+      ))
+    ));
+  }
+});
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'ShareDialogView'
+  displayName: 'ShareDialogView',
 
-  getInitialState: ->
-    link: @getShareLink()
-    embed: @getEmbed()
-    pageType: "autolaunch"
-    serverUrl: @props.settings.serverUrl or "https://codap.concord.org/releases/latest/"
-    serverUrlLabel: @props.settings.serverUrlLabel or translate("~SHARE_DIALOG.LARA_CODAP_URL")
-    launchButtonText: "Launch"
-    fullscreenScaling: true
-    graphVisToggles: false
-    tabSelected: 'link'
+  getInitialState() {
+    return {
+      link: this.getShareLink(),
+      embed: this.getEmbed(),
+      pageType: "autolaunch",
+      serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
+      serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
+      launchButtonText: "Launch",
+      fullscreenScaling: true,
+      graphVisToggles: false,
+      tabSelected: 'link'
+    };
+  },
 
-  getSharedDocumentId: ->
-    # extract sharedDocumentId from CloudContent
-    if @props.client.isShared()
-      @props.client.state.currentContent?.get "sharedDocumentId"
-    else
-      null
+  getSharedDocumentId() {
+    // extract sharedDocumentId from CloudContent
+    if (this.props.client.isShared()) {
+      return (this.props.client.state.currentContent != null ? this.props.client.state.currentContent.get("sharedDocumentId") : undefined);
+    } else {
+      return null;
+    }
+  },
 
-  getShareLink: ->
-    sharedDocumentId = @getSharedDocumentId()
-    if sharedDocumentId
-      # share link combines document URL with sharedDocumentId
-      "#{@props.client.getCurrentUrl()}#shared=#{sharedDocumentId}"
-    else
-      null
+  getShareLink() {
+    const sharedDocumentId = this.getSharedDocumentId();
+    if (sharedDocumentId) {
+      // share link combines document URL with sharedDocumentId
+      return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`;
+    } else {
+      return null;
+    }
+  },
 
-  getEmbed: ->
-    if @getShareLink()
-      """<iframe width="398px" height="313px" frameborder="no" scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" src="#{@getShareLink()}"></iframe>"""
-    else
-      null
+  getEmbed() {
+    if (this.getShareLink()) {
+      return `<iframe width="398px" height="313px" frameborder="no" scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" src="${this.getShareLink()}"></iframe>`;
+    } else {
+      return null;
+    }
+  },
 
-  getLara: ->
-    sharedDocumentId = @getSharedDocumentId()
-    if sharedDocumentId
-      documentServer = getQueryParam('documentServer') or 'https://document-store.concord.org'
-      documentServer = documentServer.slice(0, -1) while documentServer.substr(-1) is '/'  # remove trailing slash
-      graphVisToggles = if @state.graphVisToggles then '?app=is' else ''
-      # graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-      server = encodeURIComponent(@state.serverUrl + graphVisToggles)
-      # Other params are handled by document server itself:
-      buttonText = if @state.pageType is 'launch' then "&buttonText=#{encodeURIComponent(@state.launchButtonText)}" else ''
-      fullscreenScaling = if @state.pageType is 'autolaunch' and @state.fullscreenScaling then '&scaling' else ''
-      "#{documentServer}/v2/documents/#{sharedDocumentId}/#{@state.pageType}?server=#{server}#{buttonText}#{fullscreenScaling}"
-    else
-      null
+  getLara() {
+    const sharedDocumentId = this.getSharedDocumentId();
+    if (sharedDocumentId) {
+      let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org';
+      while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1); }  // remove trailing slash
+      const graphVisToggles = this.state.graphVisToggles ? '?app=is' : '';
+      // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
+      const server = encodeURIComponent(this.state.serverUrl + graphVisToggles);
+      // Other params are handled by document server itself:
+      const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : '';
+      const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : '';
+      return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`;
+    } else {
+      return null;
+    }
+  },
 
-  # adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
-  copy: (e) ->
-    e.preventDefault()
-    copied = false
-    toCopy = switch @state.tabSelected
-      when 'embed' then @getEmbed()
-      when 'link' then @getShareLink()
-      when 'lara' then @getLara()
-    try
-      mark = document.createElement 'mark'
-      mark.textContent = toCopy
-      # reset user styles for span element
-      mark.style.all = 'unset'
-      # prevents scrolling to the end of the page
-      mark.style.position = 'fixed'
-      mark.style.top = 0
-      mark.style.clip = 'rect(0, 0, 0, 0)'
-      # used to preserve spaces and line breaks
-      mark.style.whiteSpace = 'pre'
-      # do not inherit user-select (it may be `none`)
-      mark.style.webkitUserSelect = 'text'
-      mark.style.MozUserSelect = 'text'
-      mark.style.msUserSelect = 'text'
-      mark.style.userSelect = 'text'
-      document.body.appendChild mark
+  // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
+  copy(e) {
+    let mark, range, selection;
+    e.preventDefault();
+    let copied = false;
+    const toCopy = (() => { switch (this.state.tabSelected) {
+      case 'embed': return this.getEmbed();
+      case 'link': return this.getShareLink();
+      case 'lara': return this.getLara();
+    } })();
+    try {
+      mark = document.createElement('mark');
+      mark.textContent = toCopy;
+      // reset user styles for span element
+      mark.style.all = 'unset';
+      // prevents scrolling to the end of the page
+      mark.style.position = 'fixed';
+      mark.style.top = 0;
+      mark.style.clip = 'rect(0, 0, 0, 0)';
+      // used to preserve spaces and line breaks
+      mark.style.whiteSpace = 'pre';
+      // do not inherit user-select (it may be `none`)
+      mark.style.webkitUserSelect = 'text';
+      mark.style.MozUserSelect = 'text';
+      mark.style.msUserSelect = 'text';
+      mark.style.userSelect = 'text';
+      document.body.appendChild(mark);
 
-      selection = document.getSelection()
-      selection.removeAllRanges()
+      selection = document.getSelection();
+      selection.removeAllRanges();
 
-      range = document.createRange()
-      range.selectNode mark
-      selection.addRange range
+      range = document.createRange();
+      range.selectNode(mark);
+      selection.addRange(range);
 
-      copied = document.execCommand 'copy'
-    catch
-      try
-        window.clipboardData.setData 'text', toCopy
-        copied = true
-      catch
-        copied = false
-    finally
-      if selection
-        if typeof selection.removeRange is 'function'
-          selection.removeRange range
-        else
-          selection.removeAllRanges()
-      if mark
-        document.body.removeChild mark
-      @props.client.alert translate(if copied then "~SHARE_DIALOG.COPY_SUCCESS" else "~SHARE_DIALOG.COPY_ERROR"), (translate "~SHARE_DIALOG.COPY_TITLE")
+      return copied = document.execCommand('copy');
+    } catch (error) {
+      try {
+        window.clipboardData.setData('text', toCopy);
+        return copied = true;
+      } catch (error1) {
+        return copied = false;
+      }
+    }
+    finally {
+      if (selection) {
+        if (typeof selection.removeRange === 'function') {
+          selection.removeRange(range);
+        } else {
+          selection.removeAllRanges();
+        }
+      }
+      if (mark) {
+        document.body.removeChild(mark);
+      }
+      this.props.client.alert(translate(copied ? "~SHARE_DIALOG.COPY_SUCCESS" : "~SHARE_DIALOG.COPY_ERROR"), (translate("~SHARE_DIALOG.COPY_TITLE")));
+    }
+  },
 
-  updateShare: ->
-    @props.client.shareUpdate()
+  updateShare() {
+    return this.props.client.shareUpdate();
+  },
 
-  toggleShare: (e) ->
-    e.preventDefault()
-    @props.client.toggleShare =>
-      @setState
-        link: @getShareLink()
-        embed: @getEmbed()
+  toggleShare(e) {
+    e.preventDefault();
+    return this.props.client.toggleShare(() => {
+      return this.setState({
+        link: this.getShareLink(),
+        embed: this.getEmbed()
+      });
+    });
+  },
 
-  selectLinkTab: ->
-    @setState tabSelected: 'link'
+  selectLinkTab() {
+    return this.setState({tabSelected: 'link'});
+  },
 
-  selectEmbedTab: ->
-    @setState tabSelected: 'embed'
+  selectEmbedTab() {
+    return this.setState({tabSelected: 'embed'});
+  },
 
-  selectLaraTab: ->
-    @setState tabSelected: 'lara'
+  selectLaraTab() {
+    return this.setState({tabSelected: 'lara'});
+  },
 
-  changedServerUrl: (event) ->
-    @setState
-      serverUrl: event.target.value
+  changedServerUrl(event) {
+    return this.setState({
+      serverUrl: event.target.value});
+  },
 
-  changedLaunchButtonText: (event) ->
-    @setState
-      launchButtonText: event.target.value
+  changedLaunchButtonText(event) {
+    return this.setState({
+      launchButtonText: event.target.value});
+  },
 
-  changedAutoscalingPage: (event) ->
-    @setState
-      pageType: if event.target.checked then 'autolaunch' else 'launch'
+  changedAutoscalingPage(event) {
+    return this.setState({
+      pageType: event.target.checked ? 'autolaunch' : 'launch'});
+  },
 
-  changedFullscreenScaling: (event) ->
-    @setState
-      fullscreenScaling: event.target.checked
+  changedFullscreenScaling(event) {
+    return this.setState({
+      fullscreenScaling: event.target.checked});
+  },
 
-  changedGraphVisToggles: (event) ->
-    @setState
-      graphVisToggles: event.target.checked
+  changedGraphVisToggles(event) {
+    return this.setState({
+      graphVisToggles: event.target.checked});
+  },
 
-  render: ->
-    sharing = @state.link isnt null
+  render() {
+    const sharing = this.state.link !== null;
 
-    (ModalDialog {title: (translate '~DIALOG.SHARED'), close: @props.close},
-      (div {className: 'share-dialog'},
-        (div {className: 'share-top-dialog'},
-          if sharing
-            (div {},
-              (div {className: 'share-status'},
-                (translate "~SHARE_DIALOG.SHARE_STATE"), (strong {}, translate "~SHARE_DIALOG.SHARE_STATE_ENABLED")
-                (a {href: '#', onClick: @toggleShare}, translate "~SHARE_DIALOG.STOP_SHARING")
-              )
-              (div {className: 'share-button'},
-                (button {onClick: @updateShare}, translate "~SHARE_DIALOG.UPDATE_SHARING")
-                (div {className: 'share-button-help-sharing'},
-                  (a {href: @state.link, target: '_blank'}, translate "~SHARE_DIALOG.PREVIEW_SHARING")
-                )
-              )
-            )
-          else
-            (div {},
-              (div {className: 'share-status'},
-                (translate "~SHARE_DIALOG.SHARE_STATE"), (strong {}, translate "~SHARE_DIALOG.SHARE_STATE_DISABLED")
-              )
-              (div {className: 'share-button'},
-                (button {onClick: @toggleShare}, translate "~SHARE_DIALOG.ENABLE_SHARING")
-                (div {className: 'share-button-help-not-sharing'}, translate "~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")
-              )
-            )
-        )
-        if sharing
-          (div {},
-            (ul {className: 'sharing-tabs'},
-              (li {className: "sharing-tab#{if @state.tabSelected is 'link' then ' sharing-tab-selected' else ''}", style: {marginLeft: 10}, onClick: @selectLinkTab}, translate "~SHARE_DIALOG.LINK_TAB")
-              (li {className: "sharing-tab sharing-tab-embed#{if @state.tabSelected is 'embed' then ' sharing-tab-selected' else ''}", onClick: @selectEmbedTab}, translate "~SHARE_DIALOG.EMBED_TAB")
-              if @props.enableLaraSharing
-                (li {className: "sharing-tab sharing-tab-lara#{if @state.tabSelected is 'lara' then ' sharing-tab-selected' else ''}", onClick: @selectLaraTab}, "LARA")
-            )
-            (div {className: 'sharing-tab-contents'},
-              switch @state.tabSelected
-                when 'embed'
-                  (div {},
+    return (ModalDialog({title: (translate('~DIALOG.SHARED')), close: this.props.close},
+      (div({className: 'share-dialog'},
+        (div({className: 'share-top-dialog'},
+          sharing ?
+            (div({},
+              (div({className: 'share-status'},
+                (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_ENABLED"))),
+                (a({href: '#', onClick: this.toggleShare}, translate("~SHARE_DIALOG.STOP_SHARING")))
+              )),
+              (div({className: 'share-button'},
+                (button({onClick: this.updateShare}, translate("~SHARE_DIALOG.UPDATE_SHARING"))),
+                (div({className: 'share-button-help-sharing'},
+                  (a({href: this.state.link, target: '_blank'}, translate("~SHARE_DIALOG.PREVIEW_SHARING")))
+                ))
+              ))
+            ))
+          :
+            (div({},
+              (div({className: 'share-status'},
+                (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_DISABLED")))
+              )),
+              (div({className: 'share-button'},
+                (button({onClick: this.toggleShare}, translate("~SHARE_DIALOG.ENABLE_SHARING"))),
+                (div({className: 'share-button-help-not-sharing'}, translate("~SHARE_DIALOG.ENABLE_SHARING_MESSAGE")))
+              ))
+            ))
+        )),
+        sharing ?
+          (div({},
+            (ul({className: 'sharing-tabs'},
+              (li({className: `sharing-tab${this.state.tabSelected === 'link' ? ' sharing-tab-selected' : ''}`, style: {marginLeft: 10}, onClick: this.selectLinkTab}, translate("~SHARE_DIALOG.LINK_TAB"))),
+              (li({className: `sharing-tab sharing-tab-embed${this.state.tabSelected === 'embed' ? ' sharing-tab-selected' : ''}`, onClick: this.selectEmbedTab}, translate("~SHARE_DIALOG.EMBED_TAB"))),
+              this.props.enableLaraSharing ?
+                (li({className: `sharing-tab sharing-tab-lara${this.state.tabSelected === 'lara' ? ' sharing-tab-selected' : ''}`, onClick: this.selectLaraTab}, "LARA")) : undefined
+            )),
+            (div({className: 'sharing-tab-contents'},
+              (() => { switch (this.state.tabSelected) {
+                case 'embed':
+                  return (div({},
                     translate("~SHARE_DIALOG.EMBED_MESSAGE"),
-                    if document.execCommand or window.clipboardData
-                      (a {className: 'copy-link', href: '#', onClick: @copy}, translate '~SHARE_DIALOG.COPY')
-                    (div {},
-                      (textarea {value: @state.embed, readOnly: true})
-                    )
-                  )
-                when 'lara'
-                  (div {},
+                    document.execCommand || window.clipboardData ?
+                      (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
+                    (div({},
+                      (textarea({value: this.state.embed, readOnly: true}))
+                    ))
+                  ));
+                case 'lara':
+                  return (div({},
                     translate("~SHARE_DIALOG.LARA_MESSAGE"),
-                    if document.execCommand or window.clipboardData
-                      (a {className: 'copy-link', href: '#', onClick: @copy}, translate '~SHARE_DIALOG.COPY')
-                    (div {},
-                      (input {value: @getLara(), readOnly: true})
-                    )
-                    (div {className: 'lara-settings'},
-                      (div {className: 'codap-server-url'},
-                        @state.serverUrlLabel
-                        (div {},
-                          (input {value: @state.serverUrl, onChange: @changedServerUrl})
-                        )
-                      )
-                      (div {className: 'autolaunch'},
-                        (input {type: 'checkbox', checked: @state.pageType is 'autolaunch', onChange: @changedAutoscalingPage})
-                        translate "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE"
-                      )
-                      if @state.pageType is 'autolaunch'
-                        (div {className: 'fullsceen-scaling'},
-                          (input {type: 'checkbox', checked: @state.fullscreenScaling, onChange: @changedFullscreenScaling})
-                          translate "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING"
-                        )
-                      if @state.pageType is 'launch'
-                        (div {className: 'launch-button-text'},
-                          translate("~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT")
-                          (input {value: @state.launchButtonText, onChange: @changedLaunchButtonText})
-                        )
-                      (div {},
-                        (input {type: 'checkbox', checked: @state.graphVisToggles, onChange: @changedGraphVisToggles})
-                        translate "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES"
-                      )
-                    )
-                  )
-                else
-                  (div {},
+                    document.execCommand || window.clipboardData ?
+                      (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
+                    (div({},
+                      (input({value: this.getLara(), readOnly: true}))
+                    )),
+                    (div({className: 'lara-settings'},
+                      (div({className: 'codap-server-url'},
+                        this.state.serverUrlLabel,
+                        (div({},
+                          (input({value: this.state.serverUrl, onChange: this.changedServerUrl}))
+                        ))
+                      )),
+                      (div({className: 'autolaunch'},
+                        (input({type: 'checkbox', checked: this.state.pageType === 'autolaunch', onChange: this.changedAutoscalingPage})),
+                        translate("~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE")
+                      )),
+                      this.state.pageType === 'autolaunch' ?
+                        (div({className: 'fullsceen-scaling'},
+                          (input({type: 'checkbox', checked: this.state.fullscreenScaling, onChange: this.changedFullscreenScaling})),
+                          translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")
+                        )) : undefined,
+                      this.state.pageType === 'launch' ?
+                        (div({className: 'launch-button-text'},
+                          translate("~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT"),
+                          (input({value: this.state.launchButtonText, onChange: this.changedLaunchButtonText}))
+                        )) : undefined,
+                      (div({},
+                        (input({type: 'checkbox', checked: this.state.graphVisToggles, onChange: this.changedGraphVisToggles})),
+                        translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")
+                      ))
+                    ))
+                  ));
+                default:
+                  return (div({},
                     translate("~SHARE_DIALOG.LINK_MESSAGE"),
-                    if document.execCommand or window.clipboardData
-                      (a {className: 'copy-link', href: '#', onClick: @copy}, translate '~SHARE_DIALOG.COPY')
-                    (div {},
-                      (input {value: @state.link, readOnly: true})
+                    document.execCommand || window.clipboardData ?
+                      (a({className: 'copy-link', href: '#', onClick: this.copy}, translate('~SHARE_DIALOG.COPY'))) : undefined,
+                    (div({},
+                      (input({value: this.state.link, readOnly: true}))
+                    )),
+                    (div({className: 'social-icons'},
+                      (SocialIcon({icon: 'facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.state.link)}`})),
+                      (SocialIcon({icon: 'twitter', url: `https://twitter.com/home?status=${encodeURIComponent(this.state.link)}`})))
+                      // not working with url parameter: (SocialIcon {icon: 'google', url: "https://plus.google.com/share?url=#{encodeURIComponent @state.link}"})
                     )
-                    (div {className: 'social-icons'},
-                      (SocialIcon {icon: 'facebook', url: "https://www.facebook.com/sharer/sharer.php?u=#{encodeURIComponent @state.link}"})
-                      (SocialIcon {icon: 'twitter', url: "https://twitter.com/home?status=#{encodeURIComponent @state.link}"})
-                      # not working with url parameter: (SocialIcon {icon: 'google', url: "https://plus.google.com/share?url=#{encodeURIComponent @state.link}"})
-                    )
-                  )
-            )
-          )
+                  ));
+              } })()
+            ))
+          )) : undefined,
 
-        (div {className: 'buttons'},
-          (button {onClick: @props.close}, translate '~SHARE_DIALOG.CLOSE')
-        )
-        (div {className: 'longevity-warning'}, translate '~SHARE_DIALOG.LONGEVITY_WARNING') if SHOW_LONGEVITY_WARNING
-      )
-    )
+        (div({className: 'buttons'},
+          (button({onClick: this.props.close}, translate('~SHARE_DIALOG.CLOSE')))
+        )),
+        SHOW_LONGEVITY_WARNING ? (div({className: 'longevity-warning'}, translate('~SHARE_DIALOG.LONGEVITY_WARNING'))) : undefined
+      ))
+    ));
+  }
+});

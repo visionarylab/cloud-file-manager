@@ -1,121 +1,166 @@
-{div, i, span, ul, li} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, i, span, ul, li} = ReactDOMFactories;
 
-{DefaultAnchor} = require "./dropdown-anchors"
-DropdownItem = createReactClassFactory
+const {DefaultAnchor} = require("./dropdown-anchors");
+const DropdownItem = createReactClassFactory({
 
-  displayName: 'DropdownItem'
+  displayName: 'DropdownItem',
 
-  clicked: ->
-    if @props.item.items
-      @showSubMenu()
-    else
-      @props.select @props.item
+  clicked() {
+    if (this.props.item.items) {
+      return this.showSubMenu();
+    } else {
+      return this.props.select(this.props.item);
+    }
+  },
 
-  mouseEnter: ->
-    @showSubMenu()
+  mouseEnter() {
+    return this.showSubMenu();
+  },
 
-  showSubMenu: ->
-    if @props.item.items
-      menuItem = $ ReactDOM.findDOMNode @itemRef
-      menu = menuItem.parent().parent()
+  showSubMenu() {
+    if (this.props.item.items) {
+      const menuItem = $(ReactDOM.findDOMNode(this.itemRef));
+      const menu = menuItem.parent().parent();
 
-      @props.setSubMenu
-        style:
-          position: 'absolute'
-          left: menu.width()
+      return this.props.setSubMenu({
+        style: {
+          position: 'absolute',
+          left: menu.width(),
           top: menuItem.position().top - parseInt(menuItem.css('padding-top'))
-        items: @props.item.items
-    else
-      @props.setSubMenu? null
+        },
+        items: this.props.item.items
+      });
+    } else {
+      return (typeof this.props.setSubMenu === 'function' ? this.props.setSubMenu(null) : undefined);
+    }
+  },
 
-  render: ->
-    enabled = if @props.item.hasOwnProperty 'enabled'
-      if typeof @props.item.enabled is 'function'
-        @props.item.enabled()
-      else
-        @props.item.enabled
-    else
-      true
+  render() {
+    const enabled = this.props.item.hasOwnProperty('enabled') ?
+      typeof this.props.item.enabled === 'function' ?
+        this.props.item.enabled()
+      :
+        this.props.item.enabled
+    :
+      true;
 
-    classes = ['menuItem']
-    if @props.item.separator
-      classes.push 'separator'
-      (li {className: classes.join(' ')}, '')
-    else
-      classes.push 'disabled' if not enabled or not (@props.item.action or @props.item.items)
-      content = @props.item.name or @props.item.content or @props.item
-      (li {ref: ((elt) => @itemRef = elt), className: classes.join(' '), onClick: @clicked, onMouseEnter: @mouseEnter },
-        if @props.item.items
-          (i {className: 'icon-inspectorArrow-collapse'})
+    const classes = ['menuItem'];
+    if (this.props.item.separator) {
+      classes.push('separator');
+      return (li({className: classes.join(' ')}, ''));
+    } else {
+      if (!enabled || !(this.props.item.action || this.props.item.items)) { classes.push('disabled'); }
+      const content = this.props.item.name || this.props.item.content || this.props.item;
+      return (li({ref: (elt => { return this.itemRef = elt; }), className: classes.join(' '), onClick: this.clicked, onMouseEnter: this.mouseEnter },
+        this.props.item.items ?
+          (i({className: 'icon-inspectorArrow-collapse'})) : undefined,
         content
-      )
+      ));
+    }
+  }
+});
 
-cfmMenuClass = 'cfm-menu dg-wants-touch'
+const cfmMenuClass = 'cfm-menu dg-wants-touch';
 
-DropDown = createReactClass
+const DropDown = createReactClass({
 
-  displayName: 'Dropdown'
+  displayName: 'Dropdown',
 
-  getInitialState: ->
-    showingMenu: false
-    subMenu: null
+  getInitialState() {
+    return {
+      showingMenu: false,
+      subMenu: null
+    };
+  },
 
-  componentDidMount: ->
-    if window.addEventListener
-      window.addEventListener 'mousedown', @checkClose, true
-      window.addEventListener 'touchstart', @checkClose, true
+  componentDidMount() {
+    if (window.addEventListener) {
+      window.addEventListener('mousedown', this.checkClose, true);
+      return window.addEventListener('touchstart', this.checkClose, true);
+    }
+  },
 
-  componentWillUnmount: ->
-    if window.removeEventListener
-      window.removeEventListener 'mousedown', @checkClose, true
-      window.removeEventListener 'touchstart', @checkClose, true
+  componentWillUnmount() {
+    if (window.removeEventListener) {
+      window.removeEventListener('mousedown', this.checkClose, true);
+      return window.removeEventListener('touchstart', this.checkClose, true);
+    }
+  },
 
-  checkClose: (evt) ->
-    # no need to walk the DOM if the menu isn't open
-    return if not @state.showingMenu
-    # if the click is on the menu, let the menu handle it
-    elt = evt.target
-    while elt?
-      return if typeof elt.className is "string" and elt.className.indexOf(cfmMenuClass) >= 0
-      elt = elt.parentNode
-    # otherwise, close the menu
-    @setState {showingMenu: false, subMenu: false}
+  checkClose(evt) {
+    // no need to walk the DOM if the menu isn't open
+    if (!this.state.showingMenu) { return; }
+    // if the click is on the menu, let the menu handle it
+    let elt = evt.target;
+    while (elt != null) {
+      if ((typeof elt.className === "string") && (elt.className.indexOf(cfmMenuClass) >= 0)) { return; }
+      elt = elt.parentNode;
+    }
+    // otherwise, close the menu
+    return this.setState({showingMenu: false, subMenu: false});
+  },
 
-  setSubMenu: (subMenu) ->
-    @setState subMenu: subMenu
+  setSubMenu(subMenu) {
+    return this.setState({subMenu});
+  },
 
-  select: (item) ->
-    return if item?.items
-    nextState = (not @state.showingMenu)
-    @setState {showingMenu: nextState}
-    return unless item
-    item.action?()
+  select(item) {
+    if (item != null ? item.items : undefined) { return; }
+    const nextState = (!this.state.showingMenu);
+    this.setState({showingMenu: nextState});
+    if (!item) { return; }
+    return (typeof item.action === 'function' ? item.action() : undefined);
+  },
 
-  render: ->
-    menuClass = "#{cfmMenuClass} #{if @state.showingMenu then 'menu-showing' else 'menu-hidden'}"
-    dropdownClass = "menu #{if @props.className then @props.className else ''}"
-    menuAnchorClass = "menu-anchor #{if @props.menuAnchorClassName then @props.menuAnchorClassName else ''}"
-    (div {className: dropdownClass},
-      if @props.items?.length > 0
-        (div {},
-          (div {className: "#{cfmMenuClass} #{menuAnchorClass}", onClick: => @select(null)},
-            if @props.menuAnchor
-              @props.menuAnchor
-            else
+  render() {
+    let index, item;
+    const menuClass = `${cfmMenuClass} ${this.state.showingMenu ? 'menu-showing' : 'menu-hidden'}`;
+    const dropdownClass = `menu ${this.props.className ? this.props.className : ''}`;
+    const menuAnchorClass = `menu-anchor ${this.props.menuAnchorClassName ? this.props.menuAnchorClassName : ''}`;
+    return (div({className: dropdownClass},
+      (this.props.items != null ? this.props.items.length : undefined) > 0 ?
+        (div({},
+          (div({className: `${cfmMenuClass} ${menuAnchorClass}`, onClick: () => this.select(null)},
+            this.props.menuAnchor ?
+              this.props.menuAnchor
+            :
               DefaultAnchor
-          )
-          (div {className: menuClass},
-            (ul {},
-              (DropdownItem {key: index, item: item, select: @select, setSubMenu: @setSubMenu}) for item, index in @props.items
-            )
-            if @state.subMenu
-              (div {className: menuClass, style: @state.subMenu.style},
-                (ul {},
-                  (DropdownItem {key: index, item: item, select: @select}) for item, index in @state.subMenu.items
-                )
-              )
-          )
-      )
-    )
+          )),
+          (div({className: menuClass},
+            (ul({},
+              (() => {
+              const result = [];
+              for (index = 0; index < this.props.items.length; index++) {
+                item = this.props.items[index];
+                result.push((DropdownItem({key: index, item, select: this.select, setSubMenu: this.setSubMenu})));
+              }
+              return result;
+            })()
+            )),
+            this.state.subMenu ?
+              (div({className: menuClass, style: this.state.subMenu.style},
+                (ul({},
+                  (() => {
+                  const result1 = [];
+                  for (index = 0; index < this.state.subMenu.items.length; index++) {
+                    item = this.state.subMenu.items[index];
+                    result1.push((DropdownItem({key: index, item, select: this.select})));
+                  }
+                  return result1;
+                })()
+                ))
+              )) : undefined
+          ))
+      )) : undefined
+    ));
+  }
+});
 
-module.exports = DropDown
+module.exports = DropDown;

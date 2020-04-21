@@ -1,1 +1,1 @@
-module.exports = (param) -> Object.prototype.toString.call(param) is '[object String]'
+module.exports = param => Object.prototype.toString.call(param) === '[object String]';

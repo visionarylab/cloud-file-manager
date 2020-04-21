@@ -1,223 +1,295 @@
-AuthorizeMixin = require './authorize-mixin'
-CloudMetadata = (require '../providers/provider-interface').CloudMetadata
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const AuthorizeMixin = require('./authorize-mixin');
+const { CloudMetadata } = (require('../providers/provider-interface'));
 
-tr = require '../utils/translate'
+const tr = require('../utils/translate');
 
-{div, img, i, span, input, button} = ReactDOMFactories
-italic = i
+let {div, img, i, span, input, button} = ReactDOMFactories;
+const italic = i;
 
-FileListFile = createReactClassFactory
-  displayName: 'FileListFile'
+const FileListFile = createReactClassFactory({
+  displayName: 'FileListFile',
 
-  componentDidMount: ->
-    @lastClick = 0
+  componentDidMount() {
+    return this.lastClick = 0;
+  },
 
-  fileSelected:  (e) ->
-    e.preventDefault()
-    e.stopPropagation()
-    now = (new Date()).getTime()
-    @props.fileSelected @props.metadata
-    if now - @lastClick <= 250
-      @props.fileConfirmed()
-    @lastClick = now
+  fileSelected(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const now = (new Date()).getTime();
+    this.props.fileSelected(this.props.metadata);
+    if ((now - this.lastClick) <= 250) {
+      this.props.fileConfirmed();
+    }
+    return this.lastClick = now;
+  },
 
-  render: ->
-    selectableClass = if @props.metadata.type isnt CloudMetadata.Label then 'selectable' else ''
-    selectedClass = if @props.selected then 'selected' else ''
-    subFolderClass = if @props.isSubFolder then 'subfolder' else ''
-    (div {className: "#{selectableClass} #{selectedClass} #{subFolderClass}"
-          , title: @props.metadata.description or undefined
-          , onClick: if @props.metadata.type isnt CloudMetadata.Label then @fileSelected else undefined },
-      (italic {className: if @props.metadata.type is CloudMetadata.Folder then 'icon-inspectorArrow-collapse' else if @props.metadata.type is CloudMetadata.File then 'icon-noteTool'})
-      @props.metadata.name
-    )
+  render() {
+    const selectableClass = this.props.metadata.type !== CloudMetadata.Label ? 'selectable' : '';
+    const selectedClass = this.props.selected ? 'selected' : '';
+    const subFolderClass = this.props.isSubFolder ? 'subfolder' : '';
+    return (div({className: `${selectableClass} ${selectedClass} ${subFolderClass}`
+          , title: this.props.metadata.description || undefined
+          , onClick: this.props.metadata.type !== CloudMetadata.Label ? this.fileSelected : undefined },
+      (italic({className: (() => {
+        if (this.props.metadata.type === CloudMetadata.Folder) { return 'icon-inspectorArrow-collapse'; } else if (this.props.metadata.type === CloudMetadata.File) { return 'icon-noteTool'; }
+      })()})),
+      this.props.metadata.name
+    ));
+  }
+});
 
-FileList = createReactClassFactory
-  displayName: 'FileList'
+const FileList = createReactClassFactory({
+  displayName: 'FileList',
 
-  getInitialState: ->
-    loading: true
+  getInitialState() {
+    return {loading: true};
+  },
 
-  componentDidMount: ->
-    @_isMounted = true
-    @load @props.folder
+  componentDidMount() {
+    this._isMounted = true;
+    return this.load(this.props.folder);
+  },
 
-  UNSAFE_componentWillReceiveProps: (nextProps) ->
-    if nextProps.folder isnt @props.folder
-      @load nextProps.folder
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.folder !== this.props.folder) {
+      return this.load(nextProps.folder);
+    }
+  },
 
-  componentWillUnmount: ->
-    @_isMounted = false
+  componentWillUnmount() {
+    return this._isMounted = false;
+  },
 
-  load: (folder) ->
-    @props.provider.list folder, (err, list) =>
-      return @props.client.alert(err) if err
-      # asynchronous callback may be called after dialog has been dismissed
-      if @_isMounted
-        @setState
-          loading: false
-      @props.listLoaded list
+  load(folder) {
+    return this.props.provider.list(folder, (err, list) => {
+      if (err) { return this.props.client.alert(err); }
+      // asynchronous callback may be called after dialog has been dismissed
+      if (this._isMounted) {
+        this.setState({
+          loading: false});
+      }
+      return this.props.listLoaded(list);
+    });
+  },
 
-  parentSelected: (e) ->
-    @props.fileSelected @props.folder?.parent
+  parentSelected(e) {
+    return this.props.fileSelected(this.props.folder != null ? this.props.folder.parent : undefined);
+  },
 
-  render: ->
-    list = []
-    isSubFolder = @props.folder?
-    if isSubFolder
-      list.push (div {key: 'parent', className: 'selectable', onClick: @parentSelected}, (italic {className: 'icon-paletteArrow-collapse'}), @props.folder.name)
-    for metadata, i in @props.list
-      list.push (FileListFile {key: i, metadata: metadata, selected: @props.selectedFile is metadata, fileSelected: @props.fileSelected, fileConfirmed: @props.fileConfirmed, isSubFolder: isSubFolder})
+  render() {
+    const list = [];
+    const isSubFolder = (this.props.folder != null);
+    if (isSubFolder) {
+      list.push((div({key: 'parent', className: 'selectable', onClick: this.parentSelected}, (italic({className: 'icon-paletteArrow-collapse'})), this.props.folder.name)));
+    }
+    for (i = 0; i < this.props.list.length; i++) {
+      const metadata = this.props.list[i];
+      list.push((FileListFile({key: i, metadata, selected: this.props.selectedFile === metadata, fileSelected: this.props.fileSelected, fileConfirmed: this.props.fileConfirmed, isSubFolder})));
+    }
 
-    (div {className: 'filelist'},
-      if @state.loading
-        tr "~FILE_DIALOG.LOADING"
-      else
+    return (div({className: 'filelist'},
+      this.state.loading ?
+        tr("~FILE_DIALOG.LOADING")
+      :
         list
-    )
+    ));
+  }
+});
 
-FileDialogTab = createReactClass
-  displayName: 'FileDialogTab'
+const FileDialogTab = createReactClass({
+  displayName: 'FileDialogTab',
 
-  mixins: [AuthorizeMixin]
+  mixins: [AuthorizeMixin],
 
-  getInitialState: ->
-    @_isMounted = true
-    initialState = @getStateForFolder(@props.client.state.metadata?.parent, true) or null
-    initialState.filename = initialState.metadata?.name or ''
-    initialState
+  getInitialState() {
+    this._isMounted = true;
+    const initialState = this.getStateForFolder(this.props.client.state.metadata != null ? this.props.client.state.metadata.parent : undefined, true) || null;
+    initialState.filename = (initialState.metadata != null ? initialState.metadata.name : undefined) || '';
+    return initialState;
+  },
 
-#  componentDidMount: ->
-#    @_isMounted = true
+//  componentDidMount: ->
+//    @_isMounted = true
 
-  componentWillUnmount: ->
-    @_isMounted = false
+  componentWillUnmount() {
+    return this._isMounted = false;
+  },
 
-  isOpen: ->
-    @props.dialog.action is 'openFile'
+  isOpen() {
+    return this.props.dialog.action === 'openFile';
+  },
 
-  filenameChanged: (e) ->
-    filename = e.target.value
-    @setState
-      filename: filename
-      metadata: @findMetadata filename, @state.list
+  filenameChanged(e) {
+    const filename = e.target.value;
+    return this.setState({
+      filename,
+      metadata: this.findMetadata(filename, this.state.list)
+    });
+  },
 
-  listLoaded: (list) ->
-    # asynchronous callback may be called after dialog has been dismissed
-    if @_isMounted
-      @setState list: list
+  listLoaded(list) {
+    // asynchronous callback may be called after dialog has been dismissed
+    if (this._isMounted) {
+      return this.setState({list});
+    }
+  },
 
-  getSaveMetadata: ->
-    # The save metadata for a file that may have been opened from another
-    # provider must be cloned, but without cloning the provider field.
-    # Furthermore, if the provider has changed, the provider and providerData
-    # fields should be cleared.
-    saveMetadata = if @props.client.state.metadata then _.clone @props.client.state.metadata else null
-    if saveMetadata
-      if @props.provider is saveMetadata.provider
-        saveMetadata.providerData = _.cloneDeep saveMetadata.providerData
-      else
-        saveMetadata.provider = null
-        saveMetadata.providerData = null
-        saveMetadata.forceSaveDialog = false
-    saveMetadata
+  getSaveMetadata() {
+    // The save metadata for a file that may have been opened from another
+    // provider must be cloned, but without cloning the provider field.
+    // Furthermore, if the provider has changed, the provider and providerData
+    // fields should be cleared.
+    const saveMetadata = this.props.client.state.metadata ? _.clone(this.props.client.state.metadata) : null;
+    if (saveMetadata) {
+      if (this.props.provider === saveMetadata.provider) {
+        saveMetadata.providerData = _.cloneDeep(saveMetadata.providerData);
+      } else {
+        saveMetadata.provider = null;
+        saveMetadata.providerData = null;
+        saveMetadata.forceSaveDialog = false;
+      }
+    }
+    return saveMetadata;
+  },
 
-  getStateForFolder: (folder, initialFolder) ->
-    metadata = if @isOpen() then @state?.metadata or null else @getSaveMetadata()
+  getStateForFolder(folder, initialFolder) {
+    const metadata = this.isOpen() ? (this.state != null ? this.state.metadata : undefined) || null : this.getSaveMetadata();
 
-    if initialFolder and (@props.client.state.metadata?.provider isnt @props.provider)
-      folder = null
-    else
-      metadata?.parent = folder
+    if (initialFolder && ((this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined) !== this.props.provider)) {
+      folder = null;
+    } else {
+      if (metadata != null) {
+        metadata.parent = folder;
+      }
+    }
 
-    folder: folder
-    metadata: metadata
-    list: []
+    return {
+      folder,
+      metadata,
+      list: []
+    };
+  },
 
-  fileSelected: (metadata) ->
-    if metadata?.type is CloudMetadata.Folder
-      @setState @getStateForFolder metadata
-    else if metadata?.type is CloudMetadata.File
-      @setState
-        filename: metadata.name
-        metadata: metadata
-    else
-      @setState @getStateForFolder null
+  fileSelected(metadata) {
+    if ((metadata != null ? metadata.type : undefined) === CloudMetadata.Folder) {
+      return this.setState(this.getStateForFolder(metadata));
+    } else if ((metadata != null ? metadata.type : undefined) === CloudMetadata.File) {
+      return this.setState({
+        filename: metadata.name,
+        metadata
+      });
+    } else {
+      return this.setState(this.getStateForFolder(null));
+    }
+  },
 
-  confirm: ->
-    confirmed = (metadata) =>
-      # ensure the metadata provider is the currently-showing tab
-      @state.metadata = metadata
-      if @state.metadata.provider isnt @props.provider
-        @state.metadata.provider = @props.provider
-        # if switching provider, then clear providerData
-        @state.metadata.providerData = {}
-      @props.dialog.callback? @state.metadata
-      @props.close()
+  confirm() {
+    const confirmed = metadata => {
+      // ensure the metadata provider is the currently-showing tab
+      this.state.metadata = metadata;
+      if (this.state.metadata.provider !== this.props.provider) {
+        this.state.metadata.provider = this.props.provider;
+        // if switching provider, then clear providerData
+        this.state.metadata.providerData = {};
+      }
+      if (typeof this.props.dialog.callback === 'function') {
+        this.props.dialog.callback(this.state.metadata);
+      }
+      return this.props.close();
+    };
 
-    filename = $.trim @state.filename
-    existingMetadata = @findMetadata filename, @state.list
-    metadata = @state.metadata or existingMetadata
+    const filename = $.trim(this.state.filename);
+    const existingMetadata = this.findMetadata(filename, this.state.list);
+    const metadata = this.state.metadata || existingMetadata;
 
-    if metadata
-      if @isOpen()
-        confirmed metadata
-      else if existingMetadata
-        @props.client.confirm "Are you sure you want to overwrite #{existingMetadata.name}?", -> confirmed existingMetadata
-      else
-        confirmed metadata
-    else if @isOpen()
-      @props.client.alert "#{filename} not found"
-    else
-      confirmed new CloudMetadata
-        name: filename
-        type: CloudMetadata.File
-        parent: @state.folder or null
-        provider: @props.provider
+    if (metadata) {
+      if (this.isOpen()) {
+        return confirmed(metadata);
+      } else if (existingMetadata) {
+        return this.props.client.confirm(`Are you sure you want to overwrite ${existingMetadata.name}?`, () => confirmed(existingMetadata));
+      } else {
+        return confirmed(metadata);
+      }
+    } else if (this.isOpen()) {
+      return this.props.client.alert(`${filename} not found`);
+    } else {
+      return confirmed(new CloudMetadata({
+        name: filename,
+        type: CloudMetadata.File,
+        parent: this.state.folder || null,
+        provider: this.props.provider
+      })
+      );
+    }
+  },
 
-  remove: ->
-    if @state.metadata and @state.metadata.type isnt CloudMetadata.Folder
-      @props.client.confirm tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: @state.metadata.name}), =>
-        @props.provider.remove @state.metadata, (err) =>
-          if not err
-            @props.client.alert tr("~FILE_DIALOG.REMOVED_MESSAGE", {filename: @state.metadata.name}), tr("~FILE_DIALOG.REMOVED_TITLE")
-            list = @state.list.slice 0
-            index = list.indexOf @state.metadata
-            list.splice index, 1
-            @setState
-              list: list
-              metadata: null
+  remove() {
+    if (this.state.metadata && (this.state.metadata.type !== CloudMetadata.Folder)) {
+      return this.props.client.confirm(tr("~FILE_DIALOG.REMOVE_CONFIRM", {filename: this.state.metadata.name}), () => {
+        return this.props.provider.remove(this.state.metadata, err => {
+          if (!err) {
+            this.props.client.alert(tr("~FILE_DIALOG.REMOVED_MESSAGE", {filename: this.state.metadata.name}), tr("~FILE_DIALOG.REMOVED_TITLE"));
+            const list = this.state.list.slice(0);
+            const index = list.indexOf(this.state.metadata);
+            list.splice(index, 1);
+            return this.setState({
+              list,
+              metadata: null,
               filename: ''
+            });
+          }
+        });
+      });
+    }
+  },
 
-  cancel: ->
-    @props.close()
+  cancel() {
+    return this.props.close();
+  },
 
-  findMetadata: (filename, list) ->
-    for metadata in list
-      if metadata.name is filename
-        return metadata
-    null
+  findMetadata(filename, list) {
+    for (let metadata of Array.from(list)) {
+      if (metadata.name === filename) {
+        return metadata;
+      }
+    }
+    return null;
+  },
 
-  watchForEnter: (e) ->
-    if e.keyCode is 13 and not @confirmDisabled()
-      @confirm()
+  watchForEnter(e) {
+    if ((e.keyCode === 13) && !this.confirmDisabled()) {
+      return this.confirm();
+    }
+  },
 
-  confirmDisabled: ->
-    (@state.filename.length is 0) or (@isOpen() and not @state.metadata)
+  confirmDisabled() {
+    return (this.state.filename.length === 0) || (this.isOpen() && !this.state.metadata);
+  },
 
-  renderWhenAuthorized: ->
-    confirmDisabled = @confirmDisabled()
-    removeDisabled = (@state.metadata is null) or (@state.metadata.type is CloudMetadata.Folder)
+  renderWhenAuthorized() {
+    const confirmDisabled = this.confirmDisabled();
+    const removeDisabled = (this.state.metadata === null) || (this.state.metadata.type === CloudMetadata.Folder);
 
-    (div {className: 'dialogTab'},
-      (input {type: 'text', value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter})
-      (FileList {provider: @props.provider, folder: @state.folder, selectedFile: @state.metadata, fileSelected: @fileSelected, fileConfirmed: @confirm, list: @state.list, listLoaded: @listLoaded, client: @props.client})
-      (div {className: 'buttons'},
-        (button {onClick: @confirm, disabled: confirmDisabled, className: if confirmDisabled then 'disabled' else ''}, if @isOpen() then (tr "~FILE_DIALOG.OPEN") else (tr "~FILE_DIALOG.SAVE"))
-        if @props.provider.can 'remove'
-          (button {onClick: @remove, disabled: removeDisabled, className: if removeDisabled then 'disabled' else ''}, (tr "~FILE_DIALOG.REMOVE"))
-        (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
-      )
-    )
+    return (div({className: 'dialogTab'},
+      (input({type: 'text', value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
+      (FileList({provider: this.props.provider, folder: this.state.folder, selectedFile: this.state.metadata, fileSelected: this.fileSelected, fileConfirmed: this.confirm, list: this.state.list, listLoaded: this.listLoaded, client: this.props.client})),
+      (div({className: 'buttons'},
+        (button({onClick: this.confirm, disabled: confirmDisabled, className: confirmDisabled ? 'disabled' : ''}, this.isOpen() ? (tr("~FILE_DIALOG.OPEN")) : (tr("~FILE_DIALOG.SAVE")))),
+        this.props.provider.can('remove') ?
+          (button({onClick: this.remove, disabled: removeDisabled, className: removeDisabled ? 'disabled' : ''}, (tr("~FILE_DIALOG.REMOVE")))) : undefined,
+        (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
+      ))
+    ));
+  }
+});
 
-module.exports = FileDialogTab
+module.exports = FileDialogTab;

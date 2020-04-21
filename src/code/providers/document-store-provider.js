@@ -1,432 +1,562 @@
-{div, button, span} = ReactDOMFactories
+/*
+ * decaffeinate suggestions:
+ * DS001: Remove Babel/TypeScript constructor workaround
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS203: Remove `|| {}` from converted for-own loops
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, button, span} = ReactDOMFactories;
 
-getQueryParam = require '../utils/get-query-param'
-getHashParam = require '../utils/get-hash-param'
-tr = require '../utils/translate'
-isString = require '../utils/is-string'
-jiff = require 'jiff'
-pako = require 'pako'
+const getQueryParam = require('../utils/get-query-param');
+const getHashParam = require('../utils/get-hash-param');
+const tr = require('../utils/translate');
+const isString = require('../utils/is-string');
+const jiff = require('jiff');
+const pako = require('pako');
 
-ProviderInterface = (require './provider-interface').ProviderInterface
-cloudContentFactory = (require './provider-interface').cloudContentFactory
-CloudMetadata = (require './provider-interface').CloudMetadata
+const { ProviderInterface } = (require('./provider-interface'));
+const { cloudContentFactory } = (require('./provider-interface'));
+const { CloudMetadata } = (require('./provider-interface'));
 
-DocumentStoreUrl = require './document-store-url'
-PatchableContent = require './patchable-content'
+const DocumentStoreUrl = require('./document-store-url');
+const PatchableContent = require('./patchable-content');
 
-DocumentStoreAuthorizationDialog = createReactClassFactory
-  displayName: 'DocumentStoreAuthorizationDialog'
+const DocumentStoreAuthorizationDialog = createReactClassFactory({
+  displayName: 'DocumentStoreAuthorizationDialog',
 
-  getInitialState: ->
-    docStoreAvailable: false
+  getInitialState() {
+    return {docStoreAvailable: false};
+  },
 
-  UNSAFE_componentWillMount: ->
-    @props.provider._onDocStoreLoaded =>
-      @setState docStoreAvailable: true
+  UNSAFE_componentWillMount() {
+    return this.props.provider._onDocStoreLoaded(() => {
+      return this.setState({docStoreAvailable: true});
+    });
+  },
 
-  authenticate: ->
-    @props.provider.authorize()
+  authenticate() {
+    return this.props.provider.authorize();
+  },
 
-  render: ->
-    (div {className: 'document-store-auth'},
-      (div {className: 'document-store-concord-logo'}, '')
-      (div {className: 'document-store-footer'},
-        if @state.docStoreAvailable
-          (button {onClick: @authenticate}, 'Login to Concord')
-        else
+  render() {
+    return (div({className: 'document-store-auth'},
+      (div({className: 'document-store-concord-logo'}, '')),
+      (div({className: 'document-store-footer'},
+        this.state.docStoreAvailable ?
+          (button({onClick: this.authenticate}, 'Login to Concord'))
+        :
           'Trying to log into Concord...'
-      )
-    )
+      ))
+    ));
+  }
+});
 
-class DocumentStoreProvider extends ProviderInterface
+class DocumentStoreProvider extends ProviderInterface {
+  static initClass() {
+  
+    this.Name = 'documentStore';
+  
+    this.prototype._loginWindow = null;
+  }
 
-  constructor: (@options = {}, @client) ->
-    @options.deprecationPhase = 3
-    super
-      name: DocumentStoreProvider.Name
-      displayName: @options.displayName or (tr '~PROVIDER.DOCUMENT_STORE')
-      urlDisplayName: @options.urlDisplayName
-      capabilities:
-        save: @isNotDeprecated('save')
-        resave: @isNotDeprecated('save')
-        export: false
-        load: @isNotDeprecated('load')
-        list: @isNotDeprecated('list')
-        remove: @isNotDeprecated('remove')
-        rename: @isNotDeprecated('rename')
+  constructor(options, client) {
+    {
+      // Hack: trick Babel/TypeScript into allowing this before super.
+      if (false) { super(); }
+      let thisFn = (() => { return this; }).toString();
+      let thisName = thisFn.slice(thisFn.indexOf('return') + 6 + 1, thisFn.indexOf(';')).trim();
+      eval(`${thisName} = this;`);
+    }
+    if (options == null) { options = {}; }
+    this.options = options;
+    this.client = client;
+    this.options.deprecationPhase = 3;
+    super({
+      name: DocumentStoreProvider.Name,
+      displayName: this.options.displayName || (tr('~PROVIDER.DOCUMENT_STORE')),
+      urlDisplayName: this.options.urlDisplayName,
+      capabilities: {
+        save: this.isNotDeprecated('save'),
+        resave: this.isNotDeprecated('save'),
+        export: false,
+        load: this.isNotDeprecated('load'),
+        list: this.isNotDeprecated('list'),
+        remove: this.isNotDeprecated('remove'),
+        rename: this.isNotDeprecated('rename'),
         close: false
+      }
+    });
 
-    @urlParams = {
-      documentServer: getQueryParam "documentServer"
-      recordid: getQueryParam "recordid"
-      runKey: getQueryParam "runKey"
-      docName: getQueryParam "doc"
-      docOwner: getQueryParam "owner"
+    this.urlParams = {
+      documentServer: getQueryParam("documentServer"),
+      recordid: getQueryParam("recordid"),
+      runKey: getQueryParam("runKey"),
+      docName: getQueryParam("doc"),
+      docOwner: getQueryParam("owner")
+    };
+    // query params that can be removed after initial processing
+    this.removableQueryParams = ['recordid', 'doc', 'owner'];
+
+    this.docStoreUrl = new DocumentStoreUrl(this.urlParams.documentServer);
+
+    this.user = null;
+
+    this.savedContent = new PatchableContent(this.options.patchObjectHash);
+  }
+
+  can(capability, metadata) {
+    // legacy sharing support - can't save to old-style shared documents
+    if (((capability === 'save') || (capability === 'resave')) && __guard__(metadata != null ? metadata.providerData : undefined, x => x.owner)) { return false; }
+    return super.can(capability, metadata);
+  }
+
+  // if a runKey is specified, we don't need to authenticate at all
+  isAuthorizationRequired() {
+    return !(this.urlParams.runKey || (this.urlParams.docName && this.urlParams.docOwner));
+  }
+
+  authorized(authCallback) {
+    this.authCallback = authCallback;
+    if (this.authCallback) {
+      if (this.user) {
+        return this.authCallback(true);
+      } else {
+        return this._checkLogin();
+      }
+    } else {
+      return this.user !== null;
     }
-    # query params that can be removed after initial processing
-    @removableQueryParams = ['recordid', 'doc', 'owner']
+  }
 
-    @docStoreUrl = new DocumentStoreUrl @urlParams.documentServer
+  authorize(completionCallback) {
+    return this._showLoginWindow(completionCallback);
+  }
 
-    @user = null
+  _onDocStoreLoaded(docStoreLoadedCallback) {
+    this.docStoreLoadedCallback = docStoreLoadedCallback;
+    if (this._docStoreLoaded) {
+      return this.docStoreLoadedCallback();
+    }
+  }
 
-    @savedContent = new PatchableContent(@options.patchObjectHash)
+  _checkLogin() {
+    const loggedIn = user => {
+      this.user = user;
+      this._docStoreLoaded = true;
+      if (typeof this.docStoreLoadedCallback === 'function') {
+        this.docStoreLoadedCallback();
+      }
+      if (user) {
+        if (this._loginWindow != null) {
+          this._loginWindow.close();
+        }
+      }
+      if (this.authCallback) { return this.authCallback((user !== null)); }
+    };
 
-  @Name: 'documentStore'
-
-  can: (capability, metadata) ->
-    # legacy sharing support - can't save to old-style shared documents
-    return false if ((capability is 'save') or (capability is 'resave')) and metadata?.providerData?.owner
-    super(capability, metadata)
-
-  # if a runKey is specified, we don't need to authenticate at all
-  isAuthorizationRequired: ->
-    not (@urlParams.runKey or (@urlParams.docName and @urlParams.docOwner))
-
-  authorized: (@authCallback) ->
-    if @authCallback
-      if @user
-        @authCallback true
-      else
-        @_checkLogin()
-    else
-      @user isnt null
-
-  authorize: (completionCallback) ->
-    @_showLoginWindow(completionCallback)
-
-  _onDocStoreLoaded: (@docStoreLoadedCallback) ->
-    if @_docStoreLoaded
-      @docStoreLoadedCallback()
-
-  _checkLogin: ->
-    loggedIn = (user) =>
-      @user = user
-      @_docStoreLoaded = true
-      @docStoreLoadedCallback?()
-      if user
-        @_loginWindow?.close()
-      @authCallback (user isnt null) if @authCallback
-
-    $.ajax
-      dataType: 'json'
-      url: @docStoreUrl.checkLogin()
-      xhrFields:
+    return $.ajax({
+      dataType: 'json',
+      url: this.docStoreUrl.checkLogin(),
+      xhrFields: {
         withCredentials: true
-      success: (data) -> loggedIn data
-      error: -> loggedIn null
+      },
+      success(data) { return loggedIn(data); },
+      error() { return loggedIn(null); }
+    });
+  }
 
-  _loginWindow: null
+  _showLoginWindow(completionCallback) {
+    if (this._loginWindow && !this._loginWindow.closed) {
+      this._loginWindow.focus();
+    } else {
 
-  _showLoginWindow: (completionCallback) ->
-    if @_loginWindow and not @_loginWindow.closed
-      @_loginWindow.focus()
-    else
+      const computeScreenLocation = function(w, h) {
+        const screenLeft = window.screenLeft || screen.left;
+        const screenTop  = window.screenTop  || screen.top;
+        const width  = window.innerWidth  || document.documentElement.clientWidth  || screen.width;
+        const height = window.innerHeight || document.documentElement.clientHeight || screen.height;
 
-      computeScreenLocation = (w, h) ->
-        screenLeft = window.screenLeft or screen.left
-        screenTop  = window.screenTop  or screen.top
-        width  = window.innerWidth  or document.documentElement.clientWidth  or screen.width
-        height = window.innerHeight or document.documentElement.clientHeight or screen.height
+        const left = ((width / 2) - (w / 2)) + screenLeft;
+        const top = ((height / 2) - (h / 2)) + screenTop;
+        return {left, top};
+      };
 
-        left = ((width / 2) - (w / 2)) + screenLeft
-        top = ((height / 2) - (h / 2)) + screenTop
-        return {left, top}
-
-      width = 1000
-      height = 480
-      position = computeScreenLocation width, height
-      windowFeatures = [
-        'width=' + width
-        'height=' + height
-        'top=' + position.top or 200
-        'left=' + position.left or 200
-        'dependent=yes'
-        'resizable=no'
-        'location=no'
-        'dialog=yes'
+      const width = 1000;
+      const height = 480;
+      const position = computeScreenLocation(width, height);
+      const windowFeatures = [
+        `width=${width}`,
+        `height=${height}`,
+        (`top=${position.top}`) || 200,
+        (`left=${position.left}`) || 200,
+        'dependent=yes',
+        'resizable=no',
+        'location=no',
+        'dialog=yes',
         'menubar=no'
-      ]
+      ];
 
-      @_loginWindow = window.open(@docStoreUrl.authorize(), 'auth', windowFeatures.join())
+      this._loginWindow = window.open(this.docStoreUrl.authorize(), 'auth', windowFeatures.join());
 
-      if @_loginWindow
-        pollAction = =>
-          try
-            if (@_loginWindow.location.host is window.location.host)
-              clearInterval poll
-              @_loginWindow.close()
-              @_checkLogin()
-              completionCallback() if completionCallback
-          catch e
-            # console.log e
+      if (this._loginWindow) {
+        const pollAction = () => {
+          try {
+            if (this._loginWindow.location.host === window.location.host) {
+              clearInterval(poll);
+              this._loginWindow.close();
+              this._checkLogin();
+              if (completionCallback) { return completionCallback(); }
+            }
+          } catch (e) {}
+        };
+            // console.log e
 
-        poll = setInterval pollAction, 200
-
-    @_loginWindow
-
-  renderAuthorizationDialog: ->
-    (DocumentStoreAuthorizationDialog {provider: @, authCallback: @authCallback})
-
-  renderUser: ->
-    if @user
-      (span {}, (span {className: 'document-store-icon'}), @user.name)
-    else
-      null
-
-  filterTabComponent: (capability, defaultComponent) ->
-    # allow the save elsewhere button to hide the document provider tab in save
-    if capability is 'save' and @disableForNextSave
-      @disableForNextSave = false
-      null
-    else
-      defaultComponent
-
-  isNotDeprecated: (capability) ->
-    if capability is 'save'
-      @options.deprecationPhase < 2
-    else
-      @options.deprecationPhase < 3
-
-  deprecationMessage: ->
-    """
-      <div style="text-align: left">
-        <p style="margin: 10px 0;">
-          <strong>#{tr ~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE}</strong>
-        </p>
-        <p style="margin: 10px 0;">
-          #{tr ~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE}
-        </p>
-      </div>
-    """
-
-  onProviderTabSelected: (capability) ->
-    if capability is 'save' and @deprecationMessage()
-      @client.alert @deprecationMessage(), (tr '~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')
-
-  handleUrlParams: ->
-    if @urlParams.recordid
-      @client.openProviderFile @name, { id: @urlParams.recordid }
-      true # signal that the provider is handling the params
-    else if @urlParams.docName and @urlParams.docOwner
-      @client.openProviderFile @name, { name: @urlParams.docName, owner: @urlParams.docOwner }
-      true # signal that the provider is handling the params
-    else
-      false
-
-  list: (metadata, callback) ->
-    $.ajax
-      dataType: 'json'
-      url: @docStoreUrl.listDocuments()
-      context: @
-      xhrFields:
-        withCredentials: true
-      success: (data) ->
-        list = []
-        for own key, file of data
-          if @matchesExtension file.name
-            list.push new CloudMetadata
-              name: file.name
-              providerData: {id: file.id}
-              type: CloudMetadata.File
-              provider: @
-        callback null, list
-      error: ->
-        callback null, []
-      statusCode:
-        403: =>
-          @user = null
-          @authCallback false
-
-  load: (metadata, callback) ->
-    withCredentials = unless metadata.sharedContentId then true else false
-    recordid = metadata.providerData?.id or metadata.sharedContentId
-    requestData = {}
-    requestData.recordid = recordid if recordid
-    requestData.runKey = @urlParams.runKey if @urlParams.runKey
-    if not recordid
-      requestData.recordname = metadata.providerData?.name if metadata.providerData?.name
-      requestData.owner = metadata.providerData?.owner if metadata.providerData?.owner
-    $.ajax
-      url: @docStoreUrl.loadDocument()
-      dataType: 'json'
-      data: requestData
-      context: @
-      xhrFields:
-        {withCredentials}
-      success: (data) ->
-        content = cloudContentFactory.createEnvelopedCloudContent data
-
-        # for documents loaded by id or other means (besides name),
-        # capture the name for use in the CFM interface.
-        # 'docName' at the top level for CFM-wrapped documents
-        # 'name' at the top level for unwrapped documents (e.g. CODAP)
-        # 'name' at the top level of 'content' for wrapped CODAP documents
-        metadata.rename metadata.name or metadata.providerData.name or
-                        data.docName or data.name or data.content?.name
-        if metadata.name
-          content.addMetadata docName: metadata.filename
-
-        callback null, content
-      statusCode:
-        403: =>
-          @user = null
-          callback tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name or 'the file'}), 403
-
-      error: (jqXHR) ->
-        return if jqXHR.status is 403 # let statusCode handler deal with it
-        message = if metadata.sharedContentId
-          tr "~DOCSTORE.LOAD_SHARED_404_ERROR"
-        else
-          tr "~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name or metadata.providerData?.id or 'the file'}
-        callback message
-
-  save: (cloudContent, metadata, callback) ->
-    content = cloudContent.getContent()
-
-    # See if we can patch
-    patchResults = @savedContent.createPatch(content, @options.patch and metadata.overwritable)
-
-    if patchResults.shouldPatch and not patchResults.diffLength
-      # no reason to patch if there are no diffs
-      callback null # no error indicates success
-      return
-
-    params = {}
-    if metadata.providerData.id then params.recordid = metadata.providerData.id
-
-    if not patchResults.shouldPatch and metadata.filename
-      params.recordname = metadata.filename
-
-    # If we are saving for the first time as a student in a LARA activity, then we do not have
-    # authorization on the current document. However, we should have a runKey query parameter.
-    # When we save with this runKey, the document will save our changes to a copy of the document,
-    # owned by us.
-    #
-    # When we successfully save, we will get the id of the new document in the response, and use
-    # this id for future saving. We can then save via patches, and don't need the runKey.
-    if @urlParams.runKey
-      params.runKey = @urlParams.runKey
-
-    method = 'POST'
-    url = if patchResults.shouldPatch \
-            then @docStoreUrl.patchDocument(params) \
-            else @docStoreUrl.saveDocument(params)
-
-    logData =
-      operation: 'save'
-      provider: 'DocumentStoreProvider'
-      shouldPatch: patchResults.shouldPatch
-      method: method
-      url: url
-      params: JSON.stringify(params)
-      content: patchResults.sendContent.substr(0, 512)
-    @client.log 'save', logData
-
-    $.ajax
-      dataType: 'json'
-      type: method
-      url: url
-      data: pako.deflate patchResults.sendContent
-      contentType: patchResults.mimeType
-      processData: false
-      beforeSend: (xhr) ->
-        xhr.setRequestHeader('Content-Encoding', 'deflate')
-      context: @
-      xhrFields:
-        withCredentials: true
-      success: (data) ->
-        @savedContent.updateContent(if @options.patch then _.cloneDeep(content) else null)
-        if data.id then metadata.providerData.id = data.id
-
-        callback null, data
-      statusCode:
-        403: =>
-          @user = null
-          callback tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403
-      error: (jqXHR) ->
-        try
-          return if jqXHR.status is 403 # let statusCode handler deal with it
-          responseJson = JSON.parse jqXHR.responseText
-          if responseJson.message is 'error.duplicate'
-            callback tr "~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}
-          else
-            callback tr "~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}
-        catch
-          callback tr "~DOCSTORE.SAVE_ERROR", {filename: metadata.name}
-
-  remove: (metadata, callback) ->
-    $.ajax
-      url: @docStoreUrl.deleteDocument()
-      data:
-        recordname: metadata.filename
-      context: @
-      xhrFields:
-        withCredentials: true
-      success: (data) ->
-        callback null, data
-      statusCode:
-        403: =>
-          @user = null
-          callback tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403
-      error: (jqXHR) ->
-        return if jqXHR.status is 403 # let statusCode handler deal with it
-        callback tr "~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}
-
-  rename: (metadata, newName, callback) ->
-    $.ajax
-      url: @docStoreUrl.renameDocument()
-      data:
-        recordid: metadata.providerData.id
-        newRecordname: CloudMetadata.withExtension newName
-      context: @
-      xhrFields:
-        withCredentials: true
-      success: (data) ->
-        metadata.rename newName
-        callback null, metadata
-      statusCode:
-        403: =>
-          @user = null
-          callback tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403
-      error: (jqXHR) ->
-        return if jqXHR.status is 403 # let statusCode handler deal with it
-        callback tr "~DOCSTORE.RENAME_ERROR", {filename: metadata.name}
-
-  canOpenSaved: -> true
-
-  openSaved: (openSavedParams, callback) ->
-    providerData = if typeof openSavedParams is "object" \
-                      then openSavedParams \
-                      else { id: openSavedParams }
-    metadata = new CloudMetadata
-      type: CloudMetadata.File
-      provider: @
-      providerData: providerData
-
-    @load metadata, (err, content) =>
-      @client.removeQueryParams @removableQueryParams
-      callback err, content, metadata
-
-  getOpenSavedParams: (metadata) ->
-    metadata.providerData.id
-
-  fileOpened: (content, metadata) ->
-    deprecationPhase = @options.deprecationPhase or 0
-    fromLara = !!getQueryParam("launchFromLara") or !!getHashParam("lara")
-    return if not deprecationPhase or fromLara
-    @client.confirmDialog {
-      title: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'
-      message: @deprecationMessage()
-      yesTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'
-      noTitle: tr '~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'
-      hideNoButton: deprecationPhase >= 3
-      callback: =>
-        @disableForNextSave = true
-        @client.saveFileAsDialog()
-      rejectCallback: =>
-        if deprecationPhase > 1
-          @client.appOptions.autoSaveInterval = null
+        var poll = setInterval(pollAction, 200);
+      }
     }
 
-module.exports = DocumentStoreProvider
+    return this._loginWindow;
+  }
+
+  renderAuthorizationDialog() {
+    return (DocumentStoreAuthorizationDialog({provider: this, authCallback: this.authCallback}));
+  }
+
+  renderUser() {
+    if (this.user) {
+      return (span({}, (span({className: 'document-store-icon'})), this.user.name));
+    } else {
+      return null;
+    }
+  }
+
+  filterTabComponent(capability, defaultComponent) {
+    // allow the save elsewhere button to hide the document provider tab in save
+    if ((capability === 'save') && this.disableForNextSave) {
+      this.disableForNextSave = false;
+      return null;
+    } else {
+      return defaultComponent;
+    }
+  }
+
+  isNotDeprecated(capability) {
+    if (capability === 'save') {
+      return this.options.deprecationPhase < 2;
+    } else {
+      return this.options.deprecationPhase < 3;
+    }
+  }
+
+  deprecationMessage() {
+    return `\
+<div style="text-align: left">
+  <p style="margin: 10px 0;">
+    <strong>${tr(~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE)}</strong>
+  </p>
+  <p style="margin: 10px 0;">
+    ${tr(~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE)}
+  </p>
+</div>\
+`;
+  }
+
+  onProviderTabSelected(capability) {
+    if ((capability === 'save') && this.deprecationMessage()) {
+      return this.client.alert(this.deprecationMessage(), (tr('~CONCORD_CLOUD_DEPRECATION.ALERT_SAVE_TITLE')));
+    }
+  }
+
+  handleUrlParams() {
+    if (this.urlParams.recordid) {
+      this.client.openProviderFile(this.name, { id: this.urlParams.recordid });
+      return true; // signal that the provider is handling the params
+    } else if (this.urlParams.docName && this.urlParams.docOwner) {
+      this.client.openProviderFile(this.name, { name: this.urlParams.docName, owner: this.urlParams.docOwner });
+      return true; // signal that the provider is handling the params
+    } else {
+      return false;
+    }
+  }
+
+  list(metadata, callback) {
+    return $.ajax({
+      dataType: 'json',
+      url: this.docStoreUrl.listDocuments(),
+      context: this,
+      xhrFields: {
+        withCredentials: true
+      },
+      success(data) {
+        const list = [];
+        for (let key of Object.keys(data || {})) {
+          const file = data[key];
+          if (this.matchesExtension(file.name)) {
+            list.push(new CloudMetadata({
+              name: file.name,
+              providerData: {id: file.id},
+              type: CloudMetadata.File,
+              provider: this
+            })
+            );
+          }
+        }
+        return callback(null, list);
+      },
+      error() {
+        return callback(null, []);
+      },
+      statusCode: {
+        403: () => {
+          this.user = null;
+          return this.authCallback(false);
+        }
+      }
+    });
+  }
+
+  load(metadata, callback) {
+    const withCredentials = !metadata.sharedContentId ? true : false;
+    const recordid = (metadata.providerData != null ? metadata.providerData.id : undefined) || metadata.sharedContentId;
+    const requestData = {};
+    if (recordid) { requestData.recordid = recordid; }
+    if (this.urlParams.runKey) { requestData.runKey = this.urlParams.runKey; }
+    if (!recordid) {
+      if (metadata.providerData != null ? metadata.providerData.name : undefined) { requestData.recordname = metadata.providerData != null ? metadata.providerData.name : undefined; }
+      if (metadata.providerData != null ? metadata.providerData.owner : undefined) { requestData.owner = metadata.providerData != null ? metadata.providerData.owner : undefined; }
+    }
+    return $.ajax({
+      url: this.docStoreUrl.loadDocument(),
+      dataType: 'json',
+      data: requestData,
+      context: this,
+      xhrFields:
+        {withCredentials},
+      success(data) {
+        const content = cloudContentFactory.createEnvelopedCloudContent(data);
+
+        // for documents loaded by id or other means (besides name),
+        // capture the name for use in the CFM interface.
+        // 'docName' at the top level for CFM-wrapped documents
+        // 'name' at the top level for unwrapped documents (e.g. CODAP)
+        // 'name' at the top level of 'content' for wrapped CODAP documents
+        metadata.rename(metadata.name || metadata.providerData.name ||
+                        data.docName || data.name || (data.content != null ? data.content.name : undefined)
+        );
+        if (metadata.name) {
+          content.addMetadata({docName: metadata.filename});
+        }
+
+        return callback(null, content);
+      },
+      statusCode: {
+        403: () => {
+          this.user = null;
+          return callback(tr("~DOCSTORE.LOAD_403_ERROR", {filename: metadata.name || 'the file'}), 403);
+        }
+      },
+
+      error(jqXHR) {
+        if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
+        const message = metadata.sharedContentId ?
+          tr("~DOCSTORE.LOAD_SHARED_404_ERROR")
+        :
+          tr("~DOCSTORE.LOAD_404_ERROR", {filename: metadata.name || (metadata.providerData != null ? metadata.providerData.id : undefined) || 'the file'});
+        return callback(message);
+      }
+    });
+  }
+
+  save(cloudContent, metadata, callback) {
+    const content = cloudContent.getContent();
+
+    // See if we can patch
+    const patchResults = this.savedContent.createPatch(content, this.options.patch && metadata.overwritable);
+
+    if (patchResults.shouldPatch && !patchResults.diffLength) {
+      // no reason to patch if there are no diffs
+      callback(null); // no error indicates success
+      return;
+    }
+
+    const params = {};
+    if (metadata.providerData.id) { params.recordid = metadata.providerData.id; }
+
+    if (!patchResults.shouldPatch && metadata.filename) {
+      params.recordname = metadata.filename;
+    }
+
+    // If we are saving for the first time as a student in a LARA activity, then we do not have
+    // authorization on the current document. However, we should have a runKey query parameter.
+    // When we save with this runKey, the document will save our changes to a copy of the document,
+    // owned by us.
+    //
+    // When we successfully save, we will get the id of the new document in the response, and use
+    // this id for future saving. We can then save via patches, and don't need the runKey.
+    if (this.urlParams.runKey) {
+      params.runKey = this.urlParams.runKey;
+    }
+
+    const method = 'POST';
+    const url = patchResults.shouldPatch 
+            ? this.docStoreUrl.patchDocument(params) 
+            : this.docStoreUrl.saveDocument(params);
+
+    const logData = {
+      operation: 'save',
+      provider: 'DocumentStoreProvider',
+      shouldPatch: patchResults.shouldPatch,
+      method,
+      url,
+      params: JSON.stringify(params),
+      content: patchResults.sendContent.substr(0, 512)
+    };
+    this.client.log('save', logData);
+
+    return $.ajax({
+      dataType: 'json',
+      type: method,
+      url,
+      data: pako.deflate(patchResults.sendContent),
+      contentType: patchResults.mimeType,
+      processData: false,
+      beforeSend(xhr) {
+        return xhr.setRequestHeader('Content-Encoding', 'deflate');
+      },
+      context: this,
+      xhrFields: {
+        withCredentials: true
+      },
+      success(data) {
+        this.savedContent.updateContent(this.options.patch ? _.cloneDeep(content) : null);
+        if (data.id) { metadata.providerData.id = data.id; }
+
+        return callback(null, data);
+      },
+      statusCode: {
+        403: () => {
+          this.user = null;
+          return callback(tr("~DOCSTORE.SAVE_403_ERROR", {filename: metadata.name}), 403);
+        }
+      },
+      error(jqXHR) {
+        try {
+          if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
+          const responseJson = JSON.parse(jqXHR.responseText);
+          if (responseJson.message === 'error.duplicate') {
+            return callback(tr("~DOCSTORE.SAVE_DUPLICATE_ERROR", {filename: metadata.name}));
+          } else {
+            return callback(tr("~DOCSTORE.SAVE_ERROR_WITH_MESSAGE", {filename: metadata.name, message: responseJson.message}));
+          }
+        } catch (error) {
+          return callback(tr("~DOCSTORE.SAVE_ERROR", {filename: metadata.name}));
+        }
+      }});
+  }
+
+  remove(metadata, callback) {
+    return $.ajax({
+      url: this.docStoreUrl.deleteDocument(),
+      data: {
+        recordname: metadata.filename
+      },
+      context: this,
+      xhrFields: {
+        withCredentials: true
+      },
+      success(data) {
+        return callback(null, data);
+      },
+      statusCode: {
+        403: () => {
+          this.user = null;
+          return callback(tr("~DOCSTORE.REMOVE_403_ERROR", {filename: metadata.name}), 403);
+        }
+      },
+      error(jqXHR) {
+        if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
+        return callback(tr("~DOCSTORE.REMOVE_ERROR", {filename: metadata.name}));
+      }});
+  }
+
+  rename(metadata, newName, callback) {
+    return $.ajax({
+      url: this.docStoreUrl.renameDocument(),
+      data: {
+        recordid: metadata.providerData.id,
+        newRecordname: CloudMetadata.withExtension(newName)
+      },
+      context: this,
+      xhrFields: {
+        withCredentials: true
+      },
+      success(data) {
+        metadata.rename(newName);
+        return callback(null, metadata);
+      },
+      statusCode: {
+        403: () => {
+          this.user = null;
+          return callback(tr("~DOCSTORE.RENAME_403_ERROR", {filename: metadata.name}), 403);
+        }
+      },
+      error(jqXHR) {
+        if (jqXHR.status === 403) { return; } // let statusCode handler deal with it
+        return callback(tr("~DOCSTORE.RENAME_ERROR", {filename: metadata.name}));
+      }});
+  }
+
+  canOpenSaved() { return true; }
+
+  openSaved(openSavedParams, callback) {
+    const providerData = typeof openSavedParams === "object" 
+                      ? openSavedParams 
+                      : { id: openSavedParams };
+    const metadata = new CloudMetadata({
+      type: CloudMetadata.File,
+      provider: this,
+      providerData
+    });
+
+    return this.load(metadata, (err, content) => {
+      this.client.removeQueryParams(this.removableQueryParams);
+      return callback(err, content, metadata);
+    });
+  }
+
+  getOpenSavedParams(metadata) {
+    return metadata.providerData.id;
+  }
+
+  fileOpened(content, metadata) {
+    const deprecationPhase = this.options.deprecationPhase || 0;
+    const fromLara = !!getQueryParam("launchFromLara") || !!getHashParam("lara");
+    if (!deprecationPhase || fromLara) { return; }
+    return this.client.confirmDialog({
+      title: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_TITLE'),
+      message: this.deprecationMessage(),
+      yesTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_SAVE_ELSEWHERE'),
+      noTitle: tr('~CONCORD_CLOUD_DEPRECATION.CONFIRM_DO_IT_LATER'),
+      hideNoButton: deprecationPhase >= 3,
+      callback: () => {
+        this.disableForNextSave = true;
+        return this.client.saveFileAsDialog();
+      },
+      rejectCallback: () => {
+        if (deprecationPhase > 1) {
+          return this.client.appOptions.autoSaveInterval = null;
+        }
+      }
+    });
+  }
+}
+DocumentStoreProvider.initClass();
+
+module.exports = DocumentStoreProvider;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

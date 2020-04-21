@@ -1,895 +1,1202 @@
-tr = require './utils/translate'
-isString = require './utils/is-string'
-base64Array = require 'base64-js' # https://github.com/beatgammit/base64-js
-getQueryParam = require './utils/get-query-param'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS203: Remove `|| {}` from converted for-own loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const tr = require('./utils/translate');
+const isString = require('./utils/is-string');
+const base64Array = require('base64-js'); // https://github.com/beatgammit/base64-js
+const getQueryParam = require('./utils/get-query-param');
 
-CloudFileManagerUI = (require './ui').CloudFileManagerUI
+const { CloudFileManagerUI } = (require('./ui'));
 
-LocalStorageProvider = require './providers/localstorage-provider'
-ReadOnlyProvider = require './providers/readonly-provider'
-GoogleDriveProvider = require './providers/google-drive-provider'
-LaraProvider = require './providers/lara-provider'
-DocumentStoreProvider = require './providers/document-store-provider'
-DocumentStoreShareProvider = require './providers/document-store-share-provider'
-LocalFileProvider = require './providers/local-file-provider'
-PostMessageProvider = require './providers/post-message-provider'
-URLProvider = require './providers/url-provider'
+const LocalStorageProvider = require('./providers/localstorage-provider');
+const ReadOnlyProvider = require('./providers/readonly-provider');
+const GoogleDriveProvider = require('./providers/google-drive-provider');
+const LaraProvider = require('./providers/lara-provider');
+const DocumentStoreProvider = require('./providers/document-store-provider');
+const DocumentStoreShareProvider = require('./providers/document-store-share-provider');
+const LocalFileProvider = require('./providers/local-file-provider');
+const PostMessageProvider = require('./providers/post-message-provider');
+const URLProvider = require('./providers/url-provider');
 
-ProviderInterface = (require './providers/provider-interface').ProviderInterface
-cloudContentFactory = (require './providers/provider-interface').cloudContentFactory
-CloudContent = (require './providers/provider-interface').CloudContent
-CloudMetadata = (require './providers/provider-interface').CloudMetadata
+const { ProviderInterface } = (require('./providers/provider-interface'));
+const { cloudContentFactory } = (require('./providers/provider-interface'));
+const { CloudContent } = (require('./providers/provider-interface'));
+const { CloudMetadata } = (require('./providers/provider-interface'));
 
-class CloudFileManagerClientEvent
+class CloudFileManagerClientEvent {
+  static initClass() {
+  
+    this.id = 0;
+    this.events = {};
+  }
 
-  @id: 0
-  @events: {}
+  constructor(type, data, callback = null, state) {
+    this.type = type;
+    if (data == null) { data = {}; }
+    this.data = data;
+    this.callback = callback;
+    if (state == null) { state = {}; }
+    this.state = state;
+    CloudFileManagerClientEvent.id++;
+    this.id = CloudFileManagerClientEvent.id;
+  }
 
-  constructor: (@type, @data = {}, @callback = null, @state = {}) ->
-    CloudFileManagerClientEvent.id++
-    @id = CloudFileManagerClientEvent.id
+  postMessage(iframe) {
+    if (this.callback) {
+      CloudFileManagerClientEvent.events[this.id] = this;
+    }
+    // remove client from data to avoid structured clone error in postMessage
+    const eventData = _.clone(this.data);
+    delete eventData.client;
+    const message = {type: "cfm::event", eventId: this.id, eventType: this.type, eventData};
+    return iframe.postMessage(message, "*");
+  }
+}
+CloudFileManagerClientEvent.initClass();
 
-  postMessage: (iframe) ->
-    if @callback
-      CloudFileManagerClientEvent.events[@id] = @
-    # remove client from data to avoid structured clone error in postMessage
-    eventData = _.clone @data
-    delete eventData.client
-    message = {type: "cfm::event", eventId: @id, eventType: @type, eventData: eventData}
-    iframe.postMessage message, "*"
+class CloudFileManagerClient {
 
-class CloudFileManagerClient
+  constructor(options) {
+    this.shouldAutoSave = this.shouldAutoSave.bind(this);
+    this.state =
+      {availableProviders: []};
+    this._listeners = [];
+    this._resetState();
+    this._ui = new CloudFileManagerUI(this);
+    this.providers = {};
+    this.urlProvider = new URLProvider();
+  }
 
-  constructor: (options) ->
-    @state =
-      availableProviders: []
-    @_listeners = []
-    @_resetState()
-    @_ui = new CloudFileManagerUI @
-    @providers = {}
-    @urlProvider = new URLProvider()
+  setAppOptions(appOptions){
 
-  setAppOptions: (@appOptions = {})->
+    let providerName;
+    if (appOptions == null) { appOptions = {}; }
+    this.appOptions = appOptions;
+    if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true; }
+    CloudContent.wrapFileContent = this.appOptions.wrapFileContent;
 
-    @appOptions.wrapFileContent ?= true
-    CloudContent.wrapFileContent = @appOptions.wrapFileContent
-
-    # Determine the available providers. Note that order in the list can
-    # be significant in provider searches (e.g. @autoProvider).
-    allProviders = {}
-    providerList = [
-      LocalStorageProvider
-      ReadOnlyProvider
-      GoogleDriveProvider
-      LaraProvider
-      DocumentStoreProvider
-      LocalFileProvider
+    // Determine the available providers. Note that order in the list can
+    // be significant in provider searches (e.g. @autoProvider).
+    const allProviders = {};
+    const providerList = [
+      LocalStorageProvider,
+      ReadOnlyProvider,
+      GoogleDriveProvider,
+      LaraProvider,
+      DocumentStoreProvider,
+      LocalFileProvider,
       PostMessageProvider
-    ]
-    for Provider in providerList
-      if Provider.Available()
-        allProviders[Provider.Name] = Provider
+    ];
+    for (var Provider of Array.from(providerList)) {
+      if (Provider.Available()) {
+        allProviders[Provider.Name] = Provider;
+      }
+    }
 
-    # default to all providers if non specified
-    if not @appOptions.providers
-      @appOptions.providers = []
-      for own providerName of allProviders
-        appOptions.providers.push providerName
+    // default to all providers if non specified
+    if (!this.appOptions.providers) {
+      this.appOptions.providers = [];
+      for (providerName of Object.keys(allProviders || {})) {
+        appOptions.providers.push(providerName);
+      }
+    }
 
-    # preset the extension if Available
-    CloudMetadata.Extension = @appOptions.extension
-    CloudMetadata.ReadableExtensions = @appOptions.readableExtensions or []
-    if CloudMetadata.Extension then CloudMetadata.ReadableExtensions.push CloudMetadata.Extension
+    // preset the extension if Available
+    CloudMetadata.Extension = this.appOptions.extension;
+    CloudMetadata.ReadableExtensions = this.appOptions.readableExtensions || [];
+    if (CloudMetadata.Extension) { CloudMetadata.ReadableExtensions.push(CloudMetadata.Extension); }
 
-    readableMimetypes = @appOptions.readableMimeTypes or []
-    readableMimetypes.push @appOptions.mimeType
+    const readableMimetypes = this.appOptions.readableMimeTypes || [];
+    readableMimetypes.push(this.appOptions.mimeType);
 
-    # check the providers
-    requestedProviders = @appOptions.providers.slice()
-    if getQueryParam "saveSecondaryFileViaPostMessage"
-      requestedProviders.push 'postMessage'
-    availableProviders = []
-    shareProvider = null
-    for providerSpec in requestedProviders
-      [providerName, providerOptions] = if isString providerSpec \
-                                          then [providerSpec, {}] \
-                                          else [providerSpec.name, providerSpec]
-      # merge in other options as needed
-      providerOptions.mimeType ?= @appOptions.mimeType
-      providerOptions.readableMimetypes = readableMimetypes
-      if not providerName
-        @alert "Invalid provider spec - must either be string or object with name property"
-      else
-        if providerSpec.createProvider
-          allProviders[providerName] = providerSpec.createProvider ProviderInterface
-        if allProviders[providerName]
-          Provider = allProviders[providerName]
-          provider = new Provider providerOptions, @
-          @providers[providerName] = provider
-          # if we're using the DocumentStoreProvider, instantiate the ShareProvider
-          if providerName is DocumentStoreProvider.Name
-            shareProvider = new DocumentStoreShareProvider(@, provider)
-          if provider.urlDisplayName        # also add to here in providers list so we can look it up when parsing url hash
-            @providers[provider.urlDisplayName] = provider
-          availableProviders.push provider
-        else
-          @alert "Unknown provider: #{providerName}"
-    @_setState
-      availableProviders: availableProviders
-      shareProvider: shareProvider
+    // check the providers
+    const requestedProviders = this.appOptions.providers.slice();
+    if (getQueryParam("saveSecondaryFileViaPostMessage")) {
+      requestedProviders.push('postMessage');
+    }
+    const availableProviders = [];
+    let shareProvider = null;
+    for (let providerSpec of Array.from(requestedProviders)) {
+      let providerOptions;
+      [providerName, providerOptions] = Array.from(isString(providerSpec) 
+                                          ? [providerSpec, {}] 
+                                          : [providerSpec.name, providerSpec]);
+      // merge in other options as needed
+      if (providerOptions.mimeType == null) { providerOptions.mimeType = this.appOptions.mimeType; }
+      providerOptions.readableMimetypes = readableMimetypes;
+      if (!providerName) {
+        this.alert("Invalid provider spec - must either be string or object with name property");
+      } else {
+        if (providerSpec.createProvider) {
+          allProviders[providerName] = providerSpec.createProvider(ProviderInterface);
+        }
+        if (allProviders[providerName]) {
+          Provider = allProviders[providerName];
+          const provider = new Provider(providerOptions, this);
+          this.providers[providerName] = provider;
+          // if we're using the DocumentStoreProvider, instantiate the ShareProvider
+          if (providerName === DocumentStoreProvider.Name) {
+            shareProvider = new DocumentStoreShareProvider(this, provider);
+          }
+          if (provider.urlDisplayName) {        // also add to here in providers list so we can look it up when parsing url hash
+            this.providers[provider.urlDisplayName] = provider;
+          }
+          availableProviders.push(provider);
+        } else {
+          this.alert(`Unknown provider: ${providerName}`);
+        }
+      }
+    }
+    this._setState({
+      availableProviders,
+      shareProvider
+    });
 
-    @appOptions.ui or= {}
-    @appOptions.ui.windowTitleSuffix or= document.title
-    @appOptions.ui.windowTitleSeparator or= ' - '
-    @_setWindowTitle()
+    if (!this.appOptions.ui) { this.appOptions.ui = {}; }
+    if (!this.appOptions.ui.windowTitleSuffix) { this.appOptions.ui.windowTitleSuffix = document.title; }
+    if (!this.appOptions.ui.windowTitleSeparator) { this.appOptions.ui.windowTitleSeparator = ' - '; }
+    this._setWindowTitle();
 
-    @_ui.init @appOptions.ui
+    this._ui.init(this.appOptions.ui);
 
-    # check for autosave
-    if @appOptions.autoSaveInterval
-      @autoSave @appOptions.autoSaveInterval
+    // check for autosave
+    if (this.appOptions.autoSaveInterval) {
+      this.autoSave(this.appOptions.autoSaveInterval);
+    }
 
-    # initialize the cloudContentFactory with all data we want in the envelope
-    cloudContentFactory.setEnvelopeMetadata
-      cfmVersion: '__PACKAGE_VERSION__' # replaced by version number at build time
-      appName: @appOptions.appName or ""
-      appVersion: @appOptions.appVersion or ""
-      appBuildNum: @appOptions.appBuildNum or ""
+    // initialize the cloudContentFactory with all data we want in the envelope
+    cloudContentFactory.setEnvelopeMetadata({
+      cfmVersion: '__PACKAGE_VERSION__', // replaced by version number at build time
+      appName: this.appOptions.appName || "",
+      appVersion: this.appOptions.appVersion || "",
+      appBuildNum: this.appOptions.appBuildNum || ""
+    });
 
-    @newFileOpensInNewTab = if @appOptions.ui?.hasOwnProperty('newFileOpensInNewTab') then @appOptions.ui.newFileOpensInNewTab else true
-    @newFileAddsNewToQuery = @appOptions.ui?.newFileAddsNewToQuery
+    this.newFileOpensInNewTab = (this.appOptions.ui != null ? this.appOptions.ui.hasOwnProperty('newFileOpensInNewTab') : undefined) ? this.appOptions.ui.newFileOpensInNewTab : true;
+    this.newFileAddsNewToQuery = this.appOptions.ui != null ? this.appOptions.ui.newFileAddsNewToQuery : undefined;
 
-    if @appOptions.ui?.confirmCloseIfDirty
-      @_setupConfirmOnClose()
+    if (this.appOptions.ui != null ? this.appOptions.ui.confirmCloseIfDirty : undefined) {
+      this._setupConfirmOnClose();
+    }
 
-    @_startPostMessageListener()
+    return this._startPostMessageListener();
+  }
 
-  setProviderOptions: (name, newOptions) ->
-    for provider in @state.availableProviders
-      if provider.name is name
-        provider.options ?= {}
-        for key of newOptions
-          provider.options[key] = newOptions[key]
-        break
+  setProviderOptions(name, newOptions) {
+    return (() => {
+      const result = [];
+      for (let provider of Array.from(this.state.availableProviders)) {
+        if (provider.name === name) {
+          if (provider.options == null) { provider.options = {}; }
+          for (let key in newOptions) {
+            provider.options[key] = newOptions[key];
+          }
+          break;
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 
-  connect: ->
-    @_event 'connected', {client: @}
+  connect() {
+    return this._event('connected', {client: this});
+  }
 
-  #
-  # Called from CloudFileManager.clientConnect to process the URL parameters
-  # and initiate opening any document specified by URL parameters. The CFM
-  # hash params are processed here after which providers are given a chance
-  # to process any provider-specific URL parameters. Calls ready() if no
-  # initial document opening occurs.
-  #
-  processUrlParams: ->
-    # process the hash params
-    hashParams = @appOptions.hashParams
-    if hashParams.sharedContentId
-      @openSharedContent hashParams.sharedContentId
-    else if hashParams.fileParams
-      if hashParams.fileParams.indexOf("http") is 0
-        @openUrlFile hashParams.fileParams
-      else
-        [providerName, providerParams] = hashParams.fileParams.split ':'
-        @openProviderFile providerName, providerParams
-    else if hashParams.copyParams
-      @openCopiedFile hashParams.copyParams
-    else if hashParams.newInFolderParams
-      [providerName, folder] = hashParams.newInFolderParams.split ':'
-      @createNewInFolder providerName, folder
-    else if @haveTempFile()
-      @openAndClearTempFile()
-    else
-      # give providers a chance to process url params
-      for provider in @state.availableProviders
-        return if provider.handleUrlParams()
+  //
+  // Called from CloudFileManager.clientConnect to process the URL parameters
+  // and initiate opening any document specified by URL parameters. The CFM
+  // hash params are processed here after which providers are given a chance
+  // to process any provider-specific URL parameters. Calls ready() if no
+  // initial document opening occurs.
+  //
+  processUrlParams() {
+    // process the hash params
+    let providerName;
+    const { hashParams } = this.appOptions;
+    if (hashParams.sharedContentId) {
+      return this.openSharedContent(hashParams.sharedContentId);
+    } else if (hashParams.fileParams) {
+      if (hashParams.fileParams.indexOf("http") === 0) {
+        return this.openUrlFile(hashParams.fileParams);
+      } else {
+        let providerParams;
+        [providerName, providerParams] = Array.from(hashParams.fileParams.split(':'));
+        return this.openProviderFile(providerName, providerParams);
+      }
+    } else if (hashParams.copyParams) {
+      return this.openCopiedFile(hashParams.copyParams);
+    } else if (hashParams.newInFolderParams) {
+      let folder;
+      [providerName, folder] = Array.from(hashParams.newInFolderParams.split(':'));
+      return this.createNewInFolder(providerName, folder);
+    } else if (this.haveTempFile()) {
+      return this.openAndClearTempFile();
+    } else {
+      // give providers a chance to process url params
+      for (let provider of Array.from(this.state.availableProviders)) {
+        if (provider.handleUrlParams()) { return; }
+      }
 
-      # if no providers handled it, then just signal ready()
-      @ready()
+      // if no providers handled it, then just signal ready()
+      return this.ready();
+    }
+  }
 
-  ready: ->
-    @_event 'ready'
+  ready() {
+    return this._event('ready');
+  }
 
-  rendered: ->
-    @_event 'rendered', {client: @}
+  rendered() {
+    return this._event('rendered', {client: this});
+  }
 
-  listen: (listener) ->
-    if listener
-      @_listeners.push listener
+  listen(listener) {
+    if (listener) {
+      return this._listeners.push(listener);
+    }
+  }
 
-  log: (event, eventData) ->
-    @_event 'log', {logEvent: event, logEventData: eventData}
-    if (@appOptions.log)
-      @appOptions.log event, eventData
+  log(event, eventData) {
+    this._event('log', {logEvent: event, logEventData: eventData});
+    if (this.appOptions.log) {
+      return this.appOptions.log(event, eventData);
+    }
+  }
 
-  autoProvider: (capability) ->
-    for provider in @state.availableProviders
-      return provider if provider.canAuto capability
+  autoProvider(capability) {
+    for (let provider of Array.from(this.state.availableProviders)) {
+      if (provider.canAuto(capability)) { return provider; }
+    }
+  }
 
-  appendMenuItem: (item) ->
-    @_ui.appendMenuItem item; @
+  appendMenuItem(item) {
+    this._ui.appendMenuItem(item); return this;
+  }
 
-  prependMenuItem: (item) ->
-    @_ui.prependMenuItem item; @
+  prependMenuItem(item) {
+    this._ui.prependMenuItem(item); return this;
+  }
 
-  replaceMenuItem: (key, item) ->
-    @_ui.replaceMenuItem key, item; @
+  replaceMenuItem(key, item) {
+    this._ui.replaceMenuItem(key, item); return this;
+  }
 
-  insertMenuItemBefore: (key, item) ->
-    @_ui.insertMenuItemBefore key, item; @
+  insertMenuItemBefore(key, item) {
+    this._ui.insertMenuItemBefore(key, item); return this;
+  }
 
-  insertMenuItemAfter: (key, item) ->
-    @_ui.insertMenuItemAfter key, item; @
+  insertMenuItemAfter(key, item) {
+    this._ui.insertMenuItemAfter(key, item); return this;
+  }
 
-  setMenuBarInfo: (info) ->
-    @_ui.setMenuBarInfo info
+  setMenuBarInfo(info) {
+    return this._ui.setMenuBarInfo(info);
+  }
 
-  newFile: (callback = null) ->
-    @_closeCurrentFile()
-    @_resetState()
-    window.location.hash = ""
-    @_event 'newedFile', {content: ""}
+  newFile(callback = null) {
+    this._closeCurrentFile();
+    this._resetState();
+    window.location.hash = "";
+    return this._event('newedFile', {content: ""});
+  }
 
-  newFileDialog: (callback = null) ->
-    if @newFileOpensInNewTab
-      window.open @getCurrentUrl(if @newFileAddsNewToQuery then "#new" else null), '_blank'
-    else if @state.dirty
-      if @_autoSaveInterval and @state.metadata
-        @save()
-        @newFile()
-      else
-        @confirm tr('~CONFIRM.NEW_FILE'), => @newFile()
-    else
-      @newFile()
+  newFileDialog(callback = null) {
+    if (this.newFileOpensInNewTab) {
+      return window.open(this.getCurrentUrl(this.newFileAddsNewToQuery ? "#new" : null), '_blank');
+    } else if (this.state.dirty) {
+      if (this._autoSaveInterval && this.state.metadata) {
+        this.save();
+        return this.newFile();
+      } else {
+        return this.confirm(tr('~CONFIRM.NEW_FILE'), () => this.newFile());
+      }
+    } else {
+      return this.newFile();
+    }
+  }
 
-  openFile: (metadata, callback = null) ->
-    if metadata?.provider?.can 'load', metadata
-      @_event 'willOpenFile', {op: "openFile"}
-      metadata.provider.load metadata, (err, content) =>
-        return @alert(err, => @ready()) if err
-        # should wait to close current file until client signals open is complete
-        @_closeCurrentFile()
-        @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
-        callback? content, metadata
-        metadata.provider.fileOpened content, metadata
-    else
-      @openFileDialog callback
+  openFile(metadata, callback = null) {
+    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.can('load', metadata))) {
+      this._event('willOpenFile', {op: "openFile"});
+      return metadata.provider.load(metadata, (err, content) => {
+        if (err) { return this.alert(err, () => this.ready()); }
+        // should wait to close current file until client signals open is complete
+        this._closeCurrentFile();
+        this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata));
+        if (typeof callback === 'function') {
+          callback(content, metadata);
+        }
+        return metadata.provider.fileOpened(content, metadata);
+      });
+    } else {
+      return this.openFileDialog(callback);
+    }
+  }
 
-  openFileDialog: (callback = null) ->
-    showDialog = =>
-      @_ui.openFileDialog (metadata) =>
-        @openFile metadata, callback
-    if not @state.dirty
-      showDialog()
-    else
-      @confirm tr('~CONFIRM.OPEN_FILE'), showDialog
+  openFileDialog(callback = null) {
+    const showDialog = () => {
+      return this._ui.openFileDialog(metadata => {
+        return this.openFile(metadata, callback);
+      });
+    };
+    if (!this.state.dirty) {
+      return showDialog();
+    } else {
+      return this.confirm(tr('~CONFIRM.OPEN_FILE'), showDialog);
+    }
+  }
 
-  closeFile: (callback = null) ->
-    @_closeCurrentFile()
-    @_resetState()
-    window.location.hash = ""
-    @_event 'closedFile', {content: ""}
-    callback?()
+  closeFile(callback = null) {
+    this._closeCurrentFile();
+    this._resetState();
+    window.location.hash = "";
+    this._event('closedFile', {content: ""});
+    return (typeof callback === 'function' ? callback() : undefined);
+  }
 
-  closeFileDialog: (callback = null) ->
-    if not @state.dirty
-      @closeFile callback
-    else
-      @confirm tr('~CONFIRM.CLOSE_FILE'), => @closeFile callback
+  closeFileDialog(callback = null) {
+    if (!this.state.dirty) {
+      return this.closeFile(callback);
+    } else {
+      return this.confirm(tr('~CONFIRM.CLOSE_FILE'), () => this.closeFile(callback));
+    }
+  }
 
-  importData: (data, callback = null) ->
-    @_event 'importedData', data
-    callback? data
+  importData(data, callback = null) {
+    this._event('importedData', data);
+    return (typeof callback === 'function' ? callback(data) : undefined);
+  }
 
-  importDataDialog: (callback = null) ->
-    @_ui.importDataDialog (data) =>
-      @importData data, callback
+  importDataDialog(callback = null) {
+    return this._ui.importDataDialog(data => {
+      return this.importData(data, callback);
+    });
+  }
 
-  readLocalFile: (file, callback=null) ->
-    reader = new FileReader()
-    reader.onload = (loaded) ->
-      callback? {name: file.name, content: loaded.target.result}
-    reader.readAsText file
+  readLocalFile(file, callback=null) {
+    const reader = new FileReader();
+    reader.onload = loaded => typeof callback === 'function' ? callback({name: file.name, content: loaded.target.result}) : undefined;
+    return reader.readAsText(file);
+  }
 
-  openLocalFile: (file, callback=null) ->
-    @_event 'willOpenFile', {op: "openLocalFile"}
-    @readLocalFile file, (data) =>
-      content = cloudContentFactory.createEnvelopedCloudContent data.content
-      metadata = new CloudMetadata
-        name: data.name
+  openLocalFile(file, callback=null) {
+    this._event('willOpenFile', {op: "openLocalFile"});
+    return this.readLocalFile(file, data => {
+      const content = cloudContentFactory.createEnvelopedCloudContent(data.content);
+      const metadata = new CloudMetadata({
+        name: data.name,
         type: CloudMetadata.File
-      @_fileOpened content, metadata, {openedContent: content.clone()}
-      callback? content, metadata
+      });
+      this._fileOpened(content, metadata, {openedContent: content.clone()});
+      return (typeof callback === 'function' ? callback(content, metadata) : undefined);
+    });
+  }
 
-  importLocalFile: (file, callback=null) ->
-    @readLocalFile file, (data) =>
-      @importData data, callback
+  importLocalFile(file, callback=null) {
+    return this.readLocalFile(file, data => {
+      return this.importData(data, callback);
+    });
+  }
 
-  openSharedContent: (id) ->
-    @_event 'willOpenFile', {op: "openSharedContent"}
-    @state.shareProvider?.loadSharedContent id, (err, content, metadata) =>
-      return @alert(err, => @ready()) if err
-      @_fileOpened content, metadata, {overwritable: false, openedContent: content.clone()}
+  openSharedContent(id) {
+    this._event('willOpenFile', {op: "openSharedContent"});
+    return (this.state.shareProvider != null ? this.state.shareProvider.loadSharedContent(id, (err, content, metadata) => {
+      if (err) { return this.alert(err, () => this.ready()); }
+      return this._fileOpened(content, metadata, {overwritable: false, openedContent: content.clone()});
+  }) : undefined);
+  }
 
-  # must be called as a result of user action (e.g. click) to avoid popup blockers
-  parseUrlAuthorizeAndOpen: ->
-    if @appOptions.hashParams?.fileParams?
-      [providerName, providerParams] = @appOptions.hashParams.fileParams.split ':'
-      provider = @providers[providerName]
-      if provider
-        provider.authorize =>
-          @openProviderFile providerName providerParams
+  // must be called as a result of user action (e.g. click) to avoid popup blockers
+  parseUrlAuthorizeAndOpen() {
+    if ((this.appOptions.hashParams != null ? this.appOptions.hashParams.fileParams : undefined) != null) {
+      const [providerName, providerParams] = Array.from(this.appOptions.hashParams.fileParams.split(':'));
+      const provider = this.providers[providerName];
+      if (provider) {
+        return provider.authorize(() => {
+          return this.openProviderFile(providerName(providerParams));
+        });
+      }
+    }
+  }
 
-  confirmAuthorizeAndOpen: (provider, providerParams) ->
-    # trigger authorize() from confirmation dialog to avoid popup blockers
-    @confirm tr("~CONFIRM.AUTHORIZE_OPEN"), =>
-      provider.authorize =>
-        @_event 'willOpenFile', {op: "confirmAuthorizeAndOpen"}
-        provider.openSaved providerParams, (err, content, metadata) =>
-          return @alert(err) if err
-          @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
-          provider.fileOpened content, metadata
+  confirmAuthorizeAndOpen(provider, providerParams) {
+    // trigger authorize() from confirmation dialog to avoid popup blockers
+    return this.confirm(tr("~CONFIRM.AUTHORIZE_OPEN"), () => {
+      return provider.authorize(() => {
+        this._event('willOpenFile', {op: "confirmAuthorizeAndOpen"});
+        return provider.openSaved(providerParams, (err, content, metadata) => {
+          if (err) { return this.alert(err); }
+          this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata));
+          return provider.fileOpened(content, metadata);
+        });
+      });
+    });
+  }
 
-  openProviderFile: (providerName, providerParams) ->
-    provider = @providers[providerName]
-    if provider
-      provider.authorized (authorized) =>
-        # we can open the document without authorization in some cases
-        if authorized or not provider.isAuthorizationRequired()
-          @_event 'willOpenFile', {op: "openProviderFile"}
-          provider.openSaved providerParams, (err, content, metadata) =>
-            return @alert(err, => @ready()) if err
-            @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
-            provider.fileOpened content, metadata
-        else
-          @confirmAuthorizeAndOpen(provider, providerParams)
-    else
-      @alert tr("~ALERT.NO_PROVIDER"), => @ready()
+  openProviderFile(providerName, providerParams) {
+    const provider = this.providers[providerName];
+    if (provider) {
+      return provider.authorized(authorized => {
+        // we can open the document without authorization in some cases
+        if (authorized || !provider.isAuthorizationRequired()) {
+          this._event('willOpenFile', {op: "openProviderFile"});
+          return provider.openSaved(providerParams, (err, content, metadata) => {
+            if (err) { return this.alert(err, () => this.ready()); }
+            this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata));
+            return provider.fileOpened(content, metadata);
+          });
+        } else {
+          return this.confirmAuthorizeAndOpen(provider, providerParams);
+        }
+      });
+    } else {
+      return this.alert(tr("~ALERT.NO_PROVIDER"), () => this.ready());
+    }
+  }
 
-  openUrlFile: (url) ->
-    @urlProvider.openFileFromUrl url, (err, content, metadata) =>
-      @_event 'willOpenFile', {op: "openUrlFile"}
-      return @alert(err, => @ready()) if err
-      @_fileOpened content, metadata, {openedContent: content.clone()}, @_getHashParams metadata
+  openUrlFile(url) {
+    return this.urlProvider.openFileFromUrl(url, (err, content, metadata) => {
+      this._event('willOpenFile', {op: "openUrlFile"});
+      if (err) { return this.alert(err, () => this.ready()); }
+      return this._fileOpened(content, metadata, {openedContent: content.clone()}, this._getHashParams(metadata));
+    });
+  }
 
-  createNewInFolder: (providerName, folder) ->
-    provider = @providers[providerName]
-    if provider and provider.can 'setFolder', @state.metadata
-      if not @state.metadata?
-        @state.metadata = new CloudMetadata
-          type: CloudMetadata.File
-          provider: provider
+  createNewInFolder(providerName, folder) {
+    const provider = this.providers[providerName];
+    if (provider && provider.can('setFolder', this.state.metadata)) {
+      if ((this.state.metadata == null)) {
+        this.state.metadata = new CloudMetadata({
+          type: CloudMetadata.File,
+          provider
+        });
+      }
 
-      @state.metadata.parent = new CloudMetadata
-        type: CloudMetadata.Folder
-        providerData:
+      this.state.metadata.parent = new CloudMetadata({
+        type: CloudMetadata.Folder,
+        providerData: {
           id: folder
+        }
+      });
 
-      @_ui.editInitialFilename()
-    @_event 'newedFile', {content: ""}
+      this._ui.editInitialFilename();
+    }
+    return this._event('newedFile', {content: ""});
+  }
 
-  setInitialFilename: (filename) ->
-    @state.metadata.rename filename
-    @save()
+  setInitialFilename(filename) {
+    this.state.metadata.rename(filename);
+    return this.save();
+  }
 
-  isSaveInProgress: ->
-    @state.saving?
+  isSaveInProgress() {
+    return (this.state.saving != null);
+  }
 
-  confirmAuthorizeAndSave: (stringContent, callback) ->
-    # trigger authorize() from confirmation dialog to avoid popup blockers
-    @confirm tr("~CONFIRM.AUTHORIZE_SAVE"), =>
-      @state.metadata.provider.authorize =>
-        @saveFile stringContent, @state.metadata, callback
+  confirmAuthorizeAndSave(stringContent, callback) {
+    // trigger authorize() from confirmation dialog to avoid popup blockers
+    return this.confirm(tr("~CONFIRM.AUTHORIZE_SAVE"), () => {
+      return this.state.metadata.provider.authorize(() => {
+        return this.saveFile(stringContent, this.state.metadata, callback);
+      });
+    });
+  }
 
-  save: (callback = null) ->
-    @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
-      @saveContent stringContent, callback
+  save(callback = null) {
+    return this._event('getContent', { shared: this._sharedMetadata() }, stringContent => {
+      return this.saveContent(stringContent, callback);
+    });
+  }
 
-  saveContent: (stringContent, callback = null) ->
-    provider = @state.metadata?.provider or @autoProvider 'save'
-    if provider?
-      provider.authorized (isAuthorized) =>
-        # we can save the document without authorization in some cases
-        if isAuthorized or not provider.isAuthorizationRequired()
-          @saveFile stringContent, @state.metadata, callback
-        else
-          @confirmAuthorizeAndSave stringContent, callback
-    else
-      @saveFileDialog stringContent, callback
+  saveContent(stringContent, callback = null) {
+    const provider = (this.state.metadata != null ? this.state.metadata.provider : undefined) || this.autoProvider('save');
+    if (provider != null) {
+      return provider.authorized(isAuthorized => {
+        // we can save the document without authorization in some cases
+        if (isAuthorized || !provider.isAuthorizationRequired()) {
+          return this.saveFile(stringContent, this.state.metadata, callback);
+        } else {
+          return this.confirmAuthorizeAndSave(stringContent, callback);
+        }
+      });
+    } else {
+      return this.saveFileDialog(stringContent, callback);
+    }
+  }
 
-  saveFile: (stringContent, metadata, callback = null) ->
-    # must be able to 'resave' to save silently, i.e. without save dialog
-    if metadata?.provider?.can('resave', metadata)
-      @saveFileNoDialog stringContent, metadata, callback
-    else
-      @saveFileDialog stringContent, callback
+  saveFile(stringContent, metadata, callback = null) {
+    // must be able to 'resave' to save silently, i.e. without save dialog
+    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.can('resave', metadata))) {
+      return this.saveFileNoDialog(stringContent, metadata, callback);
+    } else {
+      return this.saveFileDialog(stringContent, callback);
+    }
+  }
 
-  saveFileNoDialog: (stringContent, metadata, callback = null) ->
-    @_setState
-      saving: metadata
-    currentContent = @_createOrUpdateCurrentContent stringContent, metadata
-    metadata.provider.save currentContent, metadata, (err, statusCode) =>
-      if err
-        # disable autosave on save failure; clear "Saving..." message
-        metadata.autoSaveDisabled = true
-        @_setState { metadata: metadata, saving: null }
-        if statusCode is 403
-          return @confirmAuthorizeAndSave stringContent, callback
-        else
-          return @alert(err)
-      if @state.metadata isnt metadata
-        @_closeCurrentFile()
-      # reenable autosave on save success if this isn't a local file save
-      delete metadata.autoSaveDisabled if metadata.autoSaveDisabled?
-      @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, @_getHashParams metadata
-      callback? currentContent, metadata
+  saveFileNoDialog(stringContent, metadata, callback = null) {
+    this._setState({
+      saving: metadata});
+    const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata);
+    return metadata.provider.save(currentContent, metadata, (err, statusCode) => {
+      if (err) {
+        // disable autosave on save failure; clear "Saving..." message
+        metadata.autoSaveDisabled = true;
+        this._setState({ metadata, saving: null });
+        if (statusCode === 403) {
+          return this.confirmAuthorizeAndSave(stringContent, callback);
+        } else {
+          return this.alert(err);
+        }
+      }
+      if (this.state.metadata !== metadata) {
+        this._closeCurrentFile();
+      }
+      // reenable autosave on save success if this isn't a local file save
+      if (metadata.autoSaveDisabled != null) { delete metadata.autoSaveDisabled; }
+      this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata));
+      return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined);
+    });
+  }
 
-  saveFileDialog: (stringContent = null, callback = null) ->
-    @_ui.saveFileDialog (metadata) =>
-      @_dialogSave stringContent, metadata, callback
+  saveFileDialog(stringContent = null, callback = null) {
+    return this._ui.saveFileDialog(metadata => {
+      return this._dialogSave(stringContent, metadata, callback);
+    });
+  }
 
-  saveFileAsDialog: (stringContent = null, callback = null) ->
-    @_ui.saveFileAsDialog (metadata) =>
-      @_dialogSave stringContent, metadata, callback
+  saveFileAsDialog(stringContent = null, callback = null) {
+    return this._ui.saveFileAsDialog(metadata => {
+      return this._dialogSave(stringContent, metadata, callback);
+    });
+  }
 
-  createCopy: (stringContent = null, callback = null) ->
-    saveAndOpenCopy = (stringContent) =>
-      @saveCopiedFile stringContent, @state.metadata?.name, (err, copyParams) =>
-        return callback? err if err
-        window.open @getCurrentUrl "#copy=#{copyParams}"
-        callback? copyParams
-    if stringContent is null
-      @_event 'getContent', {}, (stringContent) ->
-        saveAndOpenCopy stringContent
-    else
-      saveAndOpenCopy stringContent
+  createCopy(stringContent = null, callback = null) {
+    const saveAndOpenCopy = stringContent => {
+      return this.saveCopiedFile(stringContent, this.state.metadata != null ? this.state.metadata.name : undefined, (err, copyParams) => {
+        if (err) { return (typeof callback === 'function' ? callback(err) : undefined); }
+        window.open(this.getCurrentUrl(`#copy=${copyParams}`));
+        return (typeof callback === 'function' ? callback(copyParams) : undefined);
+      });
+    };
+    if (stringContent === null) {
+      return this._event('getContent', {}, stringContent => saveAndOpenCopy(stringContent));
+    } else {
+      return saveAndOpenCopy(stringContent);
+    }
+  }
 
-  saveCopiedFile: (stringContent, name, callback) ->
-    try
-      prefix = 'cfm-copy::'
-      maxCopyNumber = 0
-      for own key of window.localStorage
-        if key.substr(0, prefix.length) is prefix
-          copyNumber = parseInt(key.substr(prefix.length), 10)
-          maxCopyNumber = Math.max(maxCopyNumber, copyNumber)
-      maxCopyNumber++
-      value = JSON.stringify
-        name: if name?.length > 0 then "Copy of #{name}" else "Copy of Untitled Document"
-        stringContent: stringContent
-      window.localStorage.setItem "#{prefix}#{maxCopyNumber}", value
-      callback? null, maxCopyNumber
-    catch e
-      callback "Unable to temporarily save copied file"
+  saveCopiedFile(stringContent, name, callback) {
+    try {
+      const prefix = 'cfm-copy::';
+      let maxCopyNumber = 0;
+      for (let key of Object.keys(window.localStorage || {})) {
+        if (key.substr(0, prefix.length) === prefix) {
+          const copyNumber = parseInt(key.substr(prefix.length), 10);
+          maxCopyNumber = Math.max(maxCopyNumber, copyNumber);
+        }
+      }
+      maxCopyNumber++;
+      const value = JSON.stringify({
+        name: (name != null ? name.length : undefined) > 0 ? `Copy of ${name}` : "Copy of Untitled Document",
+        stringContent
+      });
+      window.localStorage.setItem(`${prefix}${maxCopyNumber}`, value);
+      return (typeof callback === 'function' ? callback(null, maxCopyNumber) : undefined);
+    } catch (e) {
+      return callback("Unable to temporarily save copied file");
+    }
+  }
 
-  openCopiedFile: (copyParams) ->
-    @_event 'willOpenFile', {op: "openCopiedFile"}
-    try
-      key = "cfm-copy::#{copyParams}"
-      copied = JSON.parse window.localStorage.getItem key
-      content = cloudContentFactory.createEnvelopedCloudContent copied.stringContent
-      metadata = new CloudMetadata
-        name: copied.name
+  openCopiedFile(copyParams) {
+    this._event('willOpenFile', {op: "openCopiedFile"});
+    try {
+      const key = `cfm-copy::${copyParams}`;
+      const copied = JSON.parse(window.localStorage.getItem(key));
+      const content = cloudContentFactory.createEnvelopedCloudContent(copied.stringContent);
+      const metadata = new CloudMetadata({
+        name: copied.name,
         type: CloudMetadata.File
-      window.location.hash = ""
-      @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
-      window.localStorage.removeItem key
-    catch e
-      callback "Unable to load copied file"
+      });
+      window.location.hash = "";
+      this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()});
+      return window.localStorage.removeItem(key);
+    } catch (e) {
+      return callback("Unable to load copied file");
+    }
+  }
 
-  haveTempFile: ->
-    try
-      key = "cfm-tempfile"
-      return !!(JSON.parse window.localStorage.getItem key)
-    catch e
-      return false
+  haveTempFile() {
+    try {
+      const key = "cfm-tempfile";
+      return !!(JSON.parse(window.localStorage.getItem(key)));
+    } catch (e) {
+      return false;
+    }
+  }
 
-  saveTempFile: (callback) ->
-    @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
-      currentContent = @_createOrUpdateCurrentContent stringContent
-      try
-        key = "cfm-tempfile"
-        value = JSON.stringify
-          stringContent: stringContent
-        window.localStorage.setItem key, value
-        metadata = new CloudMetadata
-          name: currentContent.name
+  saveTempFile(callback) {
+    return this._event('getContent', { shared: this._sharedMetadata() }, stringContent => {
+      const currentContent = this._createOrUpdateCurrentContent(stringContent);
+      try {
+        const key = "cfm-tempfile";
+        const value = JSON.stringify({
+          stringContent});
+        window.localStorage.setItem(key, value);
+        const metadata = new CloudMetadata({
+          name: currentContent.name,
           type: CloudMetadata.File
-        @_fileChanged 'savedFile', currentContent, metadata, {saved: true}, ""
-        callback? null
-      catch e
-        callback "Unable to temporarily save copied file"
+        });
+        this._fileChanged('savedFile', currentContent, metadata, {saved: true}, "");
+        return (typeof callback === 'function' ? callback(null) : undefined);
+      } catch (e) {
+        return callback("Unable to temporarily save copied file");
+      }
+    });
+  }
 
-  openAndClearTempFile: ->
-    @_event 'willOpenFile', {op: "openAndClearTempFile"}
-    try
-      key = "cfm-tempfile"
-      tempFile = JSON.parse window.localStorage.getItem key
-      content = cloudContentFactory.createEnvelopedCloudContent tempFile.stringContent
-      metadata = new CloudMetadata
-        name: tempFile.name
+  openAndClearTempFile() {
+    this._event('willOpenFile', {op: "openAndClearTempFile"});
+    try {
+      const key = "cfm-tempfile";
+      const tempFile = JSON.parse(window.localStorage.getItem(key));
+      const content = cloudContentFactory.createEnvelopedCloudContent(tempFile.stringContent);
+      const metadata = new CloudMetadata({
+        name: tempFile.name,
         type: CloudMetadata.File
-      @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
-      window.localStorage.removeItem key
-    catch e
-      callback "Unable to load temp file"
+      });
+      this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()});
+      return window.localStorage.removeItem(key);
+    } catch (e) {
+      return callback("Unable to load temp file");
+    }
+  }
 
-  _sharedMetadata: ->
-    @state.currentContent?.getSharedMetadata() or {}
+  _sharedMetadata() {
+    return (this.state.currentContent != null ? this.state.currentContent.getSharedMetadata() : undefined) || {};
+  }
 
-  shareGetLink: ->
-    @_ui.shareDialog @
+  shareGetLink() {
+    return this._ui.shareDialog(this);
+  }
 
-  shareUpdate: ->
-    @share => @alert (tr "~SHARE_UPDATE.MESSAGE"), (tr "~SHARE_UPDATE.TITLE")
+  shareUpdate() {
+    return this.share(() => this.alert((tr("~SHARE_UPDATE.MESSAGE")), (tr("~SHARE_UPDATE.TITLE"))));
+  }
 
-  toggleShare: (callback) ->
-    if @isShared()
-      @unshare callback
-    else
-      @share callback
+  toggleShare(callback) {
+    if (this.isShared()) {
+      return this.unshare(callback);
+    } else {
+      return this.share(callback);
+    }
+  }
 
-  isShared: ->
-    @state.currentContent?.get("sharedDocumentId") and not @state.currentContent?.get("isUnshared")
+  isShared() {
+    return (this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && !(this.state.currentContent != null ? this.state.currentContent.get("isUnshared") : undefined);
+  }
 
-  canEditShared: ->
-    accessKeys = @state.currentContent?.get("accessKeys") or {}
-    shareEditKey = @state.currentContent?.get("shareEditKey")
-    (shareEditKey or accessKeys.readWrite) and not @state.currentContent?.get("isUnshared")
+  canEditShared() {
+    const accessKeys = (this.state.currentContent != null ? this.state.currentContent.get("accessKeys") : undefined) || {};
+    const shareEditKey = this.state.currentContent != null ? this.state.currentContent.get("shareEditKey") : undefined;
+    return (shareEditKey || accessKeys.readWrite) && !(this.state.currentContent != null ? this.state.currentContent.get("isUnshared") : undefined);
+  }
 
-  setShareState: (shared, callback) ->
-    if @state.shareProvider
-      sharingMetadata = @state.shareProvider.getSharingMetadata shared
-      @_event 'getContent', { shared: sharingMetadata }, (stringContent) =>
-        @_setState
-          sharing: shared
-        sharedContent = cloudContentFactory.createEnvelopedCloudContent stringContent
-        sharedContent.addMetadata sharingMetadata
-        currentContent = @_createOrUpdateCurrentContent stringContent, @state.metadata
-        sharedContent.set('docName', currentContent.get('docName'))
-        if shared
-          currentContent.remove 'isUnshared'
-        else
-          currentContent.set 'isUnshared', true
-        @state.shareProvider.share shared, currentContent, sharedContent, @state.metadata, (err, sharedContentId) =>
-          return @alert(err) if err
-          callback? null, sharedContentId, currentContent
+  setShareState(shared, callback) {
+    if (this.state.shareProvider) {
+      const sharingMetadata = this.state.shareProvider.getSharingMetadata(shared);
+      return this._event('getContent', { shared: sharingMetadata }, stringContent => {
+        this._setState({
+          sharing: shared});
+        const sharedContent = cloudContentFactory.createEnvelopedCloudContent(stringContent);
+        sharedContent.addMetadata(sharingMetadata);
+        const currentContent = this._createOrUpdateCurrentContent(stringContent, this.state.metadata);
+        sharedContent.set('docName', currentContent.get('docName'));
+        if (shared) {
+          currentContent.remove('isUnshared');
+        } else {
+          currentContent.set('isUnshared', true);
+        }
+        return this.state.shareProvider.share(shared, currentContent, sharedContent, this.state.metadata, (err, sharedContentId) => {
+          if (err) { return this.alert(err); }
+          return (typeof callback === 'function' ? callback(null, sharedContentId, currentContent) : undefined);
+        });
+      });
+    }
+  }
 
-  share: (callback) ->
-    @setShareState true, (err, sharedContentId, currentContent) =>
-      @_fileChanged 'sharedFile', currentContent, @state.metadata
-      callback? null, sharedContentId
+  share(callback) {
+    return this.setShareState(true, (err, sharedContentId, currentContent) => {
+      this._fileChanged('sharedFile', currentContent, this.state.metadata);
+      return (typeof callback === 'function' ? callback(null, sharedContentId) : undefined);
+    });
+  }
 
-  unshare: (callback) ->
-    @setShareState false, (err, sharedContentId, currentContent) =>
-      @_fileChanged 'unsharedFile', currentContent, @state.metadata
-      callback? null
+  unshare(callback) {
+    return this.setShareState(false, (err, sharedContentId, currentContent) => {
+      this._fileChanged('unsharedFile', currentContent, this.state.metadata);
+      return (typeof callback === 'function' ? callback(null) : undefined);
+    });
+  }
 
-  revertToShared: (callback = null) ->
-    id = @state.currentContent?.get("sharedDocumentId")
-    if id and @state.shareProvider?
-      @state.shareProvider.loadSharedContent id, (err, content, metadata) =>
-        return @alert(err) if err
-        @state.currentContent.copyMetadataTo content
-        if not metadata.name and docName = content.get('docName')
-          metadata.name = docName
-        @_fileOpened content, metadata, {dirty: true, openedContent: content.clone()}
-        callback? null
+  revertToShared(callback = null) {
+    const id = this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined;
+    if (id && (this.state.shareProvider != null)) {
+      return this.state.shareProvider.loadSharedContent(id, (err, content, metadata) => {
+        let docName;
+        if (err) { return this.alert(err); }
+        this.state.currentContent.copyMetadataTo(content);
+        if (!metadata.name && (docName = content.get('docName'))) {
+          metadata.name = docName;
+        }
+        this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()});
+        return (typeof callback === 'function' ? callback(null) : undefined);
+      });
+    }
+  }
 
-  revertToSharedDialog: (callback = null) ->
-    if @state.currentContent?.get("sharedDocumentId") and @state.shareProvider?
-      @confirm tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), => @revertToShared callback
+  revertToSharedDialog(callback = null) {
+    if ((this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && (this.state.shareProvider != null)) {
+      return this.confirm(tr("~CONFIRM.REVERT_TO_SHARED_VIEW"), () => this.revertToShared(callback));
+    }
+  }
 
-  downloadDialog: (callback = null) ->
-    # should share metadata be included in downloaded local files?
-    @_event 'getContent', { shared: @_sharedMetadata() }, (content) =>
-      envelopedContent = cloudContentFactory.createEnvelopedCloudContent content
-      @state.currentContent?.copyMetadataTo envelopedContent
-      @_ui.downloadDialog @state.metadata?.name, envelopedContent, callback
+  downloadDialog(callback = null) {
+    // should share metadata be included in downloaded local files?
+    return this._event('getContent', { shared: this._sharedMetadata() }, content => {
+      const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content);
+      if (this.state.currentContent != null) {
+        this.state.currentContent.copyMetadataTo(envelopedContent);
+      }
+      return this._ui.downloadDialog(this.state.metadata != null ? this.state.metadata.name : undefined, envelopedContent, callback);
+    });
+  }
 
-  getDownloadBlob: (content, includeShareInfo, mimeType='text/plain') ->
-    if typeof content is "string"
-      if mimeType.indexOf("image") >= 0
-        contentToSave = base64Array.toByteArray(content)
-      else
-        contentToSave = content
+  getDownloadBlob(content, includeShareInfo, mimeType) {
+    let contentToSave;
+    if (mimeType == null) { mimeType = 'text/plain'; }
+    if (typeof content === "string") {
+      if (mimeType.indexOf("image") >= 0) {
+        contentToSave = base64Array.toByteArray(content);
+      } else {
+        contentToSave = content;
+      }
 
-    else if includeShareInfo
-      contentToSave = JSON.stringify(content.getContent())
+    } else if (includeShareInfo) {
+      contentToSave = JSON.stringify(content.getContent());
 
-    else # not includeShareInfo
-      # clone the document so we can delete the share info and not affect the original
-      json = content.clone().getContent()
-      delete json.sharedDocumentId
-      delete json.shareEditKey
-      delete json.isUnshared
-      delete json.accessKeys
-      # CODAP moves the keys into its own namespace
-      delete json.metadata.shared if json.metadata?.shared?
-      contentToSave = JSON.stringify(json)
+    } else { // not includeShareInfo
+      // clone the document so we can delete the share info and not affect the original
+      const json = content.clone().getContent();
+      delete json.sharedDocumentId;
+      delete json.shareEditKey;
+      delete json.isUnshared;
+      delete json.accessKeys;
+      // CODAP moves the keys into its own namespace
+      if ((json.metadata != null ? json.metadata.shared : undefined) != null) { delete json.metadata.shared; }
+      contentToSave = JSON.stringify(json);
+    }
 
-    new Blob([contentToSave], {type: mimeType})
+    return new Blob([contentToSave], {type: mimeType});
+  }
 
-  getDownloadUrl: (content, includeShareInfo, mimeType='text/plain') ->
-    wURL = window.URL or window.webkitURL
-    wURL.createObjectURL(@getDownloadBlob content, includeShareInfo, mimeType) if wURL
+  getDownloadUrl(content, includeShareInfo, mimeType) {
+    if (mimeType == null) { mimeType = 'text/plain'; }
+    const wURL = window.URL || window.webkitURL;
+    if (wURL) { return wURL.createObjectURL(this.getDownloadBlob(content, includeShareInfo, mimeType)); }
+  }
 
-  rename: (metadata, newName, callback) ->
-    dirty = @state.dirty
-    _rename = (metadata) =>
-      @state.currentContent?.addMetadata docName: metadata.name
-      @_fileChanged 'renamedFile', @state.currentContent, metadata, {dirty: dirty}, @_getHashParams metadata
-      callback? newName
-    if newName isnt @state.metadata?.name
-      if @state.metadata?.provider?.can 'rename', metadata
-        @state.metadata.provider.rename @state.metadata, newName, (err, metadata) =>
-          return @alert(err) if err
-          _rename metadata
-      else
-        if metadata
-          metadata.name = newName
-          metadata.filename = newName
-        else
-          metadata = new CloudMetadata
-            name: newName
+  rename(metadata, newName, callback) {
+    const { dirty } = this.state;
+    const _rename = metadata => {
+      if (this.state.currentContent != null) {
+        this.state.currentContent.addMetadata({docName: metadata.name});
+      }
+      this._fileChanged('renamedFile', this.state.currentContent, metadata, {dirty}, this._getHashParams(metadata));
+      return (typeof callback === 'function' ? callback(newName) : undefined);
+    };
+    if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
+      if (__guard__(this.state.metadata != null ? this.state.metadata.provider : undefined, x => x.can('rename', metadata))) {
+        return this.state.metadata.provider.rename(this.state.metadata, newName, (err, metadata) => {
+          if (err) { return this.alert(err); }
+          return _rename(metadata);
+        });
+      } else {
+        if (metadata) {
+          metadata.name = newName;
+          metadata.filename = newName;
+        } else {
+          metadata = new CloudMetadata({
+            name: newName,
             type: CloudMetadata.File
-        _rename metadata
+          });
+        }
+        return _rename(metadata);
+      }
+    }
+  }
 
-  renameDialog: (callback = null) ->
-    @_ui.renameDialog @state.metadata?.name, (newName) =>
-      @rename @state.metadata, newName, callback
+  renameDialog(callback = null) {
+    return this._ui.renameDialog(this.state.metadata != null ? this.state.metadata.name : undefined, newName => {
+      return this.rename(this.state.metadata, newName, callback);
+    });
+  }
 
-  revertToLastOpened: (callback = null) ->
-    @_event 'willOpenFile', {op: "revertToLastOpened"}
-    if @state.openedContent? and @state.metadata
-      @_fileOpened @state.openedContent, @state.metadata, {openedContent: @state.openedContent.clone()}
+  revertToLastOpened(callback = null) {
+    this._event('willOpenFile', {op: "revertToLastOpened"});
+    if ((this.state.openedContent != null) && this.state.metadata) {
+      return this._fileOpened(this.state.openedContent, this.state.metadata, {openedContent: this.state.openedContent.clone()});
+    }
+  }
 
-  revertToLastOpenedDialog: (callback = null) ->
-    if @state.openedContent? and @state.metadata
-      @confirm tr('~CONFIRM.REVERT_TO_LAST_OPENED'), => @revertToLastOpened callback
-    else
-      callback? 'No initial opened version was found for the currently active file'
+  revertToLastOpenedDialog(callback = null) {
+    if ((this.state.openedContent != null) && this.state.metadata) {
+      return this.confirm(tr('~CONFIRM.REVERT_TO_LAST_OPENED'), () => this.revertToLastOpened(callback));
+    } else {
+      return (typeof callback === 'function' ? callback('No initial opened version was found for the currently active file') : undefined);
+    }
+  }
 
-  saveSecondaryFileAsDialog: (stringContent, extension, mimeType, callback) ->
-    if (provider = @autoProvider 'export')
-      metadata = { provider, extension, mimeType }
-      @saveSecondaryFile stringContent, metadata, callback
-    else
-      data = { content: stringContent, extension, mimeType }
-      @_ui.saveSecondaryFileAsDialog data, (metadata) =>
-        # replace defaults
-        if extension
-          metadata.filename = CloudMetadata.newExtension metadata.filename, extension
-        if mimeType
-          metadata.mimeType = mimeType
+  saveSecondaryFileAsDialog(stringContent, extension, mimeType, callback) {
+    let provider;
+    if (provider = this.autoProvider('export')) {
+      const metadata = { provider, extension, mimeType };
+      return this.saveSecondaryFile(stringContent, metadata, callback);
+    } else {
+      const data = { content: stringContent, extension, mimeType };
+      return this._ui.saveSecondaryFileAsDialog(data, metadata => {
+        // replace defaults
+        if (extension) {
+          metadata.filename = CloudMetadata.newExtension(metadata.filename, extension);
+        }
+        if (mimeType) {
+          metadata.mimeType = mimeType;
+        }
 
-        @saveSecondaryFile stringContent, metadata, callback
+        return this.saveSecondaryFile(stringContent, metadata, callback);
+      });
+    }
+  }
 
-  # Saves a file to backend, but does not update current metadata.
-  # Used e.g. when exporting .csv files from CODAP
-  saveSecondaryFile: (stringContent, metadata, callback = null) ->
-    if metadata?.provider?.can 'export', metadata
-      metadata.provider.saveAsExport stringContent, metadata, (err, statusCode) =>
-        if err
-          return @alert(err)
-        callback? stringContent, metadata
+  // Saves a file to backend, but does not update current metadata.
+  // Used e.g. when exporting .csv files from CODAP
+  saveSecondaryFile(stringContent, metadata, callback = null) {
+    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.can('export', metadata))) {
+      return metadata.provider.saveAsExport(stringContent, metadata, (err, statusCode) => {
+        if (err) {
+          return this.alert(err);
+        }
+        return (typeof callback === 'function' ? callback(stringContent, metadata) : undefined);
+      });
+    }
+  }
 
-  dirty: (isDirty = true)->
-    @_setState
-      dirty: isDirty
-      saved: @state.saved and not isDirty
-    if window.self isnt window.top
-      # post to parent and not top window (not a bug even though we test for self inst top above)
-      window.parent.postMessage({type: "cfm::setDirty", isDirty: isDirty}, "*")
+  dirty(isDirty){
+    if (isDirty == null) { isDirty = true; }
+    this._setState({
+      dirty: isDirty,
+      saved: this.state.saved && !isDirty
+    });
+    if (window.self !== window.top) {
+      // post to parent and not top window (not a bug even though we test for self inst top above)
+      return window.parent.postMessage({type: "cfm::setDirty", isDirty}, "*");
+    }
+  }
 
-  shouldAutoSave: =>
-    @state.dirty and
-      not @state.metadata?.autoSaveDisabled and
-      not @isSaveInProgress() and
-      @state.metadata?.provider?.can 'resave', @state.metadata
+  shouldAutoSave() {
+    return this.state.dirty &&
+      !(this.state.metadata != null ? this.state.metadata.autoSaveDisabled : undefined) &&
+      !this.isSaveInProgress() &&
+      __guard__(this.state.metadata != null ? this.state.metadata.provider : undefined, x => x.can('resave', this.state.metadata));
+  }
 
-  autoSave: (interval) ->
-    if @_autoSaveInterval
-      clearInterval @_autoSaveInterval
+  autoSave(interval) {
+    if (this._autoSaveInterval) {
+      clearInterval(this._autoSaveInterval);
+    }
 
-    # in case the caller uses milliseconds
-    if interval > 1000
-      interval = Math.round(interval / 1000)
-    if interval > 0
-      @_autoSaveInterval = setInterval (=> @save() if @shouldAutoSave()), (interval * 1000)
+    // in case the caller uses milliseconds
+    if (interval > 1000) {
+      interval = Math.round(interval / 1000);
+    }
+    if (interval > 0) {
+      return this._autoSaveInterval = setInterval((() => { if (this.shouldAutoSave()) { return this.save(); } }), (interval * 1000));
+    }
+  }
 
-  isAutoSaving: ->
-    @_autoSaveInterval?
+  isAutoSaving() {
+    return (this._autoSaveInterval != null);
+  }
 
-  changeLanguage: (newLangCode, callback) ->
-    if callback
-      if not @state.dirty
-        callback newLangCode
-      else
-        postSave = (err) =>
-          if err
-            @alert(err)
-            @confirm tr('~CONFIRM.CHANGE_LANGUAGE'), -> callback newLangCode
-          else
-            callback newLangCode
-        if @state.metadata?.provider or @autoProvider 'save'
-          @save (err) -> postSave()
-        else
-          @saveTempFile postSave
+  changeLanguage(newLangCode, callback) {
+    if (callback) {
+      if (!this.state.dirty) {
+        return callback(newLangCode);
+      } else {
+        const postSave = err => {
+          if (err) {
+            this.alert(err);
+            return this.confirm(tr('~CONFIRM.CHANGE_LANGUAGE'), () => callback(newLangCode));
+          } else {
+            return callback(newLangCode);
+          }
+        };
+        if ((this.state.metadata != null ? this.state.metadata.provider : undefined) || this.autoProvider('save')) {
+          return this.save(err => postSave());
+        } else {
+          return this.saveTempFile(postSave);
+        }
+      }
+    }
+  }
 
-  showBlockingModal: (modalProps) ->
-    @_ui.showBlockingModal modalProps
+  showBlockingModal(modalProps) {
+    return this._ui.showBlockingModal(modalProps);
+  }
 
-  hideBlockingModal: ->
-    @_ui.hideBlockingModal()
+  hideBlockingModal() {
+    return this._ui.hideBlockingModal();
+  }
 
-  getCurrentUrl: (queryString = null) ->
-    suffix = if queryString? then "?#{queryString}" else ""
-    # Check browser support for document.location.origin (& window.location.origin)
-    "#{document.location.origin}#{document.location.pathname}#{suffix}"
+  getCurrentUrl(queryString = null) {
+    const suffix = (queryString != null) ? `?${queryString}` : "";
+    // Check browser support for document.location.origin (& window.location.origin)
+    return `${document.location.origin}${document.location.pathname}${suffix}`;
+  }
 
-  # Takes an array of strings representing url parameters to be removed from the URL.
-  # Removes the specified parameters from the URL and then uses the history API's
-  # pushState() method to update the URL without reloading the page.
-  # Adapted from http://stackoverflow.com/a/11654436.
-  removeQueryParams: (params) ->
-    url = window.location.href
-    hash = url.split('#')
+  // Takes an array of strings representing url parameters to be removed from the URL.
+  // Removes the specified parameters from the URL and then uses the history API's
+  // pushState() method to update the URL without reloading the page.
+  // Adapted from http://stackoverflow.com/a/11654436.
+  removeQueryParams(params) {
+    let url = window.location.href;
+    const hash = url.split('#');
 
-    for key in params
-      re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "g")
+    for (let key of Array.from(params)) {
+      const re = new RegExp(`([?&])${key}=.*?(&|#|$)(.*)`, "g");
 
-      if re.test(url)
-        hash[0] = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '')
+      if (re.test(url)) {
+        hash[0] = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '');
+      }
+    }
 
-    url = hash[0] + if hash[1]? then '#' + hash[1] else ''
+    url = hash[0] + ((hash[1] != null) ? `#${hash[1]}` : '');
 
-    if url isnt window.location.href
-      history.pushState { originalUrl: window.location.href }, '', url
+    if (url !== window.location.href) {
+      return history.pushState({ originalUrl: window.location.href }, '', url);
+    }
+  }
 
-  confirm: (message, callback) ->
-    @confirmDialog { message: message, callback: callback }
+  confirm(message, callback) {
+    return this.confirmDialog({ message, callback });
+  }
 
-  confirmDialog: (params) ->
-    @_ui.confirmDialog params
+  confirmDialog(params) {
+    return this._ui.confirmDialog(params);
+  }
 
-  alert: (message, titleOrCallback, callback) ->
-    if _.isFunction(titleOrCallback)
-      callback = titleOrCallback
-      titleOrCallback = null
-    @_ui.alertDialog message, (titleOrCallback or tr "~CLIENT_ERROR.TITLE"), callback
+  alert(message, titleOrCallback, callback) {
+    if (_.isFunction(titleOrCallback)) {
+      callback = titleOrCallback;
+      titleOrCallback = null;
+    }
+    return this._ui.alertDialog(message, (titleOrCallback || tr("~CLIENT_ERROR.TITLE")), callback);
+  }
 
-  _dialogSave: (stringContent, metadata, callback) ->
-    if stringContent isnt null
-      @saveFileNoDialog stringContent, metadata, callback
-    else
-      @_event 'getContent', { shared: @_sharedMetadata() }, (stringContent) =>
-        @saveFileNoDialog stringContent, metadata, callback
+  _dialogSave(stringContent, metadata, callback) {
+    if (stringContent !== null) {
+      return this.saveFileNoDialog(stringContent, metadata, callback);
+    } else {
+      return this._event('getContent', { shared: this._sharedMetadata() }, stringContent => {
+        return this.saveFileNoDialog(stringContent, metadata, callback);
+      });
+    }
+  }
 
-  _fileChanged: (type, content, metadata, additionalState={}, hashParams=null) ->
-    metadata?.overwritable ?= true
-    @_updateState content, metadata, additionalState, hashParams
-    @_event type, { content: content?.getClientContent(), shared: @_sharedMetadata() }
+  _fileChanged(type, content, metadata, additionalState, hashParams=null) {
+    if (additionalState == null) { additionalState = {}; }
+    if (metadata != null) {
+      metadata.overwritable != null ? metadata.overwritable : (metadata.overwritable = true);
+    }
+    this._updateState(content, metadata, additionalState, hashParams);
+    return this._event(type, { content: (content != null ? content.getClientContent() : undefined), shared: this._sharedMetadata() });
+  }
 
-  _fileOpened: (content, metadata, additionalState={}, hashParams=null) ->
-    eventData = { content: content?.getClientContent() }
-    # update state before sending 'openedFile' events so that 'openedFile' listeners that
-    # reference state have the updated state values
-    @_updateState content, metadata, additionalState, hashParams
-    # add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
-    contentType = metadata.mimeType or metadata.contentType
-    eventData.metadata = {contentType} if contentType
-    @_event 'openedFile', eventData, (iError, iSharedMetadata) =>
-      return @alert(iError, => @ready()) if iError
+  _fileOpened(content, metadata, additionalState, hashParams=null) {
+    if (additionalState == null) { additionalState = {}; }
+    const eventData = { content: (content != null ? content.getClientContent() : undefined) };
+    // update state before sending 'openedFile' events so that 'openedFile' listeners that
+    // reference state have the updated state values
+    this._updateState(content, metadata, additionalState, hashParams);
+    // add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
+    const contentType = metadata.mimeType || metadata.contentType;
+    if (contentType) { eventData.metadata = {contentType}; }
+    return this._event('openedFile', eventData, (iError, iSharedMetadata) => {
+      if (iError) { return this.alert(iError, () => this.ready()); }
 
-      metadata?.overwritable ?= true
-      if not @appOptions.wrapFileContent
-        content.addMetadata iSharedMetadata
-      # and then update state again for the metadata and content changes
-      @_updateState content, metadata, additionalState, hashParams
-      @ready()
+      if (metadata != null) {
+        metadata.overwritable != null ? metadata.overwritable : (metadata.overwritable = true);
+      }
+      if (!this.appOptions.wrapFileContent) {
+        content.addMetadata(iSharedMetadata);
+      }
+      // and then update state again for the metadata and content changes
+      this._updateState(content, metadata, additionalState, hashParams);
+      return this.ready();
+    });
+  }
 
-  _updateState: (content, metadata, additionalState={}, hashParams=null) ->
-    state =
-      currentContent: content
-      metadata: metadata
-      saving: null
+  _updateState(content, metadata, additionalState, hashParams=null) {
+    if (additionalState == null) { additionalState = {}; }
+    const state = {
+      currentContent: content,
+      metadata,
+      saving: null,
+      saved: false,
+      dirty: !additionalState.saved && (content != null ? content.requiresConversion() : undefined)
+    };
+    for (let key of Object.keys(additionalState || {})) {
+      const value = additionalState[key];
+      state[key] = value;
+    }
+    this._setWindowTitle(metadata != null ? metadata.name : undefined);
+    if (hashParams !== null) {
+      window.location.hash = hashParams;
+    }
+    return this._setState(state);
+  }
+
+  _event(type, data, eventCallback = null) {
+    if (data == null) { data = {}; }
+    const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state);
+    for (let listener of Array.from(this._listeners)) {
+      listener(event);
+    }
+    // Workaround to fix https://www.pivotaltracker.com/story/show/162392580
+    // CODAP will fail on the renamedFile message because we don't send the state with
+    // the postMessage events and CODAP examines the state to get the new name.
+    // I tried sending the state but that causes CODAP to replace its state which breaks other things.
+    // A permanent fix for this would be to send the new filename outside of the state metadata.
+    const skipPostMessage = type === "renamedFile";
+    if ((this.appOptions != null ? this.appOptions.sendPostMessageClientEvents : undefined) && this.iframe && !skipPostMessage) {
+      return event.postMessage(this.iframe.contentWindow);
+    }
+  }
+
+  _setState(options) {
+    for (let key of Object.keys(options || {})) {
+      const value = options[key];
+      this.state[key] = value;
+    }
+    return this._event('stateChanged');
+  }
+
+  _resetState() {
+    return this._setState({
+      openedContent: null,
+      currentContent: null,
+      metadata: null,
+      dirty: false,
+      saving: null,
       saved: false
-      dirty: not additionalState.saved and content?.requiresConversion()
-    for own key, value of additionalState
-      state[key] = value
-    @_setWindowTitle metadata?.name
-    if hashParams isnt null
-      window.location.hash = hashParams
-    @_setState state
+    });
+  }
 
-  _event: (type, data = {}, eventCallback = null) ->
-    event = new CloudFileManagerClientEvent type, data, eventCallback, @state
-    for listener in @_listeners
-      listener event
-    # Workaround to fix https://www.pivotaltracker.com/story/show/162392580
-    # CODAP will fail on the renamedFile message because we don't send the state with
-    # the postMessage events and CODAP examines the state to get the new name.
-    # I tried sending the state but that causes CODAP to replace its state which breaks other things.
-    # A permanent fix for this would be to send the new filename outside of the state metadata.
-    skipPostMessage = type is "renamedFile"
-    if @appOptions?.sendPostMessageClientEvents and @iframe and not skipPostMessage
-      event.postMessage(@iframe.contentWindow)
+  _closeCurrentFile() {
+    if (__guard__(this.state.metadata != null ? this.state.metadata.provider : undefined, x => x.can('close', this.state.metadata))) {
+      return this.state.metadata.provider.close(this.state.metadata);
+    }
+  }
 
-  _setState: (options) ->
-    for own key, value of options
-      @state[key] = value
-    @_event 'stateChanged'
+  _createOrUpdateCurrentContent(stringContent, metadata = null) {
+    let currentContent;
+    if (this.state.currentContent != null) {
+      ({ currentContent } = this.state);
+      currentContent.setText(stringContent);
+    } else {
+      currentContent = cloudContentFactory.createEnvelopedCloudContent(stringContent);
+    }
+    if (metadata != null) {
+      currentContent.addMetadata({docName: metadata.name});
+    }
+    return currentContent;
+  }
 
-  _resetState: ->
-    @_setState
-      openedContent: null
-      currentContent: null
-      metadata: null
-      dirty: false
-      saving: null
-      saved: false
+  _setWindowTitle(name) {
+    if (!this.appOptions.appSetsWindowTitle && __guard__(this.appOptions != null ? this.appOptions.ui : undefined, x => x.windowTitleSuffix)) {
+      return document.title = `${(name != null ? name.length : undefined) > 0 ? name : (tr("~MENUBAR.UNTITLED_DOCUMENT"))}${this.appOptions.ui.windowTitleSeparator}${this.appOptions.ui.windowTitleSuffix}`;
+    }
+  }
 
-  _closeCurrentFile: ->
-    if @state.metadata?.provider?.can 'close', @state.metadata
-      @state.metadata.provider.close @state.metadata
+  _getHashParams(metadata) {
+    let openSavedParams;
+    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.canOpenSaved()) && ((openSavedParams = __guard__(metadata != null ? metadata.provider : undefined, x1 => x1.getOpenSavedParams(metadata))) != null)) {
+      return `#file=${metadata.provider.urlDisplayName || metadata.provider.name}:${encodeURIComponent(openSavedParams)}`;
+    } else if ((metadata != null ? metadata.provider : undefined) instanceof URLProvider &&
+        (window.location.hash.indexOf("#file=http") === 0)) {
+      return window.location.hash;    // leave it alone
+    } else { return ""; }
+  }
 
-  _createOrUpdateCurrentContent: (stringContent, metadata = null) ->
-    if @state.currentContent?
-      currentContent = @state.currentContent
-      currentContent.setText stringContent
-    else
-      currentContent = cloudContentFactory.createEnvelopedCloudContent stringContent
-    if metadata?
-      currentContent.addMetadata docName: metadata.name
-    currentContent
+  _startPostMessageListener() {
+    return $(window).on('message', e => {
+      const oe = e.originalEvent;
+      const data = oe.data || {};
+      const reply = function(type, params) {
+        if (params == null) { params = {}; }
+        const message = _.merge({}, params, {type});
+        return oe.source.postMessage(message, oe.origin);
+      };
+      switch ((oe.data != null ? oe.data.type : undefined)) {
+        case 'cfm::getCommands':
+          return reply('cfm::commands', {commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty', 'cfm::iframedClientConnected']});
+        case 'cfm::autosave':
+          if (this.shouldAutoSave()) {
+            return this.save(() => reply('cfm::autosaved', {saved: true}));
+          } else {
+            return reply('cfm::autosaved', {saved: false});
+          }
+        case 'cfm::event':
+          return this._event(data.eventType, data.eventData, function() {
+            const callbackArgs = JSON.stringify(Array.prototype.slice.call(arguments));
+            return reply('cfm::event:reply', {eventId: data.eventId, callbackArgs});
+        });
+        case 'cfm::event:reply':
+          var event = CloudFileManagerClientEvent.events[data.eventId];
+          return __guard__(event != null ? event.callback : undefined, x => x.apply(this, JSON.parse(data.callbackArgs)));
+        case 'cfm::setDirty':
+          return this.dirty(data.isDirty);
+        case 'cfm::iframedClientConnected':
+          return this.processUrlParams();
+      }
+    });
+  }
 
-  _setWindowTitle: (name) ->
-    if not @appOptions.appSetsWindowTitle and @appOptions?.ui?.windowTitleSuffix
-      document.title = "#{if name?.length > 0 then name else (tr "~MENUBAR.UNTITLED_DOCUMENT")}#{@appOptions.ui.windowTitleSeparator}#{@appOptions.ui.windowTitleSuffix}"
+  _setupConfirmOnClose() {
+    return $(window).on('beforeunload', e => {
+      if (this.state.dirty) {
+        // different browsers trigger the confirm in different ways
+        e.preventDefault();
+        return e.returnValue = true;
+      }
+    });
+  }
+}
 
-  _getHashParams: (metadata) ->
-    if metadata?.provider?.canOpenSaved() and (openSavedParams = metadata?.provider?.getOpenSavedParams metadata)?
-      "#file=#{metadata.provider.urlDisplayName or metadata.provider.name}:#{encodeURIComponent openSavedParams}"
-    else if metadata?.provider instanceof URLProvider and
-        window.location.hash.indexOf("#file=http") is 0
-      window.location.hash    # leave it alone
-    else ""
+module.exports = {
+  CloudFileManagerClientEvent,
+  CloudFileManagerClient
+};
 
-  _startPostMessageListener: ->
-    $(window).on 'message', (e) =>
-      oe = e.originalEvent
-      data = oe.data or {}
-      reply = (type, params={}) ->
-        message = _.merge {}, params, {type: type}
-        oe.source.postMessage message, oe.origin
-      switch oe.data?.type
-        when 'cfm::getCommands'
-          reply 'cfm::commands', commands: ['cfm::autosave', 'cfm::event', 'cfm::event:reply', 'cfm::setDirty', 'cfm::iframedClientConnected']
-        when 'cfm::autosave'
-          if @shouldAutoSave()
-            @save -> reply 'cfm::autosaved', saved: true
-          else
-            reply 'cfm::autosaved', saved: false
-        when 'cfm::event'
-          @_event data.eventType, data.eventData, ->
-            callbackArgs = JSON.stringify(Array.prototype.slice.call(arguments))
-            reply 'cfm::event:reply', {eventId: data.eventId, callbackArgs: callbackArgs}
-        when 'cfm::event:reply'
-          event = CloudFileManagerClientEvent.events[data.eventId]
-          event?.callback?.apply(@, JSON.parse(data.callbackArgs))
-        when 'cfm::setDirty'
-          @dirty data.isDirty
-        when 'cfm::iframedClientConnected'
-          @processUrlParams()
-
-  _setupConfirmOnClose: ->
-    $(window).on 'beforeunload', (e) =>
-      if @state.dirty
-        # different browsers trigger the confirm in different ways
-        e.preventDefault()
-        e.returnValue = true
-
-module.exports =
-  CloudFileManagerClientEvent: CloudFileManagerClientEvent
-  CloudFileManagerClient: CloudFileManagerClient
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

@@ -1,140 +1,173 @@
-{div, input, button, a} = ReactDOMFactories
-tr = require '../utils/translate'
-CloudMetadata = (require '../providers/provider-interface').CloudMetadata
-cloudContentFactory = (require '../providers/provider-interface').cloudContentFactory
-FileSaver = require('../lib/file-saver')
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const {div, input, button, a} = ReactDOMFactories;
+const tr = require('../utils/translate');
+const { CloudMetadata } = (require('../providers/provider-interface'));
+const { cloudContentFactory } = (require('../providers/provider-interface'));
+const FileSaver = require('../lib/file-saver');
 
-module.exports = createReactClass
+module.exports = createReactClass({
 
-  displayName: 'LocalFileSaveTab'
+  displayName: 'LocalFileSaveTab',
 
-  getInitialState: ->
-    # If the dialog has the content to save, which occurs when saving secondary content
-    # like CSV files, then use that instead of the document content and make sure that
-    # it doesn't get modified by (for instance) trying to remove sharing metadata. To
-    # do so, we specify that we want to include the share info, which tells the client
-    # to leave the content alone.
-    hasPropsContent = @props.dialog.data?.content?
-    filename = @props.client.state.metadata?.name or (tr "~MENUBAR.UNTITLED_DOCUMENT")
-    extension = if hasPropsContent and @props.dialog.data.extension \
-                  then @props.dialog.data.extension else 'json'
-    state =
-      filename: filename
-      supportsDownloadAttribute: document.createElement('a').download isnt undefined
-      downloadFilename: @getDownloadFilename hasPropsContent, filename, extension
-      extension: extension
-      mimeType: if hasPropsContent and @props.dialog.data.mimeType? \
-                  then @props.dialog.data.mimeType else 'text/plain',
-      shared: @props.client.isShared()
-      hasPropsContent: hasPropsContent
-      includeShareInfo: hasPropsContent
-      gotContent: hasPropsContent
-      content: @props.dialog.data?.content
+  getInitialState() {
+    // If the dialog has the content to save, which occurs when saving secondary content
+    // like CSV files, then use that instead of the document content and make sure that
+    // it doesn't get modified by (for instance) trying to remove sharing metadata. To
+    // do so, we specify that we want to include the share info, which tells the client
+    // to leave the content alone.
+    let state;
+    const hasPropsContent = ((this.props.dialog.data != null ? this.props.dialog.data.content : undefined) != null);
+    const filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"));
+    const extension = hasPropsContent && this.props.dialog.data.extension 
+                  ? this.props.dialog.data.extension : 'json';
+    return state = {
+      filename,
+      supportsDownloadAttribute: document.createElement('a').download !== undefined,
+      downloadFilename: this.getDownloadFilename(hasPropsContent, filename, extension),
+      extension,
+      mimeType: hasPropsContent && (this.props.dialog.data.mimeType != null) 
+                  ? this.props.dialog.data.mimeType : 'text/plain',
+      shared: this.props.client.isShared(),
+      hasPropsContent,
+      includeShareInfo: hasPropsContent,
+      gotContent: hasPropsContent,
+      content: (this.props.dialog.data != null ? this.props.dialog.data.content : undefined)
+    };
+  },
 
-  componentDidMount: ->
-    if not @state.hasPropsContent
-      @props.client._event 'getContent', { shared: @props.client._sharedMetadata() }, (content) =>
-        envelopedContent = cloudContentFactory.createEnvelopedCloudContent content
-        @props.client.state?.currentContent?.copyMetadataTo envelopedContent
-        @setState
-          gotContent: true
+  componentDidMount() {
+    if (!this.state.hasPropsContent) {
+      this.props.client._event('getContent', { shared: this.props.client._sharedMetadata() }, content => {
+        const envelopedContent = cloudContentFactory.createEnvelopedCloudContent(content);
+        __guard__(this.props.client.state != null ? this.props.client.state.currentContent : undefined, x => x.copyMetadataTo(envelopedContent));
+        return this.setState({
+          gotContent: true,
           content: envelopedContent
+        });
+      });
+    }
 
-    # Using the React onClick handler for the download button yielded odd behaviors
-    # in which the onClick handler got triggered multiple times and the default
-    # handler could not be prevented, presumably due to React's SyntheticEvent system.
-    # The solution here is to use standard browser event handlers.
-    @downloadRef.addEventListener 'click', @confirm
+    // Using the React onClick handler for the download button yielded odd behaviors
+    // in which the onClick handler got triggered multiple times and the default
+    // handler could not be prevented, presumably due to React's SyntheticEvent system.
+    // The solution here is to use standard browser event handlers.
+    return this.downloadRef.addEventListener('click', this.confirm);
+  },
 
-  componentWillUnmount: ->
-    @downloadRef.removeEventListener 'click', @confirm
+  componentWillUnmount() {
+    return this.downloadRef.removeEventListener('click', this.confirm);
+  },
 
-  filenameChanged: ->
-    filename = @filenameRef.value
-    @setState
-      filename: filename
-      downloadFilename: @getDownloadFilename @state.hasPropsContent, filename, @state.extension
+  filenameChanged() {
+    const filename = this.filenameRef.value;
+    return this.setState({
+      filename,
+      downloadFilename: this.getDownloadFilename(this.state.hasPropsContent, filename, this.state.extension)
+    });
+  },
 
-  includeShareInfoChanged: ->
-    @setState includeShareInfo: @includeShareInfoRef.checked
+  includeShareInfoChanged() {
+    return this.setState({includeShareInfo: this.includeShareInfoRef.checked});
+  },
 
-  getDownloadFilename: (hasPropsContent, filename, extension) ->
-    newName = filename.replace /^\s+|\s+$/, ''
-    if hasPropsContent \
-      then CloudMetadata.newExtension(newName, extension) \
-      else CloudMetadata.withExtension(newName, extension)
+  getDownloadFilename(hasPropsContent, filename, extension) {
+    const newName = filename.replace(/^\s+|\s+$/, '');
+    if (hasPropsContent) { 
+      return CloudMetadata.newExtension(newName, extension); 
+      } else { return CloudMetadata.withExtension(newName, extension); }
+  },
 
-  confirm: (e, simulateClick) ->
-    if not @confirmDisabled()
-      if @state.supportsDownloadAttribute
-        @downloadRef.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
-        @downloadRef.click() if simulateClick
-      else
-        blob = @props.client.getDownloadBlob(@state.content, @state.includeShareInfo, @state.mimeType)
-        FileSaver.saveAs(blob, @state.downloadFilename, true)
-        e?.preventDefault()
+  confirm(e, simulateClick) {
+    if (!this.confirmDisabled()) {
+      if (this.state.supportsDownloadAttribute) {
+        this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType);
+        if (simulateClick) { this.downloadRef.click(); }
+      } else {
+        const blob = this.props.client.getDownloadBlob(this.state.content, this.state.includeShareInfo, this.state.mimeType);
+        FileSaver.saveAs(blob, this.state.downloadFilename, true);
+        if (e != null) {
+          e.preventDefault();
+        }
+      }
 
-      metadata = new CloudMetadata
-        name: @state.downloadFilename.split('.')[0]
-        type: CloudMetadata.File
-        parent: null
-        provider: @props.provider
-      @props.dialog.callback metadata
-      @props.close()
+      const metadata = new CloudMetadata({
+        name: this.state.downloadFilename.split('.')[0],
+        type: CloudMetadata.File,
+        parent: null,
+        provider: this.props.provider
+      });
+      this.props.dialog.callback(metadata);
+      this.props.close();
 
-      # return value indicates whether to trigger href
-      return @state.supportsDownloadAttribute
-    else
-      e?.preventDefault()
-    return
+      // return value indicates whether to trigger href
+      return this.state.supportsDownloadAttribute;
+    } else {
+      if (e != null) {
+        e.preventDefault();
+      }
+    }
+  },
 
-  contextMenu: (e) ->
-    @downloadRef.href = @props.client.getDownloadUrl(@state.content, @state.includeShareInfo, @state.mimeType)
-    return
+  contextMenu(e) {
+    this.downloadRef.href = this.props.client.getDownloadUrl(this.state.content, this.state.includeShareInfo, this.state.mimeType);
+  },
 
-  cancel: ->
-    @props.close()
-    return
+  cancel() {
+    this.props.close();
+  },
 
-  watchForEnter: (e) ->
-    if e.keyCode is 13 and not @confirmDisabled()
-      e.preventDefault()
-      e.stopPropagation()
-      @confirm(null, true)
-    return
+  watchForEnter(e) {
+    if ((e.keyCode === 13) && !this.confirmDisabled()) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.confirm(null, true);
+    }
+  },
 
-  confirmDisabled: ->
-    (@state.downloadFilename.length is 0) or not @state.gotContent
+  confirmDisabled() {
+    return (this.state.downloadFilename.length === 0) || !this.state.gotContent;
+  },
 
-  render: ->
-    confirmDisabled = @confirmDisabled()
+  render() {
+    const confirmDisabled = this.confirmDisabled();
 
-    # for modern browsers
-    downloadAnchor = (a {
-      href: '#'
-      ref: (elt) => @downloadRef = elt
-      className: (if confirmDisabled then 'disabled' else '')
-      download: @state.downloadFilename
-      onContextMenu: @contextMenu
-    }, tr '~FILE_DIALOG.DOWNLOAD')
+    // for modern browsers
+    const downloadAnchor = (a({
+      href: '#',
+      ref: elt => { return this.downloadRef = elt; },
+      className: (confirmDisabled ? 'disabled' : ''),
+      download: this.state.downloadFilename,
+      onContextMenu: this.contextMenu
+    }, tr('~FILE_DIALOG.DOWNLOAD')));
 
-    # for Safari (or other non-modern browsers)
-    downloadButton = (button {
-      ref: (elt) => @downloadRef = elt
-      className: (if confirmDisabled then 'disabled' else '')
-    }, tr '~FILE_DIALOG.DOWNLOAD')
+    // for Safari (or other non-modern browsers)
+    const downloadButton = (button({
+      ref: elt => { return this.downloadRef = elt; },
+      className: (confirmDisabled ? 'disabled' : '')
+    }, tr('~FILE_DIALOG.DOWNLOAD')));
 
-    (div {className: 'dialogTab localFileSave'},
-      (input {type: 'text', ref: ((elt) => @filenameRef = elt), value: @state.filename, placeholder: (tr "~FILE_DIALOG.FILENAME"), onChange: @filenameChanged, onKeyDown: @watchForEnter}),
-      (div {className: 'saveArea'},
-        if @state.shared and not @state.hasPropsContent
-          (div {className: 'shareCheckbox'},
-            (input {type: 'checkbox', ref: ((elt) => @includeShareInfoRef = elt), value: @state.includeShareInfo, onChange: @includeShareInfoChanged})
-            (tr '~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO')
-          )
-      )
-      (div {className: 'buttons'},
-        if @state.supportsDownloadAttribute then downloadAnchor else downloadButton
-        (button {onClick: @cancel}, (tr "~FILE_DIALOG.CANCEL"))
-      )
-    )
+    return (div({className: 'dialogTab localFileSave'},
+      (input({type: 'text', ref: (elt => { return this.filenameRef = elt; }), value: this.state.filename, placeholder: (tr("~FILE_DIALOG.FILENAME")), onChange: this.filenameChanged, onKeyDown: this.watchForEnter})),
+      (div({className: 'saveArea'},
+        this.state.shared && !this.state.hasPropsContent ?
+          (div({className: 'shareCheckbox'},
+            (input({type: 'checkbox', ref: (elt => { return this.includeShareInfoRef = elt; }), value: this.state.includeShareInfo, onChange: this.includeShareInfoChanged})),
+            (tr('~DOWNLOAD_DIALOG.INCLUDE_SHARE_INFO'))
+          )) : undefined
+      )),
+      (div({className: 'buttons'},
+        this.state.supportsDownloadAttribute ? downloadAnchor : downloadButton,
+        (button({onClick: this.cancel}, (tr("~FILE_DIALOG.CANCEL"))))
+      ))
+    ));
+  }
+});
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

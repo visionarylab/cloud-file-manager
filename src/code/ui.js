@@ -1,197 +1,283 @@
-tr = require './utils/translate'
-isString = require './utils/is-string'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const tr = require('./utils/translate');
+const isString = require('./utils/is-string');
 
-class CloudFileManagerUIEvent
+class CloudFileManagerUIEvent {
 
-  constructor: (@type, @data = {}) ->
+  constructor(type, data) {
+    this.type = type;
+    if (data == null) { data = {}; }
+    this.data = data;
+  }
+}
 
-class CloudFileManagerUIMenu
+class CloudFileManagerUIMenu {
+  static initClass() {
+  
+    this.DefaultMenu = ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog'];
+  }
 
-  @DefaultMenu: ['newFileDialog', 'openFileDialog', 'revertSubMenu', 'separator', 'save', 'createCopy', 'shareSubMenu', 'renameDialog']
+  constructor(options, client) {
+    this.options = options;
+    this.items = this.parseMenuItems(options.menu, client);
+  }
 
-  constructor: (options, client) ->
-    @options = options
-    @items = @parseMenuItems options.menu, client
+  parseMenuItems(menuItems, client) {
+    const setAction = action => (client[action] != null ? client[action].bind(client) : undefined) || (() => client.alert(`No ${action} action is available in the client`));
 
-  parseMenuItems: (menuItems, client) ->
-    setAction = (action) ->
-      client[action]?.bind(client) or (-> client.alert "No #{action} action is available in the client")
+    const setEnabled = function(action) {
+      switch (action) {
+        case 'revertSubMenu':
+          // revert sub-menu state depends on presence of shareEditKey
+          return () => ((client.state.openedContent != null) && (client.state.metadata != null)) || client.canEditShared();
+        case 'revertToLastOpenedDialog':
+          return () => (client.state.openedContent != null) && (client.state.metadata != null);
+        case 'shareGetLink': case 'shareSubMenu':
+          return () => client.state.shareProvider != null;
+        case 'revertToSharedDialog':
+          // revert to shared menu item state depends on sharedDocumentId
+          return () => client.isShared();
+        case 'shareUpdate':
+          // shareUpdate menu item state depends on presence of shareEditKey or readWrite accessKey
+          return () => client.canEditShared();
+        default:
+          return true;
+      }
+    };
 
-    setEnabled = (action) ->
-      switch action
-        when 'revertSubMenu'
-          # revert sub-menu state depends on presence of shareEditKey
-          -> (client.state.openedContent? and client.state.metadata?) or client.canEditShared()
-        when 'revertToLastOpenedDialog'
-          -> client.state.openedContent? and client.state.metadata?
-        when 'shareGetLink', 'shareSubMenu'
-          -> client.state.shareProvider?
-        when 'revertToSharedDialog'
-          # revert to shared menu item state depends on sharedDocumentId
-          -> client.isShared()
-        when 'shareUpdate'
-          # shareUpdate menu item state depends on presence of shareEditKey or readWrite accessKey
-          -> client.canEditShared()
-        else
-          true
+    const getItems = subMenuItems => {
+      if (subMenuItems) {
+        return this.parseMenuItems(subMenuItems, client);
+      } else {
+        return null;
+      }
+    };
 
-    getItems = (subMenuItems) =>
-      if subMenuItems
-        @parseMenuItems subMenuItems, client
-      else
-        null
+    const names = {
+      newFileDialog: tr("~MENU.NEW"),
+      openFileDialog: tr("~MENU.OPEN"),
+      closeFileDialog: tr("~MENU.CLOSE"),
+      revertToLastOpenedDialog: tr("~MENU.REVERT_TO_LAST_OPENED"),
+      revertToSharedDialog: tr("~MENU.REVERT_TO_SHARED_VIEW"),
+      save: tr("~MENU.SAVE"),
+      saveFileAsDialog: tr("~MENU.SAVE_AS"),
+      saveSecondaryFileAsDialog: tr("~MENU.EXPORT_AS"),
+      createCopy: tr("~MENU.CREATE_COPY"),
+      shareGetLink: tr("~MENU.SHARE_GET_LINK"),
+      shareUpdate: tr("~MENU.SHARE_UPDATE"),
+      downloadDialog: tr("~MENU.DOWNLOAD"),
+      renameDialog: tr("~MENU.RENAME"),
+      revertSubMenu: tr("~MENU.REVERT_TO"),
+      shareSubMenu: tr("~MENU.SHARE")
+    };
 
-    names =
-      newFileDialog: tr "~MENU.NEW"
-      openFileDialog: tr "~MENU.OPEN"
-      closeFileDialog: tr "~MENU.CLOSE"
-      revertToLastOpenedDialog: tr "~MENU.REVERT_TO_LAST_OPENED"
-      revertToSharedDialog: tr "~MENU.REVERT_TO_SHARED_VIEW"
-      save: tr "~MENU.SAVE"
-      saveFileAsDialog: tr "~MENU.SAVE_AS"
-      saveSecondaryFileAsDialog: tr "~MENU.EXPORT_AS"
-      createCopy: tr "~MENU.CREATE_COPY"
-      shareGetLink: tr "~MENU.SHARE_GET_LINK"
-      shareUpdate: tr "~MENU.SHARE_UPDATE"
-      downloadDialog: tr "~MENU.DOWNLOAD"
-      renameDialog: tr "~MENU.RENAME"
-      revertSubMenu: tr "~MENU.REVERT_TO"
-      shareSubMenu: tr "~MENU.SHARE"
-
-    subMenus =
-      revertSubMenu: ['revertToLastOpenedDialog', 'revertToSharedDialog']
+    const subMenus = {
+      revertSubMenu: ['revertToLastOpenedDialog', 'revertToSharedDialog'],
       shareSubMenu: ['shareGetLink', 'shareUpdate']
+    };
 
-    items = []
-    for item, i in menuItems
-      if item is 'separator'
-        menuItem =
-          key: "seperator#{i}"
+    const items = [];
+    for (let i = 0; i < menuItems.length; i++) {
+      var menuItem;
+      const item = menuItems[i];
+      if (item === 'separator') {
+        menuItem = {
+          key: `seperator${i}`,
           separator: true
-      else if isString item
-        menuItem =
-          key: item
-          name: @options.menuNames?[item] or names[item] or "Unknown item: #{item}"
-          enabled: setEnabled item
-          items: getItems subMenus[item]
-          action: setAction item
-      else
-        menuItem = item
-        # clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
-        if isString item.action
-          menuItem.key = item.action
-          menuItem.enabled = setEnabled item.action
-          menuItem.action = setAction item.action
-        else
-          menuItem.enabled or= true
-        menuItem.items = getItems(item.items) if item.items
-      items.push menuItem
-    items
+        };
+      } else if (isString(item)) {
+        menuItem = {
+          key: item,
+          name: (this.options.menuNames != null ? this.options.menuNames[item] : undefined) || names[item] || `Unknown item: ${item}`,
+          enabled: setEnabled(item),
+          items: getItems(subMenus[item]),
+          action: setAction(item)
+        };
+      } else {
+        menuItem = item;
+        // clients can pass in custom {name:..., action:...} menu items where the action can be a client function name or otherwise it is assumed action is a function
+        if (isString(item.action)) {
+          menuItem.key = item.action;
+          menuItem.enabled = setEnabled(item.action);
+          menuItem.action = setAction(item.action);
+        } else {
+          if (!menuItem.enabled) { menuItem.enabled = true; }
+        }
+        if (item.items) { menuItem.items = getItems(item.items); }
+      }
+      items.push(menuItem);
+    }
+    return items;
+  }
+}
+CloudFileManagerUIMenu.initClass();
 
-class CloudFileManagerUI
+class CloudFileManagerUI {
 
-  constructor: (@client)->
-    @menu = null
-    @listenerCallbacks = []
+  constructor(client){
+    this.client = client;
+    this.menu = null;
+    this.listenerCallbacks = [];
+  }
 
-  init: (options) ->
-    options = options or {}
-    # skip the menu if explicity set to null (meaning no menu)
-    if options.menu isnt null
-      if typeof options.menu is 'undefined'
-        options.menu = CloudFileManagerUIMenu.DefaultMenu
-      @menu = new CloudFileManagerUIMenu options, @client
+  init(options) {
+    options = options || {};
+    // skip the menu if explicity set to null (meaning no menu)
+    if (options.menu !== null) {
+      if (typeof options.menu === 'undefined') {
+        options.menu = CloudFileManagerUIMenu.DefaultMenu;
+      }
+      return this.menu = new CloudFileManagerUIMenu(options, this.client);
+    }
+  }
 
-  # for React to listen for dialog changes
-  listen: (callback) ->
-    @listenerCallbacks.push callback
+  // for React to listen for dialog changes
+  listen(callback) {
+    return this.listenerCallbacks.push(callback);
+  }
 
-  listenerCallback: (evt) ->
-    for callback in @listenerCallbacks
-      callback evt
+  listenerCallback(evt) {
+    return Array.from(this.listenerCallbacks).map((callback) =>
+      callback(evt));
+  }
 
-  appendMenuItem: (item) ->
-    @listenerCallback new CloudFileManagerUIEvent 'appendMenuItem', item
+  appendMenuItem(item) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('appendMenuItem', item));
+  }
 
-  prependMenuItem: (item) ->
-    @listenerCallback new CloudFileManagerUIEvent 'prependMenuItem', item
+  prependMenuItem(item) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('prependMenuItem', item));
+  }
 
-  replaceMenuItem: (key, item) ->
-    @listenerCallback new CloudFileManagerUIEvent 'replaceMenuItem',
-      key: key
-      item: item
+  replaceMenuItem(key, item) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('replaceMenuItem', {
+      key,
+      item
+    }
+    )
+    );
+  }
 
-  insertMenuItemBefore: (key, item) ->
-    @listenerCallback new CloudFileManagerUIEvent 'insertMenuItemBefore',
-      key: key
-      item: item
+  insertMenuItemBefore(key, item) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('insertMenuItemBefore', {
+      key,
+      item
+    }
+    )
+    );
+  }
 
-  insertMenuItemAfter: (key, item) ->
-    @listenerCallback new CloudFileManagerUIEvent 'insertMenuItemAfter',
-      key: key
-      item: item
+  insertMenuItemAfter(key, item) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('insertMenuItemAfter', {
+      key,
+      item
+    }
+    )
+    );
+  }
 
-  setMenuBarInfo: (info) ->
-    @listenerCallback new CloudFileManagerUIEvent 'setMenuBarInfo', info
+  setMenuBarInfo(info) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('setMenuBarInfo', info));
+  }
 
-  saveFileDialog: (callback) ->
-    @_showProviderDialog 'saveFile', (tr '~DIALOG.SAVE'), callback
+  saveFileDialog(callback) {
+    return this._showProviderDialog('saveFile', (tr('~DIALOG.SAVE')), callback);
+  }
 
-  saveFileAsDialog: (callback) ->
-    @_showProviderDialog 'saveFileAs', (tr '~DIALOG.SAVE_AS'), callback
+  saveFileAsDialog(callback) {
+    return this._showProviderDialog('saveFileAs', (tr('~DIALOG.SAVE_AS')), callback);
+  }
 
-  saveSecondaryFileAsDialog: (data, callback) ->
-    @_showProviderDialog 'saveSecondaryFileAs', (tr '~DIALOG.EXPORT_AS'), callback, data
+  saveSecondaryFileAsDialog(data, callback) {
+    return this._showProviderDialog('saveSecondaryFileAs', (tr('~DIALOG.EXPORT_AS')), callback, data);
+  }
 
-  openFileDialog: (callback) ->
-    @_showProviderDialog 'openFile', (tr '~DIALOG.OPEN'), callback
+  openFileDialog(callback) {
+    return this._showProviderDialog('openFile', (tr('~DIALOG.OPEN')), callback);
+  }
 
-  importDataDialog: (callback) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showImportDialog',
-      callback: callback
+  importDataDialog(callback) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showImportDialog',
+      {callback})
+    );
+  }
 
-  downloadDialog: (filename, content, callback) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showDownloadDialog',
-      filename: filename
-      content: content
-      callback: callback
+  downloadDialog(filename, content, callback) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showDownloadDialog', {
+      filename,
+      content,
+      callback
+    }
+    )
+    );
+  }
 
-  renameDialog: (filename, callback) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showRenameDialog',
-      filename: filename
-      callback: callback
+  renameDialog(filename, callback) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showRenameDialog', {
+      filename,
+      callback
+    }
+    )
+    );
+  }
 
-  shareDialog: (client, enableLaraSharing=false) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showShareDialog',
-      client: client
-      enableLaraSharing: enableLaraSharing
+  shareDialog(client, enableLaraSharing) {
+    if (enableLaraSharing == null) { enableLaraSharing = false; }
+    return this.listenerCallback(new CloudFileManagerUIEvent('showShareDialog', {
+      client,
+      enableLaraSharing
+    }
+    )
+    );
+  }
 
-  showBlockingModal: (modalProps) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showBlockingModal', modalProps
+  showBlockingModal(modalProps) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showBlockingModal', modalProps));
+  }
 
-  hideBlockingModal: ->
-    @listenerCallback new CloudFileManagerUIEvent 'hideBlockingModal'
+  hideBlockingModal() {
+    return this.listenerCallback(new CloudFileManagerUIEvent('hideBlockingModal'));
+  }
 
-  editInitialFilename: ->
-    @listenerCallback new CloudFileManagerUIEvent 'editInitialFilename'
+  editInitialFilename() {
+    return this.listenerCallback(new CloudFileManagerUIEvent('editInitialFilename'));
+  }
 
-  alertDialog: (message, title, callback) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showAlertDialog',
-      title: title
-      message: message
-      callback: callback
+  alertDialog(message, title, callback) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showAlertDialog', {
+      title,
+      message,
+      callback
+    }
+    )
+    );
+  }
 
-  confirmDialog: (params) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showConfirmDialog', params
+  confirmDialog(params) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showConfirmDialog', params));
+  }
 
-  _showProviderDialog: (action, title, callback, data) ->
-    @listenerCallback new CloudFileManagerUIEvent 'showProviderDialog',
-      action: action
-      title: title
-      callback: callback
-      data: data
+  _showProviderDialog(action, title, callback, data) {
+    return this.listenerCallback(new CloudFileManagerUIEvent('showProviderDialog', {
+      action,
+      title,
+      callback,
+      data
+    }
+    )
+    );
+  }
+}
 
-module.exports =
-  CloudFileManagerUIEvent: CloudFileManagerUIEvent
-  CloudFileManagerUI: CloudFileManagerUI
-  CloudFileManagerUIMenu: CloudFileManagerUIMenu
+module.exports = {
+  CloudFileManagerUIEvent,
+  CloudFileManagerUI,
+  CloudFileManagerUIMenu
+};
