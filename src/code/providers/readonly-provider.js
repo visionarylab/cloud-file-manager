@@ -18,6 +18,7 @@ const isArray = require('../utils/is-array')
 const { ProviderInterface } = (require('./provider-interface'))
 const { cloudContentFactory } = (require('./provider-interface'))
 const { CloudMetadata } = (require('./provider-interface'))
+import {reportError} from "../utils/report-error"
 
 class ReadOnlyProvider extends ProviderInterface {
   static initClass() {
@@ -113,9 +114,7 @@ class ReadOnlyProvider extends ProviderInterface {
             return callback(null, iTree)
           } else {
             // an empty folder is unusual but not necessarily an error
-            if (typeof console.error === 'function') {
-              console.error(`No contents found for ${this.displayName} provider`)
-            }
+            reportError(`No contents found for ${this.displayName} provider`)
             return callback(null, {})
           }
         }),

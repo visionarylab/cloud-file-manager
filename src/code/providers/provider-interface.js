@@ -11,9 +11,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div} = ReactDOMFactories
 
 const isString = require('../utils/is-string')
+
+import {reportError} from '../utils/report-error'
 
 class CloudFile {
   constructor(options) {
@@ -147,7 +148,9 @@ class CloudContentFactory {
     if ((content == null)) { return }
     const result = { isCfmWrapped: false, isPreCfmFormat: false }
     if (isString(content)) {
-      try { content = JSON.parse(content) } catch (error) {}
+      try { content = JSON.parse(content) } catch (error) {
+        reportError(error)
+      }
     }
     // Currently, we assume 'metadata' is top-level property in
     // non-CFM-wrapped documents. Could put in a client callback
@@ -167,7 +170,9 @@ class CloudContentFactory {
   // envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded(content) {
     if (isString(content)) {
-      try { content = JSON.parse(content) } catch (error) {}
+      try { content = JSON.parse(content) } catch (error) {
+        reportError(error)
+      }
     }
     if (content.content != null) {
       return content
