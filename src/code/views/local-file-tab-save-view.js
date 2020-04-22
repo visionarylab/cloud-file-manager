@@ -23,12 +23,12 @@ module.exports = createReactClass({
     // it doesn't get modified by (for instance) trying to remove sharing metadata. To
     // do so, we specify that we want to include the share info, which tells the client
     // to leave the content alone.
-    let state
+
     const hasPropsContent = ((this.props.dialog.data != null ? this.props.dialog.data.content : undefined) != null)
     const filename = (this.props.client.state.metadata != null ? this.props.client.state.metadata.name : undefined) || (tr("~MENUBAR.UNTITLED_DOCUMENT"))
     const extension = hasPropsContent && this.props.dialog.data.extension 
                   ? this.props.dialog.data.extension : 'json'
-    return state = {
+    return {
       filename,
       supportsDownloadAttribute: document.createElement('a').download !== undefined,
       downloadFilename: this.getDownloadFilename(hasPropsContent, filename, extension),

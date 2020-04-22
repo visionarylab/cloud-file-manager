@@ -7,7 +7,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, input, a, button, strong, textarea, svg, g, path, span, circle, ul, li} = ReactDOMFactories
+const {div, input, a, button, strong, textarea, svg, g, path, circle, ul, li} = ReactDOMFactories
 
 const SHOW_LONGEVITY_WARNING = false
 

@@ -13,7 +13,7 @@ const { CloudMetadata } = (require('../providers/provider-interface'))
 
 const tr = require('../utils/translate')
 
-let {div, img, i, span, input, button} = ReactDOMFactories
+let {div, i, input, button} = ReactDOMFactories
 const italic = i
 
 const FileListFile = createReactClassFactory({

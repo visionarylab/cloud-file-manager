@@ -26,9 +26,8 @@ module.exports = createReactClass({
   },
 
   getInitialState() {
-    let initialState
     const dimensions = this.getDimensions()
-    return initialState = {
+    return {
       backgroundStyle: this.getBackgroundStyle(dimensions),
       contentStyle: this.getContentStyle(dimensions)
     }

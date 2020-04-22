@@ -18,9 +18,8 @@ module.exports = createReactClass({
   displayName: 'DownloadDialogView',
 
   getInitialState() {
-    let state
     const filename = CloudMetadata.withExtension(this.props.filename || (tr("~MENUBAR.UNTITLED_DOCUMENT")), 'json')
-    return state = {
+    return {
       filename,
       trimmedFilename: this.trim(filename),
       includeShareInfo: false,

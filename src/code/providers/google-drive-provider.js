@@ -182,7 +182,6 @@ class GoogleDriveProvider extends ProviderInterface {
 
   list(metadata, callback) {
     return this._loadedGAPI(() => {
-      let query
       let mimeType
       const mimeTypesQuery = ((() => {
         const result = []
@@ -191,7 +190,8 @@ class GoogleDriveProvider extends ProviderInterface {
         return result
       })()).join(" or ")
       const request = gapi.client.drive.files.list({
-        q: (query = `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`)})
+        q: (
+          `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`)})
       return request.execute(result => {
         if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
         const list = []

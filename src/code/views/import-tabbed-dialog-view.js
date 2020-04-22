@@ -9,10 +9,7 @@ const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view
 const TabbedPanel = require('./tabbed-panel-view')
 const LocalFileTab = createReactFactory(require('./local-file-tab-list-view'))
 const UrlTab = createReactFactory(require('./url-tab-view'))
-
 const tr = require('../utils/translate')
-
-const LocalFileImportTab = createReactClassFactory
 
 module.exports = createReactClass({
   displayName: 'ImportTabbedDialog',

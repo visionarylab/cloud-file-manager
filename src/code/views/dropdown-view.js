@@ -7,7 +7,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, i, span, ul, li} = ReactDOMFactories
+const {div, i, ul, li} = ReactDOMFactories
 
 const {DefaultAnchor} = require("./dropdown-anchors")
 const DropdownItem = createReactClassFactory({

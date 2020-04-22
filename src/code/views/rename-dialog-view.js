@@ -5,7 +5,7 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, input, a, button} = ReactDOMFactories
+const {div, input, button} = ReactDOMFactories
 
 const ModalDialog = createReactFactory(require('./modal-dialog-view'))
 
@@ -16,9 +16,8 @@ module.exports = createReactClass({
   displayName: 'RenameDialogView',
 
   getInitialState() {
-    let state
     const filename = this.props.filename || ''
-    return state = {
+    return {
       filename,
       trimmedFilename: this.trim(filename)
     }

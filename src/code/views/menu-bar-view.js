@@ -51,8 +51,7 @@ module.exports = createReactClass({
   },
 
   getInitialState() {
-    let state
-    return state = {
+    return {
       editingFilename: false,
       filename: this.getFilename(this.props),
       editableFilename: this.getEditableFilename(this.props),

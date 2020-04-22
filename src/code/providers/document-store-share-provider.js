@@ -7,7 +7,6 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 const { CloudMetadata } = (require('./provider-interface'))
-const DocumentStoreUrl = require('./document-store-url')
 const pako = require('pako')
 
 //

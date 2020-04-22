@@ -11,7 +11,6 @@
  */
 const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view'))
 const TabbedPanel = require('./tabbed-panel-view')
-const { CloudMetadata } = (require('../providers/provider-interface'))
 const FileDialogTab = createReactFactory(require('./file-dialog-tab-view'))
 const SelectProviderDialogTab = createReactFactory(require('./select-provider-dialog-tab-view'))
 

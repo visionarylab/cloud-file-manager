@@ -44,8 +44,7 @@ class LocalStorageProvider extends ProviderInterface {
     this.client = client
   }
   static Available() {
-    let result
-    return result = (() => { try {
+    return (() => { try {
       const test = 'LocalStorageProvider::auth'
       window.localStorage.setItem(test, test)
       window.localStorage.removeItem(test)
@@ -79,6 +78,7 @@ class LocalStorageProvider extends ProviderInterface {
     const prefix = this._getKey(((metadata != null ? metadata.path() : undefined) || []).join('/'))
     for (let key of Object.keys(window.localStorage || {})) {
       if (key.substr(0, prefix.length) === prefix) {
+        // eslint-disable-next-line no-unused-vars
         const [filename, ...remainder] = Array.from(key.substr(prefix.length).split('/'))
         const name = key.substr(prefix.length)
         if (this.matchesExtension(name)) {
