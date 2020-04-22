@@ -15,7 +15,8 @@
     "ReactDOMFactories": false,
     "ReactDOM":false,
     "createReactClass": false,
-    "_": false
+    "_": false,
+    "gapi": false
     // "DG": false, "Raphael": false, "$": false, "SC": false, "sc_require": false,
     // "sc_super": false, "static_url": false, "NO": false, "YES": false,
     // "module": false, "require": false
