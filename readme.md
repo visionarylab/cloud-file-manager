@@ -23,6 +23,9 @@ By default this deploys to models-resources/cloud-file-manager/branch/<branch-na
 You can preview thse deployments from a web browser at:
 https://cloud-file-manager.concord.org/branch/<branch-name>/
 
+As of 2020-04-22 pushing the `production` branch will update the production
+version of the CFM app.
+
 ## Integrating Cloud File Manager
 
 There are two ways to integrate Cloud File Manager into an application
