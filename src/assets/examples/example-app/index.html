@@ -45,6 +45,7 @@
       function setContent(cfmContent) {
         if(typeof cfmContent !== "string") cfmContent = JSON.stringify(cfmContent);
         document.getElementById("text").value = cfmContent;
+        document.getElementById("text").innerHTML = cfmContent;
       }
 
       function appendContent(cfmContent) {
@@ -78,7 +79,7 @@
       This simple demo app uses the textarea below to edit text files.  You can either use the menu bar or the buttons below to open, save and create new files.
     </p>
     <div>
-      <textarea cols="50" rows="10" id="text" onkeyup="changed()"></textarea>
+      <textarea name = "document-content" cols="50" rows="10" id="text" onkeyup="changed()" data-test="document-content"></textarea>
     </div>
     <div id="buttons">
       <button onclick="newFile()">New</button>

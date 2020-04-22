@@ -1,10 +1,13 @@
 # Built files
 dist/
 .publish/
-
 # Packages folder.
 node_modules/
 
 # OS or Editor folders
 .DS_Store
 .idea
+.nvmrc
+
+# test folders
+cypress/screenshots
