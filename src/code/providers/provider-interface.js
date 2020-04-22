@@ -24,30 +24,30 @@ class CloudFile {
 
 class CloudMetadata {
   static initClass() {
-  
     this.Folder = 'folder'
     this.File = 'file'
     this.Label = 'label'
-  
     this.Extension = null
   }
+
+  // TODO: THIS IS FUBAR
   constructor(options) {
-    let val, val1, val2
-    this.name = options.name,
-      this.type = options.type,
-      this.description = options.description,
-      this.content = options.content,
-      this.url = options.url,
-      val = options.provider,
-      this.provider = val != null ? val : null,
-      val1 = options.parent,
-      this.parent = val1 != null ? val1 : null,
-      val2 = options.providerData,
-      this.providerData = val2 != null ? val2 : {},
-      this.overwritable = options.overwritable,
-      this.sharedContentId = options.sharedContentId,
-      this.sharedContentSecretKey = options.sharedContentSecretKey,
-      this.mimeType = options.mimeType
+    let provider, parent, providerData
+    this.name = options.name
+    this.type = options.type
+    this.description = options.description
+    this.content = options.content
+    this.url = options.url
+    provider = options.provider
+    this.provider = provider != null ? provider : null
+    parent = options.parent
+    this.parent = parent != null ? parent : null
+    providerData = options.providerData
+    this.providerData = providerData != null ? providerData : {}
+    this.overwritable = options.overwritable
+    this.sharedContentId = options.sharedContentId
+    this.sharedContentSecretKey = options.sharedContentSecretKey
+    this.mimeType = options.mimeType
     this._updateFilename()
   }
 
@@ -114,6 +114,7 @@ class CloudContentFactory {
   constructor() {
     this.envelopeMetadata = {}
   }
+
 
   // set initial envelopeMetadata or update individual properties
   setEnvelopeMetadata(envelopeMetadata) {

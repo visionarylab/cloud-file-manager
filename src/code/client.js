@@ -80,6 +80,7 @@ class CloudFileManagerClient {
   setAppOptions(appOptions){
 
     let providerName
+    let Provider
     if (appOptions == null) { appOptions = {} }
     this.appOptions = appOptions
     if (this.appOptions.wrapFileContent == null) { this.appOptions.wrapFileContent = true }
@@ -97,7 +98,7 @@ class CloudFileManagerClient {
       LocalFileProvider,
       PostMessageProvider
     ]
-    for (var Provider of Array.from(providerList)) {
+    for (Provider of Array.from(providerList)) {
       if (Provider.Available()) {
         allProviders[Provider.Name] = Provider
       }
