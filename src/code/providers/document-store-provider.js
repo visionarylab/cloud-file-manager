@@ -253,10 +253,10 @@ class DocumentStoreProvider extends ProviderInterface {
     return `\
 <div style="text-align: left">
   <p style="margin: 10px 0;">
-    <strong>${tr(~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE)}</strong>
+    <strong>${tr('~CONCORD_CLOUD_DEPRECATION.SHUT_DOWN_MESSAGE')}</strong>
   </p>
   <p style="margin: 10px 0;">
-    ${tr(~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE)}
+    ${tr('~CONCORD_CLOUD_DEPRECATION.PLEASE_SAVE_ELSEWHERE')}
   </p>
 </div>\
 `
