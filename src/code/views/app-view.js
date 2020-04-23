@@ -80,10 +80,12 @@ class AppView extends React.Component {
         if (event.state.saving) {
         return {message: tr('~FILE_STATUS.SAVING'), type: 'info'}
       } else if (event.state.saved) {
-        const providerName = event.state.metadata.provider != null ? event.state.metadata.provider.displayName : undefined
-        message = providerName 
-                    ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName }) 
-                    : tr('~FILE_STATUS.SAVED')
+        const providerName = event.state.metadata.provider != null
+          ? event.state.metadata.provider.displayName
+          : undefined
+        message = providerName
+          ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
+          : tr('~FILE_STATUS.SAVED')
         return {message, type: 'info'}
       } else if (event.state.dirty) {
         return {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
