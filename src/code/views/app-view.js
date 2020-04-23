@@ -167,7 +167,7 @@ class AppView extends React.Component {
     })
   }
 
-  _getMenuItemIndex(key) {
+  _getMenuItemIndex = (key) => {
     let index
     if (isString(key)) {
       for (index = 0; index < this.state.menuItems.length; index++) {
@@ -185,7 +185,7 @@ class AppView extends React.Component {
     }
   }
 
-  closeDialogs() {
+  closeDialogs = () => {
     return this.setState({
       providerDialog: null,
       downloadDialog: null,
@@ -195,15 +195,15 @@ class AppView extends React.Component {
     })
   }
 
-  closeAlert() {
+  closeAlert = () => {
     return this.setState({alertDialog: null})
   }
 
-  closeConfirm() {
+  closeConfirm = () => {
     return this.setState({confirmDialog: null})
   }
 
-  renderDialogs() {
+  renderDialogs = () => {
     return (div({},
       (() => {
       if (this.state.blockingModalProps) {

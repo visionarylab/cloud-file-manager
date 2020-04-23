@@ -5,13 +5,14 @@
     "amd": true,
     "node": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
-    "ecmaVersion": 9,
+    "ecmaVersion": 7,
     "sourceType": "module"
   },
   "globals": {
     "$": false,
-    "createReactClassFactory": false,
+  "createReactClassFactory": false,
     "createReactFactory":false,
     "ReactDOMFactories": false,
     "ReactDOM":false,
@@ -22,7 +23,7 @@
     // "sc_super": false, "static_url": false, "NO": false, "YES": false,
     // "module": false, "require": false
   },
-  "plugins": ["react", "@typescript-eslint"],
+  "plugins": ["react", "@typescript-eslint", "babel"],
   "extends": [ "eslint:recommended", "plugin:react/recommended" ],
   "settings": {
     "react": {
@@ -54,7 +55,8 @@
     "no-eval": "error",
     // "no-extra-bind": "off", // 18 extra binds
     "no-global-assign": "error",
-    "no-invalid-this": "error",
+    "no-invalid-this": "off",
+    "babel/no-invalid-this": "error",
     "no-loop-func": "warn",
     "no-new-wrappers": "error",
     "no-proto": "error",
