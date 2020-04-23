@@ -22,7 +22,7 @@
     // "sc_super": false, "static_url": false, "NO": false, "YES": false,
     // "module": false, "require": false
   },
-  "plugins": ["react"],
+  "plugins": ["react", "@typescript-eslint"],
   "extends": [ "eslint:recommended", "plugin:react/recommended" ],
   "settings": {
     "react": {
@@ -39,6 +39,7 @@
     // possible errors
     // "no-console": "off",    // 19 console statements
     "no-extra-parens": "off",   // liberal use of extra parens
+    "no-prototype-builtins": "warn",
     "no-unreachable": "error",
     "no-unsafe-negation": "error",
 
