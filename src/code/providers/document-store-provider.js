@@ -23,6 +23,7 @@ import { CloudMetadata }  from './provider-interface'
 
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
+import { reportError } from '../utils/report-error'
 
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',
@@ -214,7 +215,9 @@ class DocumentStoreProvider extends ProviderInterface {
               this._checkLogin()
               if (completionCallback) { return completionCallback() }
             }
-          } catch (e) {}
+          } catch (e) {
+            reportError(e)
+          }
         }
             // console.log e
 

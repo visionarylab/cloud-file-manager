@@ -14,7 +14,7 @@ const date = new Date()
 
 // CODAP builds append '.ignore' to js filenames to avoid CODAP compilation
 const codapOutputFileName = (webpackChunk) => {
-  return webpackChunk.chunk.name.match(/\.js$/) ? '[name].ignore': '[name]';
+  return webpackChunk.chunk.name.match(/\.js$/) ? '[name].ignore': '[name]'
 }
 
 const replacementStrings = {

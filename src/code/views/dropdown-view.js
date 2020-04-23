@@ -34,7 +34,7 @@ const DropdownItem = createReactClassFactory({
         style: {
           position: 'absolute',
           left: menu.width(),
-          top: menuItem.position().top - parseInt(menuItem.css('padding-top'))
+          top: menuItem.position().top - parseInt(menuItem.css('padding-top'), 10)
         },
         items: this.props.item.items
       })

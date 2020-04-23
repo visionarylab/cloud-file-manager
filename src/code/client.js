@@ -32,7 +32,7 @@ import { ProviderInterface }  from './providers/provider-interface'
 import { cloudContentFactory }  from './providers/provider-interface'
 import { CloudContent }  from './providers/provider-interface'
 import { CloudMetadata }  from './providers/provider-interface'
-
+import { reportError } from "./utils/report-error"
 class CloudFileManagerClientEvent {
   static initClass() {
   
@@ -634,7 +634,7 @@ class CloudFileManagerClient {
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
       return window.localStorage.removeItem(key)
     } catch (e) {
-      return callback("Unable to load copied file")
+      reportError("Unable to load copied file")
     }
   }
 
@@ -680,7 +680,7 @@ class CloudFileManagerClient {
       this._fileOpened(content, metadata, {dirty: true, openedContent: content.clone()})
       return window.localStorage.removeItem(key)
     } catch (e) {
-      return callback("Unable to load temp file")
+      reportError("Unable to load temp file")
     }
   }
 
@@ -870,8 +870,8 @@ class CloudFileManagerClient {
   }
 
   saveSecondaryFileAsDialog(stringContent, extension, mimeType, callback) {
-    let provider
-    if (provider = this.autoProvider('export')) {
+    const provider = this.autoProvider('export')
+    if (provider) {
       const metadata = { provider, extension, mimeType }
       return this.saveSecondaryFile(stringContent, metadata, callback)
     } else {
@@ -1024,12 +1024,18 @@ class CloudFileManagerClient {
       })
     }
   }
+  // Will mutate metadata:
+  _updateMetaDataOverwritable(metadata) {
+    if (metadata != null) {
+      metadata.overwritable = (metadata.overwritable != null)
+        ? metadata.overwritable
+        : true
+    }
+  }
 
   _fileChanged(type, content, metadata, additionalState, hashParams=null) {
     if (additionalState == null) { additionalState = {} }
-    if (metadata != null) {
-      metadata.overwritable != null ? metadata.overwritable : (metadata.overwritable = true)
-    }
+    this._updateMetaDataOverwritable(metadata)
     this._updateState(content, metadata, additionalState, hashParams)
     return this._event(type, { content: (content != null ? content.getClientContent() : undefined), shared: this._sharedMetadata() })
   }
@@ -1046,9 +1052,7 @@ class CloudFileManagerClient {
     return this._event('openedFile', eventData, (iError, iSharedMetadata) => {
       if (iError) { return this.alert(iError, () => this.ready()) }
 
-      if (metadata != null) {
-        metadata.overwritable != null ? metadata.overwritable : (metadata.overwritable = true)
-      }
+      this._updateMetaDataOverwritable(metadata)
       if (!this.appOptions.wrapFileContent) {
         content.addMetadata(iSharedMetadata)
       }

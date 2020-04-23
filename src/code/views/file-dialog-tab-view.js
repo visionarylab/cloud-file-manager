@@ -195,17 +195,18 @@ const FileDialogTab = createReactClass({
   },
 
   confirm() {
-    const confirmed = metadata => {
+    const confirmed = _metadata => {
+      const metadata = _metadata
       // ensure the metadata provider is the currently-showing tab
-      this.state.metadata = metadata
-      if (this.state.metadata.provider !== this.props.provider) {
-        this.state.metadata.provider = this.props.provider
+      if (metadata.provider !== this.props.provider) {
+        metadata.provider = this.props.provider
         // if switching provider, then clear providerData
-        this.state.metadata.providerData = {}
+        metadata.providerData = {}
       }
       if (typeof this.props.dialog.callback === 'function') {
-        this.props.dialog.callback(this.state.metadata)
+        this.props.dialog.callback(metadata)
       }
+      this.setState({metadata: metadata})
       return this.props.close()
     }
 

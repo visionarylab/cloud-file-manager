@@ -105,7 +105,7 @@ class ReadOnlyProvider extends ProviderInterface {
     return metadata.name
   }
 
-  _loadTree(callback) {
+  _loadTree = (callback) => {
     // wait for all promises to be resolved before proceeding
     const complete = iTree => {
       return Promise.all(this.promises)

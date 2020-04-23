@@ -106,6 +106,7 @@ class AppView extends React.Component {
   })
 
     return this.props.client._ui.listen(event => {
+      const {menuOptions} = this.state
       switch (event.type) {
         case 'showProviderDialog':
           return this.setState({providerDialog: event.data})
@@ -134,7 +135,9 @@ class AppView extends React.Component {
         case 'replaceMenuItem':
           var index = this._getMenuItemIndex(event.data.key)
           if (index !== -1) {
-            this.state.menuItems[index] = event.data.item
+            const {menuItems} = this.state
+            menuItems[index] = event.data.item
+            this.setState({menuItems: menuItems})
             return this.setState({menuItems: this.state.menuItems})
           }
           break
@@ -161,7 +164,8 @@ class AppView extends React.Component {
           }
           break
         case 'setMenuBarInfo':
-          this.state.menuOptions.info = event.data
+          menuOptions.info = event.data
+          this.setState({menuOptions: menuOptions})
           return this.setState({menuOptions: this.state.menuOptions})
       }
     })

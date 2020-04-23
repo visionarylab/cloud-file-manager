@@ -118,6 +118,7 @@ class DocumentStoreShareProvider {
         }
       })
     } else {
+      const docName = (metadata != null ? metadata.filename : undefined) || 'document'
       return callback(`Unable to unshare '${docName}'`)
     }
   }

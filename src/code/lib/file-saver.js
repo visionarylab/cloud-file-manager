@@ -170,7 +170,8 @@ var saveAs = saveAs || (function (view) {
 }(
 	typeof self !== "undefined" && self
 	|| typeof window !== "undefined" && window
-	|| this.content
+	// eslint-disable-next-line babel/no-invalid-this
+	|| this.content // TODO: What do we think `this` is here? ¯\_(ツ)_/¯ 
 	))
 // `self` is undefined in Firefox for Android content script context
 // while `this` is nsIContentFrameMessageManager
