@@ -7,11 +7,12 @@
  */
 const {div, button} = ReactDOMFactories
 
-const ModalDialog = createReactFactory(require('./modal-dialog-view'))
+import modalDialogView from './modal-dialog-view'
+const ModalDialog = createReactFactory(modalDialogView)
 
-const tr = require('../utils/translate')
+import tr  from '../utils/translate'
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'ConfirmDialogView',
 

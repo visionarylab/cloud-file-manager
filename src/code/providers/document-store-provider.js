@@ -12,17 +12,17 @@
  */
 const {div, button, span} = ReactDOMFactories
 
-const getQueryParam = require('../utils/get-query-param')
-const getHashParam = require('../utils/get-hash-param')
-const tr = require('../utils/translate')
-const pako = require('pako')
+import getQueryParam  from '../utils/get-query-param'
+import getHashParam  from '../utils/get-hash-param'
+import tr  from '../utils/translate'
+import pako  from 'pako'
 
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const { CloudMetadata } = (require('./provider-interface'))
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import { CloudMetadata }  from './provider-interface'
 
-const DocumentStoreUrl = require('./document-store-url')
-const PatchableContent = require('./patchable-content')
+import DocumentStoreUrl  from './document-store-url'
+import PatchableContent  from './patchable-content'
 
 const DocumentStoreAuthorizationDialog = createReactClassFactory({
   displayName: 'DocumentStoreAuthorizationDialog',
@@ -553,7 +553,7 @@ class DocumentStoreProvider extends ProviderInterface {
 }
 DocumentStoreProvider.initClass()
 
-module.exports = DocumentStoreProvider
+export default DocumentStoreProvider
 
 function __guard__(value, transform) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined

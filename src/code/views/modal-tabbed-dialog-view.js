@@ -5,10 +5,13 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const ModalDialog = createReactFactory(require('./modal-dialog-view'))
-const TabbedPanel = createReactFactory(require('./tabbed-panel-view'))
+import modalDialogView from './modal-dialog-view'
+import tabbedPanelView from './tabbed-panel-view'
 
-module.exports = createReactClass({
+const ModalDialog = createReactFactory(modalDialogView)
+const TabbedPanel = createReactFactory(tabbedPanelView)
+
+export default createReactClass({
 
   displayName: 'ModalTabbedDialogView',
 

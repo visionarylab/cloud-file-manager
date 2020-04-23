@@ -6,9 +6,9 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 const {div, input, button} = ReactDOMFactories
-const tr = require('../utils/translate')
+import tr  from '../utils/translate'
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'UrlTab',
 

@@ -54,7 +54,7 @@ if (codap) {
 }
 
 const appEntries = {
-  'js/app.js': './code/app.js',
+  'js/app.js': './code/app.jsx',
   'css/app': './style/app.styl'
 }
 

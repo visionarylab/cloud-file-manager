@@ -9,15 +9,16 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const { CloudMetadata } = (require('./provider-interface'))
-const DocumentStoreUrl = require('./document-store-url')
-const PatchableContent = require('./patchable-content')
-const getQueryParam = require('../utils/get-query-param')
-const base64 = (require('js-base64')).Base64
-const pako = require('pako')
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import { CloudMetadata }  from './provider-interface'
+import DocumentStoreUrl  from './document-store-url'
+import PatchableContent  from './patchable-content'
+import getQueryParam  from '../utils/get-query-param'
+import Base64  from 'js-base64'
+import pako  from 'pako'
 
+const { base64 }  = Base64
 // This provider supports the lara:... protocol used for documents launched
 // from LARA. It looks up the document ID and access keys from the LARA
 // interactive run state and then uses the V2 DocStore API to read/write
@@ -530,7 +531,7 @@ class LaraProvider extends ProviderInterface {
 }
 LaraProvider.initClass()
 
-module.exports = LaraProvider
+export default LaraProvider
 
 function __guard__(value, transform) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined

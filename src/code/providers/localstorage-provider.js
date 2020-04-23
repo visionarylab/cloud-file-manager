@@ -11,11 +11,11 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const tr = require('../utils/translate')
+import tr  from '../utils/translate'
 
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const { CloudMetadata } = (require('./provider-interface'))
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import { CloudMetadata }  from './provider-interface'
 
 class LocalStorageProvider extends ProviderInterface {
   static initClass() {
@@ -139,4 +139,4 @@ class LocalStorageProvider extends ProviderInterface {
 }
 LocalStorageProvider.initClass()
 
-module.exports = LocalStorageProvider
+export default LocalStorageProvider

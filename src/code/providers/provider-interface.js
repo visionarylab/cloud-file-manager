@@ -12,7 +12,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 
-const isString = require('../utils/is-string')
+import isString  from '../utils/is-string'
 
 import {reportError} from '../utils/report-error'
 
@@ -367,14 +367,17 @@ class ProviderInterface {
 
   _notImplemented(methodName) {
     // this uses a browser alert instead of client.alert because this is just here for debugging
+    // eslint-disable-next-line no-alert
     return alert(`${methodName} not implemented for ${this.name} provider`)
   }
 }
 
-module.exports = {
+const cloudContentFactory = new CloudContentFactory()
+
+export {
   CloudFile,
   CloudMetadata,
   CloudContent,
-  cloudContentFactory: new CloudContentFactory(),
+  cloudContentFactory,
   ProviderInterface
 }

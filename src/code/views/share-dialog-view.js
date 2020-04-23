@@ -11,14 +11,15 @@ const {div, input, a, button, strong, textarea, svg, g, path, circle, ul, li} = 
 
 const SHOW_LONGEVITY_WARNING = false
 
-const ModalDialog = createReactFactory(require('./modal-dialog-view'))
-const getQueryParam = require('../utils/get-query-param')
+import modalDialogView from './modal-dialog-view'
+const ModalDialog = createReactFactory(modalDialogView)
+import getQueryParam  from '../utils/get-query-param'
 
 // This function is named "tr" elsewhere in this codeline.
 // Using the fullname, "translate" here, to avoid the potential overloading
 // of the react function, "tr".
-const translate = require('../utils/translate')
-const socialIcons = require('svg-social-icons/lib/icons.json')
+import translate  from '../utils/translate'
+import socialIcons  from 'svg-social-icons/lib/icons.json'
 
 const SocialIcon = createReactClassFactory({
 
@@ -51,7 +52,7 @@ const SocialIcon = createReactClassFactory({
   }
 })
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'ShareDialogView',
 

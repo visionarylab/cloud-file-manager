@@ -6,10 +6,10 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 const {div, input, button} = ReactDOMFactories
-const tr = require('../utils/translate')
-const { CloudMetadata } = (require('../providers/provider-interface'))
+import tr  from '../utils/translate'
+import { CloudMetadata }  from '../providers/provider-interface'
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'LocalFileListTab',
 

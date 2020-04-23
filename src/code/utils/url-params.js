@@ -13,4 +13,4 @@ if (window && window.location && window.location.search) {
   })()
 }
 
-module.exports = urlParams
+export default urlParams

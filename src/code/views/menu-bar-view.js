@@ -6,13 +6,18 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import DropDownView from "./dropdown-view"
+import DropDownAnchor from "./dropdown-view"
+import tr  from '../utils/translate'
+
+
+
 const {div, i, span, input} = ReactDOMFactories
+const Dropdown = createReactFactory(DropDownView)
+const {TriangleOnlyAnchor} = DropDownAnchor
 
-const Dropdown = createReactFactory(require('./dropdown-view'))
-const {TriangleOnlyAnchor} = require("./dropdown-anchors")
-const tr = require('../utils/translate')
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'MenuBar',
 

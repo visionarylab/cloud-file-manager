@@ -9,9 +9,8 @@
  */
 const {div, i, ul, li} = ReactDOMFactories
 
-const {DefaultAnchor} = require("./dropdown-anchors")
+import { DefaultAnchor } from './dropdown-anchors'
 const DropdownItem = createReactClassFactory({
-
   displayName: 'DropdownItem',
 
   clicked() {
@@ -165,4 +164,4 @@ const DropDown = createReactClass({
   }
 })
 
-module.exports = DropDown
+export default DropDown

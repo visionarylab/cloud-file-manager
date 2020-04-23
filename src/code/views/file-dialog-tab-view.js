@@ -8,10 +8,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const AuthorizeMixin = require('./authorize-mixin')
-const { CloudMetadata } = (require('../providers/provider-interface'))
+import AuthorizeMixin  from './authorize-mixin'
+import { CloudMetadata }  from '../providers/provider-interface'
 
-const tr = require('../utils/translate')
+import tr  from '../utils/translate'
 
 let {div, i, input, button} = ReactDOMFactories
 const italic = i
@@ -294,4 +294,4 @@ const FileDialogTab = createReactClass({
   }
 })
 
-module.exports = FileDialogTab
+export default FileDialogTab

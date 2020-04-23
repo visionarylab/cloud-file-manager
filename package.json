@@ -56,7 +56,8 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && NODE_ENV=production webpack -p",
+    "build": "npm run clean && webpack --mode development",
+    "build:production": "npm run clean && NODE_ENV=production webpack --mode production -p",
     "build:codap": "npm run clean && NODE_ENV=production dest='../codap/apps/dg/resources/cloud-file-manager' codap=1 noGlobals=1 noMap=1 webpack -p",
     "strings:build": "./node_modules/.bin/strip-json-comments src/code/utils/lang/en-US-master.json > src/code/utils/lang/en-US.json",
     "strings:pull:usage": "echo Usage: `npm run strings:pull -- -a <poeditor_api_key>`",
@@ -64,7 +65,7 @@
     "strings:push:usage": "echo Usage: `npm run strings:push -- -a <poeditor_api_key>`",
     "strings:push": "./bin/strings-push-project.sh",
     "start": "npm-run-all --parallel watch:server watch:build",
-    "watch:build": "webpack --watch",
+    "watch:build": "webpack --watch --mode development",
     "watch:server": "live-server ./dist --open=examples",
     "test:local": "cypress open --env testEnv=local"
   }

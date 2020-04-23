@@ -11,27 +11,27 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const tr = require('./utils/translate')
-const isString = require('./utils/is-string')
-const base64Array = require('base64-js') // https://github.com/beatgammit/base64-js
-const getQueryParam = require('./utils/get-query-param')
+import tr  from './utils/translate'
+import isString  from './utils/is-string'
+import base64Array  from 'base64-js' // https://github.com/beatgammit/base64-js
+import getQueryParam  from './utils/get-query-param'
 
-const { CloudFileManagerUI } = (require('./ui'))
+import { CloudFileManagerUI }  from './ui'
 
-const LocalStorageProvider = require('./providers/localstorage-provider')
-const ReadOnlyProvider = require('./providers/readonly-provider')
-const GoogleDriveProvider = require('./providers/google-drive-provider')
-const LaraProvider = require('./providers/lara-provider')
-const DocumentStoreProvider = require('./providers/document-store-provider')
-const DocumentStoreShareProvider = require('./providers/document-store-share-provider')
-const LocalFileProvider = require('./providers/local-file-provider')
-const PostMessageProvider = require('./providers/post-message-provider')
-const URLProvider = require('./providers/url-provider')
+import LocalStorageProvider  from './providers/localstorage-provider'
+import ReadOnlyProvider  from './providers/readonly-provider'
+import GoogleDriveProvider  from './providers/google-drive-provider'
+import LaraProvider  from './providers/lara-provider'
+import DocumentStoreProvider  from './providers/document-store-provider'
+import DocumentStoreShareProvider  from './providers/document-store-share-provider'
+import LocalFileProvider  from './providers/local-file-provider'
+import PostMessageProvider  from './providers/post-message-provider'
+import URLProvider  from './providers/url-provider'
 
-const { ProviderInterface } = (require('./providers/provider-interface'))
-const { cloudContentFactory } = (require('./providers/provider-interface'))
-const { CloudContent } = (require('./providers/provider-interface'))
-const { CloudMetadata } = (require('./providers/provider-interface'))
+import { ProviderInterface }  from './providers/provider-interface'
+import { cloudContentFactory }  from './providers/provider-interface'
+import { CloudContent }  from './providers/provider-interface'
+import { CloudMetadata }  from './providers/provider-interface'
 
 class CloudFileManagerClientEvent {
   static initClass() {
@@ -1195,7 +1195,7 @@ class CloudFileManagerClient {
   }
 }
 
-module.exports = {
+export {
   CloudFileManagerClientEvent,
   CloudFileManagerClient
 }

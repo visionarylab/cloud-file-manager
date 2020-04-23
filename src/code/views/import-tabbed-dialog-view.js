@@ -5,13 +5,17 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view'))
-const TabbedPanel = require('./tabbed-panel-view')
-const LocalFileTab = createReactFactory(require('./local-file-tab-list-view'))
-const UrlTab = createReactFactory(require('./url-tab-view'))
-const tr = require('../utils/translate')
+import TabbedPanel  from './tabbed-panel-view'
+import tr  from '../utils/translate'
 
-module.exports = createReactClass({
+import modalTabbedDialogView from './modal-tabbed-dialog-view'
+import localfileTabListView from './local-file-tab-list-view'
+import urlTabView from './url-tab-view'
+
+const ModalTabbedDialog = createReactFactory(modalTabbedDialogView)
+const LocalFileTab = createReactFactory(localfileTabListView)
+const UrlTab = createReactFactory(urlTabView)
+export default createReactClass({
   displayName: 'ImportTabbedDialog',
 
   importFile(metadata, via) {

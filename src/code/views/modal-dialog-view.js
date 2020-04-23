@@ -5,11 +5,11 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import modalView from './modal-view'
 const {div, i} = ReactDOMFactories
+const Modal = createReactFactory(modalView)
 
-const Modal = createReactFactory(require('./modal-view'))
-
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'ModalDialog',
 

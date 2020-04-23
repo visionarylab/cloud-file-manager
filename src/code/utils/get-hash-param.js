@@ -5,7 +5,7 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-module.exports = function(param) {
+export default function(param) {
   let ret = null
   location.hash.substr(1).split("&").some(function(pair) {
     const key = pair.split("=")[0]

@@ -7,18 +7,30 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const MenuBar = createReactFactory(require('./menu-bar-view'))
-const ProviderTabbedDialog = createReactFactory(require('./provider-tabbed-dialog-view'))
-const DownloadDialog = createReactFactory(require('./download-dialog-view'))
-const RenameDialog = createReactFactory(require('./rename-dialog-view'))
-const ShareDialog = createReactFactory(require('./share-dialog-view'))
-const BlockingModal = createReactFactory(require('./blocking-modal-view'))
-const AlertDialog = createReactFactory(require('./alert-dialog-view'))
-const ConfirmDialog = createReactFactory(require('./confirm-dialog-view'))
-const ImportTabbedDialog = createReactFactory(require('./import-tabbed-dialog-view'))
+import React from "react"
+import menuBarView from './menu-bar-view'
+import providerTabbedDialogView from './provider-tabbed-dialog-view'
+import downloadDialogView from './download-dialog-view'
+import renameDialogView from './rename-dialog-view'
+import shareDialogView from './share-dialog-view'
+import blockingModalView from './blocking-modal-view'
+import alterDialogView from './alert-dialog-view'
+import confirmDialogView from './confirm-dialog-view'
+import importTabbedDialgView  from './import-tabbed-dialog-view'
 
-const tr = require('../utils/translate')
-const isString = require('../utils/is-string')
+
+const MenuBar = createReactFactory(menuBarView)
+const ProviderTabbedDialog = createReactFactory(providerTabbedDialogView)
+const DownloadDialog = createReactFactory(downloadDialogView)
+const RenameDialog = createReactFactory(renameDialogView)
+const ShareDialog = createReactFactory(shareDialogView)
+const BlockingModal = createReactFactory(blockingModalView)
+const AlertDialog = createReactFactory(alterDialogView)
+const ConfirmDialog = createReactFactory(confirmDialogView)
+const ImportTabbedDialog = createReactFactory(importTabbedDialgView)
+
+import tr  from '../utils/translate'
+import isString  from '../utils/is-string'
 
 const {div, iframe} = ReactDOMFactories
 
@@ -37,16 +49,12 @@ const InnerApp = createReactClassFactory({
   }
 })
 
-const App = createReactClass({
+class AppView extends React.Component {
 
-  displayName: 'CloudFileManager',
-
-  getFilename(metadata) {
-    if ((metadata != null ? metadata.hasOwnProperty("name") : undefined) && ((metadata.name != null ? metadata.name.length : undefined) > 0)) { return metadata.name } else { return null }
-  },
-
-  getInitialState() {
-    return {
+  constructor(props) {
+    super(props)
+    this.displayName = 'CloudFileManager'
+    this.state = {
       filename: this.getFilename(this.props.client.state.metadata),
       provider: (this.props.client.state.metadata != null ? this.props.client.state.metadata.provider : undefined),
       menuItems: (this.props.client._ui.menu != null ? this.props.client._ui.menu.items : undefined) || [],
@@ -59,7 +67,11 @@ const App = createReactClass({
       confirmDialog: null,
       dirty: false
     }
-  },
+  }
+
+  getFilename(metadata) {
+    if ((metadata != null ? metadata.hasOwnProperty('name') : undefined) && ((metadata.name != null ? metadata.name.length : undefined) > 0)) { return metadata.name } else { return null }
+  }
 
   componentDidMount() {
     this.props.client.listen(event => {
@@ -151,7 +163,7 @@ const App = createReactClass({
           return this.setState({menuOptions: this.state.menuOptions})
       }
     })
-  },
+  }
 
   _getMenuItemIndex(key) {
     let index
@@ -169,7 +181,7 @@ const App = createReactClass({
         return index
       }
     }
-  },
+  }
 
   closeDialogs() {
     return this.setState({
@@ -179,15 +191,15 @@ const App = createReactClass({
       shareDialog: null,
       importDialog: null
     })
-  },
+  }
 
   closeAlert() {
     return this.setState({alertDialog: null})
-  },
+  }
 
   closeConfirm() {
     return this.setState({confirmDialog: null})
-  },
+  }
 
   renderDialogs() {
     return (div({},
@@ -213,7 +225,7 @@ const App = createReactClass({
       this.state.confirmDialog ?
         (ConfirmDialog(_.merge({}, this.state.confirmDialog, { close: this.closeConfirm }))) : undefined
     ))
-  },
+  }
 
   render() {
     const menuItems = !this.props.hideMenuBar ? this.state.menuItems : []
@@ -234,6 +246,6 @@ const App = createReactClass({
       return null
     }
   }
-})
+}
 
-module.exports = App
+export default AppView

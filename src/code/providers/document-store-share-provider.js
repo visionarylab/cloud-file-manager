@@ -6,8 +6,8 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const { CloudMetadata } = (require('./provider-interface'))
-const pako = require('pako')
+import { CloudMetadata }  from './provider-interface'
+import pako  from 'pako'
 
 //
 // A utility class for providing sharing functionality via the Concord Document Store.
@@ -123,4 +123,4 @@ class DocumentStoreShareProvider {
   }
 }
 
-module.exports = DocumentStoreShareProvider
+export default DocumentStoreShareProvider

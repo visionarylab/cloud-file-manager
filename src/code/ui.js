@@ -8,8 +8,8 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const tr = require('./utils/translate')
-const isString = require('./utils/is-string')
+import tr  from './utils/translate'
+import isString  from './utils/is-string'
 
 class CloudFileManagerUIEvent {
 
@@ -278,7 +278,7 @@ class CloudFileManagerUI {
   }
 }
 
-module.exports = {
+export {
   CloudFileManagerUIEvent,
   CloudFileManagerUI,
   CloudFileManagerUIMenu

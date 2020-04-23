@@ -7,7 +7,7 @@
  */
 const {div} = ReactDOMFactories
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'Modal',
 

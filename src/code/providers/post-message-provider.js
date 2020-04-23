@@ -8,8 +8,8 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const { ProviderInterface } = (require('./provider-interface'))
-const getQueryParam = require('../utils/get-query-param')
+import { ProviderInterface }  from './provider-interface'
+import getQueryParam  from '../utils/get-query-param'
 
 class PostMessageProvider extends ProviderInterface {
   static initClass() {
@@ -49,4 +49,4 @@ class PostMessageProvider extends ProviderInterface {
 }
 PostMessageProvider.initClass()
 
-module.exports = PostMessageProvider
+export default PostMessageProvider

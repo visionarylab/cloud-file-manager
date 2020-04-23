@@ -7,9 +7,10 @@
  */
 const {div} = ReactDOMFactories
 
-const Modal = createReactFactory(require('./modal-view'))
+import modalView from './modal-view'
+const Modal = createReactFactory(modalView)
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'BlockingModal',
 

@@ -12,6 +12,7 @@ const {
 
 module.exports = (env) => ({
   performance: { hints: false },
+  devtool: 'inline-source-map',
   context: path.resolve(__dirname, 'src'),
   entry: entry,
   output: {
@@ -25,7 +26,7 @@ module.exports = (env) => ({
       //   use: ['coffee-loader']
       // },
       {
-        test: /\.tsx?$/,
+        test: /(\.tsx?|\.jsx?)$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
@@ -47,7 +48,7 @@ module.exports = (env) => ({
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.json', '.styl']
+    extensions: ['.tsx', '.ts', '.js', '.jsx', '.json', '.styl']
   },
   plugins: [
     new MiniCssExtractPlugin(),

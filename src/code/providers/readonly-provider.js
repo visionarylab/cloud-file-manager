@@ -11,13 +11,13 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const tr = require('../utils/translate')
-const isString = require('../utils/is-string')
-const isArray = require('../utils/is-array')
+import tr  from '../utils/translate'
+import isString  from '../utils/is-string'
+import isArray  from '../utils/is-array'
 
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const { CloudMetadata } = (require('./provider-interface'))
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import { CloudMetadata }  from './provider-interface'
 import {reportError} from "../utils/report-error"
 
 class ReadOnlyProvider extends ProviderInterface {
@@ -282,7 +282,7 @@ class ReadOnlyProvider extends ProviderInterface {
 }
 ReadOnlyProvider.initClass()
 
-module.exports = ReadOnlyProvider
+export default ReadOnlyProvider
 
 function __guard__(value, transform) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined

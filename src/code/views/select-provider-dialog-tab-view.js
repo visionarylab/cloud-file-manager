@@ -7,4 +7,4 @@ const SelectProviderDialogTab = createReactClassFactory({
   render() { return (div({}, `TODO: SelectProviderDialogTab: ${this.props.provider.displayName}`)) }
 })
 
-module.exports = SelectProviderDialogTab
+export default SelectProviderDialogTab

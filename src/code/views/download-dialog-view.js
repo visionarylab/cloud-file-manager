@@ -6,14 +6,14 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+import tr  from '../utils/translate'
+import { CloudMetadata }  from '../providers/provider-interface'
+import modalDialogView from './modal-dialog-view'
 const {div, input, a, button} = ReactDOMFactories
+const ModalDialog = createReactFactory(modalDialogView)
 
-const ModalDialog = createReactFactory(require('./modal-dialog-view'))
-const { CloudMetadata } = (require('../providers/provider-interface'))
 
-const tr = require('../utils/translate')
-
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'DownloadDialogView',
 

@@ -31,7 +31,7 @@ const Tab = createReactClassFactory({
   }
 })
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'TabbedPanelView',
 

@@ -8,12 +8,15 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const tr = require('../utils/translate')
+import tr  from '../utils/translate'
 
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const LocalFileListTab = createReactFactory(require('../views/local-file-tab-list-view'))
-const LocalFileSaveTab = createReactFactory(require('../views/local-file-tab-save-view'))
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import localFileTabListView from '../views/local-file-tab-list-view'
+import localFileTabSaveView from '../views/local-file-tab-save-view'
+
+const LocalFileListTab = createReactFactory(localFileTabListView)
+const LocalFileSaveTab = createReactFactory(localFileTabSaveView)
 
 class LocalFileProvider extends ProviderInterface {
   static initClass() {
@@ -72,4 +75,4 @@ class LocalFileProvider extends ProviderInterface {
 }
 LocalFileProvider.initClass()
 
-module.exports = LocalFileProvider
+export default LocalFileProvider

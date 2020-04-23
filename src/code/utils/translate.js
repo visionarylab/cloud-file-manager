@@ -7,18 +7,27 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const urlParams = require('./url-params')
+import urlParams  from './url-params'
+import de from './lang/de'
+import el from './lang/el'
+import enUs from './lang/en-US'
+import es from './lang/es'
+import he from './lang/he'
+import nb from './lang/nb'
+import nn from './lang/nn'
+import tr from './lang/tr'
+import zh from './lang/zh-TW'
 
 const languageFiles = [
-  {key: 'de',    contents: require('./lang/de')},      // German
-  {key: 'el',    contents: require('./lang/el')},      // Greek
-  {key: 'en-US', contents: require('./lang/en-US')},   // US English
-  {key: 'es',    contents: require('./lang/es')},      // Spanish
-  {key: 'he',    contents: require('./lang/he')},      // Hebrew
-  {key: 'nb',    contents: require('./lang/nb.json')}, // Norwegian Bokmål
-  {key: 'nn',    contents: require('./lang/nn.json')}, // Norwegian Nynorsk
-  {key: 'tr',    contents: require('./lang/tr')},      // Turkish
-  {key: 'zh-TW', contents: require('./lang/zh-TW')}   // Chinese (Taiwan)
+  {key: 'de',    contents: de},  // German
+  {key: 'el',    contents: el},  // Greek
+  {key: 'en-US', contents: enUs},// US English
+  {key: 'es',    contents: es},  // Spanish
+  {key: 'he',    contents: he},  // Hebrew
+  {key: 'nb',    contents: nb},  // Norwegian Bokmål
+  {key: 'nn',    contents: nn},  // Norwegian Nynorsk
+  {key: 'tr',    contents: tr},  // Turkish
+  {key: 'zh-TW', contents: zh}   // Chinese (Taiwan)
 ]
 
 // returns baseLANG from baseLANG-REGION if REGION exists
@@ -61,4 +70,4 @@ const translate = function(key, vars, lang) {
   })
 }
 
-module.exports = translate
+export default translate

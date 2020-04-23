@@ -68,4 +68,4 @@ const AuthorizeMixin = {
   }
 }
 
-module.exports = AuthorizeMixin
+export default AuthorizeMixin

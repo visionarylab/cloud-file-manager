@@ -93,4 +93,4 @@ class DocumentStoreUrl {
   // v2DeleteDocument: (id, params) ->
   //   { method: 'DELETE', url: @v2Document(id, params) }
     
-module.exports = DocumentStoreUrl
+export default DocumentStoreUrl

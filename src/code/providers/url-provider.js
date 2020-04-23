@@ -7,9 +7,9 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const { CloudMetadata } = (require('./provider-interface'))
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import { CloudMetadata }  from './provider-interface'
 
 // This provider gets created by the client when needed to open a url directly.
 // It cannot be added as one of the app's list of providers
@@ -54,4 +54,4 @@ class URLProvider extends ProviderInterface {
   }
 }
 
-module.exports = URLProvider
+export default URLProvider

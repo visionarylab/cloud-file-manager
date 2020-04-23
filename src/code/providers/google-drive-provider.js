@@ -13,10 +13,10 @@
  */
 const {div, button, span} = ReactDOMFactories
 
-const tr = require('../utils/translate')
-const { ProviderInterface } = (require('./provider-interface'))
-const { cloudContentFactory } = (require('./provider-interface'))
-const { CloudMetadata } = (require('./provider-interface'))
+import tr  from '../utils/translate'
+import { ProviderInterface }  from './provider-interface'
+import { cloudContentFactory }  from './provider-interface'
+import { CloudMetadata }  from './provider-interface'
 
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
@@ -406,7 +406,7 @@ class GoogleDriveProvider extends ProviderInterface {
 }
 GoogleDriveProvider.initClass()
 
-module.exports = GoogleDriveProvider
+export default GoogleDriveProvider
 
 function __guard__(value, transform) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined

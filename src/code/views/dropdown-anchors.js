@@ -18,7 +18,7 @@ const TriangleOnlyAnchor =
     (polygon(({points: "0,7 4,13 8,7"})))
   ))
 
-module.exports = {
+export {
   DefaultAnchor,
   TriangleOnlyAnchor
 }

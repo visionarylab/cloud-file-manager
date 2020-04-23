@@ -5,7 +5,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-module.exports = function(param) {
+export default function(param) {
   param = param.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
   const regexS = `[\\?&]${param}=([^&#]*)`
   const regex = new RegExp(regexS)

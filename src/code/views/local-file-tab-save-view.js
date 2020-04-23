@@ -8,12 +8,12 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 const {div, input, button, a} = ReactDOMFactories
-const tr = require('../utils/translate')
-const { CloudMetadata } = (require('../providers/provider-interface'))
-const { cloudContentFactory } = (require('../providers/provider-interface'))
-const FileSaver = require('../lib/file-saver')
+import tr  from '../utils/translate'
+import { CloudMetadata }  from '../providers/provider-interface'
+import { cloudContentFactory }  from '../providers/provider-interface'
+import FileSaver  from '../lib/file-saver'
 
-module.exports = createReactClass({
+export default createReactClass({
 
   displayName: 'LocalFileSaveTab',
 

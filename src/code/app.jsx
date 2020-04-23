@@ -6,12 +6,12 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const AppView = createReactFactory(require('./views/app-view'))
+import AppView from './views/app-view'
+import React from 'react'
+import { CloudFileManagerUIMenu } from './ui'
+import { CloudFileManagerClient } from './client'
 
-const { CloudFileManagerUIMenu } = (require('./ui'))
-const { CloudFileManagerClient } = (require('./client'))
-
-const getHashParam = require('./utils/get-hash-param')
+import getHashParam  from './utils/get-hash-param'
 
 class CloudFileManager {
 
@@ -80,12 +80,12 @@ class CloudFileManager {
 
   _renderApp(anchor) {
     this.appOptions.client = this.client
-    ReactDOM.render((AppView(this.appOptions)), anchor)
+  ReactDOM.render(<AppView {... this.appOptions} />, anchor)
     this.client.iframe = anchor.getElementsByTagName('iframe')[0]
     return this.client.rendered()
   }
 }
 
 const instance = new  CloudFileManager()
-module.exports = instance
+export default instance
 global.CloudFileManager = instance

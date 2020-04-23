@@ -9,14 +9,18 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const ModalTabbedDialog = createReactFactory(require('./modal-tabbed-dialog-view'))
-const TabbedPanel = require('./tabbed-panel-view')
-const FileDialogTab = createReactFactory(require('./file-dialog-tab-view'))
-const SelectProviderDialogTab = createReactFactory(require('./select-provider-dialog-tab-view'))
+import tr  from '../utils/translate'
+import TabbedPanel  from './tabbed-panel-view'
+import modalTabbedDialogView from './modal-tabbed-dialog-view'
+import fileDialogTabView from './file-dialog-tab-view'
+import selectProviderDialogTabView from './select-provider-dialog-tab-view'
 
-const tr = require('../utils/translate')
+const ModalTabbedDialog = createReactFactory(modalTabbedDialogView)
+const FileDialogTab = createReactFactory(fileDialogTabView)
+const SelectProviderDialogTab = createReactFactory(selectProviderDialogTabView)
 
-module.exports = createReactClass({
+
+export default createReactClass({
   displayName: 'ProviderTabbedDialog',
 
   render() {

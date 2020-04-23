@@ -10,7 +10,7 @@
 // This utility class simplifies working with document store URLs
 //
 
-const jiff = require('jiff')
+import jiff  from 'jiff'
 
 class PatchableContent {
 
@@ -63,4 +63,4 @@ class PatchableContent {
   }
 }
     
-module.exports = PatchableContent
+export default PatchableContent
