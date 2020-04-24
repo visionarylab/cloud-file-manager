@@ -1,7 +1,6 @@
 import CfmObject from "../../support/elements/CfmObject"
 import DocumentObject from "../../support/elements/DocumentObject"
 
-const ext = '.txt';
 const cfm = new CfmObject;
 const docArea = new DocumentObject;
 

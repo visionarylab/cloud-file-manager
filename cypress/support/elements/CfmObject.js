@@ -71,6 +71,11 @@ class CfmObject{
         cy.get('.filelist .selectable').contains(document).click();
         this.getOpenDialogOpenButton();
     }
+    openReadOnlyDoc(document){
+        this.getTab('Read Only').click();
+        cy.get('.filelist .selectable').contains(document).click();
+        this.getOpenDialogOpenButton();
+    }
     getOpenDialogOpenButton(){
         //('.buttons button').contains('Open') yields an array of buttons from all the tabs that remains visible to the DOM 
         //even though it has been styled display: none, so had to use xpath to select the one that is actionable
