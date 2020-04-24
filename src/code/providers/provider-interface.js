@@ -14,8 +14,6 @@
 
 import isString  from '../utils/is-string'
 
-import {reportError} from '../utils/report-error'
-
 class CloudFile {
   constructor(options) {
     ({content: this.content, metadata: this.metadata} = options)
@@ -57,6 +55,8 @@ class CloudMetadata {
   }
 
   static withExtension(name, defaultExtension, keepOriginalExtension) {
+    // TODO:  Eslint doesn't like this bitwise not operator.
+    // I feel the same.
     if (keepOriginalExtension && ~name.indexOf(".")) {
       return name
     }
@@ -150,7 +150,7 @@ class CloudContentFactory {
     const result = { isCfmWrapped: false, isPreCfmFormat: false }
     if (isString(content)) {
       try { content = JSON.parse(content) } catch (error) {
-        reportError(error)
+        // noop, just cecking if it's valid json
       }
     }
     // Currently, we assume 'metadata' is top-level property in
@@ -172,7 +172,7 @@ class CloudContentFactory {
   _wrapIfNeeded(content) {
     if (isString(content)) {
       try { content = JSON.parse(content) } catch (error) {
-        reportError(error)
+        // noop, just cecking if it's json or plain text
       }
     }
     if (content.content != null) {
@@ -280,7 +280,8 @@ class ProviderInterface {
   }
 
   renderAuthorizationDialog() {
-    return (AuthorizationNotImplementedDialog({provider: this}))
+    console.warn('renderAuthorizationDialog not implimented')
+    return null
   }
 
   renderUser() {
@@ -297,6 +298,7 @@ class ProviderInterface {
       for (let extension of Array.from(CloudMetadata.ReadableExtensions)) {
         if (name.substr(-extension.length) === extension) { return true }
         if (extension === "") {
+          // TODO:  Eslint doesn't like this bitwise not operator.
           if (!~name.indexOf(".")) { return true }
         }
       }
