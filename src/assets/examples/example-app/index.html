@@ -50,6 +50,7 @@
 
       function appendContent(cfmContent) {
         document.getElementById("text").value += '\n\nImported data: ' + cfmContent;
+        document.getElementById("text").innerHTML += '\n\nImported data: ' + cfmContent;
       }
 
       function connected(client) {
