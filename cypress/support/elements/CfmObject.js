@@ -150,7 +150,7 @@ class CfmObject{
         return cy.get('.share-dialog .share-status strong').text()
     }
     getShareButton(text){//['Enable Sharing','Update shared view']
-        return cy.get('.share-dialog button').contains('text')
+        return cy.get('.share-dialog button').contains(text)
     }
     getCloseButton(){
         return cy.get('.share-dialog button').contains('Close')
@@ -161,7 +161,7 @@ class CfmObject{
     getPreviewLink(){
         return cy.get('.share-button-help-sharing a')
     }
-    getShareTabs(tab){
+    getShareTabs(tab){ //["Link","Embed"]
         return cy.get('.share-dialog .sharing-tabs').contains(tab)
     }
     getShareLink(){
@@ -183,6 +183,7 @@ class CfmObject{
         this.getSharingButton().click();
     }
 
+
     //Rename modal
     getRenameInputTextField(){
         return cy.get('.rename-dialog input');
@@ -200,6 +201,16 @@ class CfmObject{
         //&ss_domain=http%3A%2F%2Flocalhost%3A8080&gsiwebsdk=shim&o2v=1&as=YqVf37GwUvUNK1LOLRAmYA&flowName=GeneralOAuthFlow
         //https://accounts.google.com/signin/oauth/identifier?response_type=permission%20id_token&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.install%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&openid.realm&redirect_uri=storagerelay%3A%2F%2Fhttp%2Fconcord-consortium.github.io%3Fid%3Dauth892717&client_id=1095918012594-svs72eqfalasuc4t1p1ps1m8r9b8psso.apps.googleusercontent.com&ss_domain=http%3A%2F%2Fconcord-consortium.github.io&gsiwebsdk=shim&o2v=1&as=RsVkg4YHV_NwB2SkafuS3g&flowName=GeneralOAuthFlow
         cy.get('.button').contains('Login to Google').click();
+    }
+
+    getModalDialogTitle(){
+        return cy.get('.modal-dialog-title')
+    }
+    getDialogMessage(){
+        return cy.get('.modal-dialog-workspace .alert-dialog-message')
+    }
+    getDialogCloseButton(){
+        return cy.get('.modal-dialog-workspace .alert-dialog button').contains('Close')
     }
 }
 export default CfmObject;
