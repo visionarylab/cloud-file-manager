@@ -27,7 +27,7 @@ class CfmObject{
         return cy.get('.cfm-menu.menu-'+state)
     }
     selectCFMMenuItem(item){ 
-        //['New','Open ...','Import data...','Close','Revert to...', 'Save','Get link to shared view']
+        //['New','Open ...','Import data...','Close','Revert to...', 'Save','Share...']
         cy.get('.cfm-menu .menuItem').contains(item).click();
     }
     openDocFromFileMenu(){
@@ -124,6 +124,7 @@ class CfmObject{
         this.openCFMMenu();
         this.selectCFMMenuItem('Save')
         this.getTab('Local Storage').click();
+        cy.get('.modal-dialog-workspace .dialogTab input').first().click().clear().type(filename);
         this.getSaveButton().click()
     }
 

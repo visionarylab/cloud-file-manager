@@ -1,13 +1,14 @@
 import CfmObject from "../../support/elements/CfmObject"
 import DocumentObject from "../../support/elements/DocumentObject"
 
-const ext = '.txt';
 const cfm = new CfmObject;
 const docArea = new DocumentObject;
-
-// Cypress.config('fixturesFolder', dir)
-
+var sharedDocTitle = 'Share me'
 var sharedText = 'will share this document'
+var updateTextCFMMenu = ' Update from CFM menu'
+var updateTextShareDialog = ' Update from Share dialog'
+
+
 context('before share',()=>{
     before(()=>{
         cy.visit('/examples/all-providers.html')
@@ -31,7 +32,6 @@ context('before share',()=>{
             cfm.selectCFMMenuItem('Get link to shared view')
             cfm.getShareStatus().should('contain','disabled');
         })
-
     })
 })
 context('after shared',function(){
@@ -60,35 +60,105 @@ context('after shared',function(){
             cfm.getEmbedText().should('have.attr','readonly');
             cfm.getEmbedText().should('contain','<iframe width="398px" height="313px" frameborder="no" scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" src="'+this.sharedURL+'"></iframe>')
         })
-    }) 
-    describe('visit shared link',function(){
-        it('verify shared link is accessible',function(){
-            cy.visit(this.sharedURL);
-            docArea.getTextArea().should('contain', sharedText)
+        after(function(){ //save to local storage to verify if share state is restored and verify update of shared doc is propagated
+            cfm.getCloseButton().click();
+            cfm.saveToLocalStorage(sharedDocTitle)
+            cy.saveLocalStorageCache()
+        })
+    })   
+    //putting these tests here so it has access to the sharedURL
+    context('Shared document',function(){
+        describe('visit shared link',function(){
+            it('verify shared link is accessible',function(){
+                cy.visit(this.sharedURL);
+                docArea.getTextArea().should('contain', sharedText)
+            })
+            it('verify shared document is not shared',function(){
+                cfm.openCFMMenu()
+                cfm.selectCFMMenuItem('Share...')
+                cfm.selectCFMMenuItem('Get link to shared view')
+                cfm.getShareStatus().should('contain','disabled');
+                cfm.getShareButton('Enable sharing').should('be.visible')
+            })
         })
     })
-    describe('Update shared view',function(){
+    context('Restore original document',function(){
+    //restore saved shared doc
         before(function(){
-            cy.visit('/examples/all-providers.html')
-            //need to actually have some kind of message in the document that gets updated at update
+            cy.visit('/examples/all-providers.html');
+            cy.restoreLocalStorageCache();
+            cfm.openDocFromFileMenu();
+            cfm.openLocalStorageDoc(sharedDocTitle)
         })
-
-        it('verify confirmation dialog comes up',function(){
-            cfm.getShareButton('Update shared view').click();
-            cfm.getModalDialogTitle().should('contain','Shared View Updated')
-            cfm.getDialogMessage().should('contain','The shared view was updated successfully.')
-            cfm.getDialogCloseButton().click({force:true});
-            cfm.getModalDialogTitle().contains('Shared View Updated').should('not.exist')
+        it('verify shared state is restored',function(){
+            cfm.openCFMMenu()
+            cfm.selectCFMMenuItem('Share...')
+            cfm.selectCFMMenuItem('Get link to shared view')
+            cfm.getShareStatus().should('contain','enabled');
+            cfm.getShareButton('Update shared view').should('be.visible')
+            cfm.getCloseButton().click();
+        })
+    })
+    context('Update shared view',function(){
+        describe('update from share dialog',function(){
+            it('verify confirmation dialog comes up',function(){
+                docArea.getTextArea().type(updateTextShareDialog);
+                cfm.openCFMMenu();
+                cfm.selectCFMMenuItem('Share')
+                cfm.selectCFMMenuItem('Get link to shared view')    
+                cfm.getShareButton('Update shared view').click();
+                cfm.getModalDialogTitle().should('contain','Shared View Updated')
+                cfm.getDialogMessage().should('contain','The shared view was updated successfully.')
+                cfm.getDialogCloseButton().click({force:true});
+                cfm.getModalDialogTitle().contains('Shared View Updated').should('not.exist')
+                cfm.getCloseButton().click();
+                cfm.openCFMMenu();
+                cfm.selectCFMMenuItem('Save')
+                // cfm.saveToLocalStorage(sharedDocTitle)
+                cy.saveLocalStorageCache()
+            })
+            it('verify shared document is updated',function(){
+                cy.visit(this.sharedURL)
+                docArea.getTextArea().should('contain',updateTextShareDialog);
+            })
+        })
+        describe('update from CFM menu',function(){
+            it('update text area',function(){
+                cy.visit('/examples/all-providers.html');
+                cy.restoreLocalStorageCache();
+                cfm.openCFMMenu();
+                cfm.selectCFMMenuItem('Open')
+                cfm.openLocalStorageDoc(sharedDocTitle);
+                docArea.getTextArea().type(updateTextCFMMenu);
+                cfm.openCFMMenu();
+                cfm.selectCFMMenuItem('Share...');
+                cfm.selectCFMMenuItem('Update shared view')
+                cfm.openCFMMenu();
+                cfm.selectCFMMenuItem('Save')
+                cy.saveLocalStorageCache()
+            })
+            it('verify update in shared document',function(){
+                cy.visit(this.sharedURL);
+                docArea.getTextArea().should('contain',updateTextCFMMenu)
+            })
         })
     })
 })
-
 context('unshare document',()=>{
     before(function(){
-        cfm.getPreviewLink().attribute('href').as('sharedURL')
-        cy.log(this.sharedURL)
+        cy.url().as('sharedURL')
     })
     describe('unshare document',()=>{
+        before(function(){
+            cy.visit('/examples/all-providers.html');
+            cy.restoreLocalStorageCache();
+            cfm.openCFMMenu();
+            cfm.selectCFMMenuItem('Open ...')
+            cfm.openLocalStorageDoc(sharedDocTitle)
+            cfm.openCFMMenu()
+            cfm.selectCFMMenuItem('Share...');
+            cfm.selectCFMMenuItem('Get link to shared view')
+        })
         it('verify unshare of document',function(){
             cfm.getUnshareLink().click();
             cfm.getShareStatus().should('contain','disabled');

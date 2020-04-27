@@ -22,7 +22,7 @@ context('Save and Restore from different providers',()=>{
             cfm.getDocumentTitle().click().find('input').type(title+"{enter}");
             cfm.openCFMMenu();
             cfm.selectCFMMenuItem('Save')
-            cfm.getLocalStorageTab().click();
+            cfm.getTab('Local Storage').click();
             cfm.getDocumentSaveFilenameField().should('have.value',title)
             cfm.getSaveButton().click();
             docArea.getTextArea('{clear}')
@@ -58,7 +58,7 @@ context('Save and Restore from different providers',()=>{
             cfm.getDocumentTitle().click().find('input').type(title+"{enter}");
             cfm.openCFMMenu();
             cfm.selectCFMMenuItem('Save')
-            cfm.getLocalFileTab().click();
+            cfm.getTab('Local File').click();
             cfm.getDocumentSaveFilenameField().should('have.value',title)
             cy.get('.modal-dialog-workspace .dialogTab.localFileSave input').click().clear().type(title);
             cy.get('.buttons a').contains('Download').click();
@@ -93,7 +93,7 @@ context('Save and Restore from different providers',()=>{
             cfm.getDocumentTitle().click().find('input').type(title+"{enter}");
             cfm.openCFMMenu();
             cfm.selectCFMMenuItem('Save')
-            cfm.getGoogleDocTab().click();
+            cfm.getTab('Google Drive').click();
 
             cfm.getDocumentSaveFilenameField().should('have.value',title)
             cfm.getSaveButton().click()
@@ -111,7 +111,7 @@ context('Save and Restore from different providers',()=>{
             cfm.openCFMMenu();
             cfm.selectCFMMenuItem('Open ...')
             // cfm.openLocalDoc(dir+title);
-            this.getGoogleDocTab().click();
+            this.getTab('Google Drive').click();
             cy.wait(2000)
             cy.get('.filelist .selectable').contains(filename).click({force:true});
             this.getOpenDialogOpenButton();
