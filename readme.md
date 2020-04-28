@@ -125,3 +125,11 @@ Note that there is probably a way to eliminate the need for step 3 above by requ
 * Draw a simple architecture diagram of how the client connects to the React UI using http://asciiflow.com/
 * Document how to add another provider
 * Document the event listener functions in both createFrame and clientConnect and how each can talk to each other
+
+
+# Javascript conversion notes:
+
+1. There is one Mixin: AuthorizeMixin, which is only consumed by one class. It will be inlined into the consumer `file-dialog-tab-view`
+2. There is some component is being called without a Factory wrapper, and I can't work out which it is.
+3. Maybe we should get rid of all factory whatever things and just use jsx.
+4. https://reactjs.org/blog/2020/02/26/react-v16.13.0.html#deprecating-reactcreatefactory
