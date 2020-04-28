@@ -135,3 +135,26 @@ Cypress.Commands.add("restoreLocalStorageCache", () => {
     localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
   });
 });
+
+Cypress.Commands.add('loginToGoogle', (overrides = {}) => {
+
+    const options = {
+      method: 'POST',
+      url: 'http://auth.corp.com:7075/login',
+      qs: {
+        // use qs to set query string to the url that creates
+        // http://auth.corp.com:8080?redirectTo=http://localhost:7074/set_token
+        redirectTo: 'http://localhost:8080/set_token',
+      },
+      form: true, // we are submitting a regular form body
+      body: {
+        username: 'jane.lane',
+        password: 'password123',
+      },
+    }
+
+    // allow us to override defaults with passed in overrides
+    _.extend(options, overrides)
+
+    cy.request(options)
+  })
