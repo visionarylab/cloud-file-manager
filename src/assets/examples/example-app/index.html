@@ -90,10 +90,10 @@
       <button onclick="saveSecondaryFileAs()">Export Separate File</button>
     </div>
     <div>
-      Import Local File: <input type="file" onchange="importLocalFile(event)">
+      Import Local File: <input type="file" onchange="importLocalFile(event)" data-test="import-button">
     </div>
     <div>
-      Open Local File: <input type="file" onchange="openLocalFile(event)">
+      Open Local File: <input type="file" onchange="openLocalFile(event)" data-test="open-local-button" >
     </div>
     <script type="text/javascript">
       var cfm = parent && parent.CloudFileManager ? parent.CloudFileManager : null,

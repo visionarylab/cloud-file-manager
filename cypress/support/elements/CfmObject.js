@@ -107,6 +107,9 @@ class CfmObject{
     getSaveButton(){
         return cy.get('.dialogTab button').contains('Save')
     }
+    getCancelButton(){
+        return cy.get('.dialogTab button').contains('Cancel')
+    }
     saveToGoogleDrive(filename){
         this.openCFMMenu();
         this.selectCFMMenuItem('Save');
