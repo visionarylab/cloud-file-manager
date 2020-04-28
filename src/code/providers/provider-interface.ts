@@ -21,27 +21,29 @@ type documentId = string
 type key = string
 type mimeType = string
 
+type AnyForNow = any
+type GenericFileCallback = (arg: AnyForNow) => AnyForNow
 
 // TODO: What does a save callback signature really looklike?
-type ISaveCallback = (arg: any) => any
+type callbackSigSave = GenericFileCallback
 
 // TODO: What does a load callback signature really looklike?
-type ILoadCallback = (arg: any) => any
+type callbackSigLoad = GenericFileCallback
 
 // TODO: What does a list callback signature really looklike?
-type IListCallback = (arg: any) => any
+type callbackSigList = GenericFileCallback
 
 // TODO: What does a rename callback signature really looklike?
-type IRenameCallback = (arg: any) => any
+type callbackSigRename = GenericFileCallback
 
 // TODO: What does a list callback signature really looklike?
-type IRemoveCallback = (arg: any) => any
+type callbackSigRemove = GenericFileCallback
 
 // TODO: What does a close callback signature really looklike?
-type ICloseCallback = (arg: any) => any
+type callbackSigClose = GenericFileCallback
 
 // TODO: What does a open-save callback signature really looklike?
-type IOpenSaveCallback = (arg: any) => any
+type callbackSigOpenSave = GenericFileCallback
 
 
 enum ICloudFileTypes {
@@ -73,7 +75,7 @@ interface ISharedMetadata {
   accessKeys?: string | string[]
 }
 
-type CloudFileContentType = any
+type CloudFileContentType = string
 interface ICloudFileOpts {
   content: CloudFileContentType
   metadata: ICloudMetaDataOpts
@@ -275,6 +277,7 @@ class CloudContentFactory {
 
   // envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded(content: string | CloudContent) {
+    debugger
     if (isString(content)) {
       try { content = JSON.parse(content as string) } catch (error) {
         // noop, just cecking if it's json or plain text
@@ -293,23 +296,19 @@ interface ICloudContentFormat {
   isPreCfmFormat: boolean
 }
 
-interface ICloudContentInterface {
-  contentFormat: ICloudContentFormat
-  content: any
-  // If we are 'wrapped' data & meta-data are both top-level
-  [key: string]: any
-}
-class CloudContent implements ICloudContentInterface{
+class CloudContent {
   static wrapFileContent: boolean = true
 
+  // TODO: These should probably be private, but there is some refactoring
+  // that has to happen to make this possible
   content : any
-  contentFormat: any
+  contentFormat: ICloudContentFormat
   [key: string]: any
-  constructor(_content:any, _contentFormat:any) {
-    this.content = _content == null
+  constructor(content:any, contentFormat:any) {
+    this.content = content == null
       ? {}
-      : _content
-    this.contentFormat = _contentFormat
+      : content
+    this.contentFormat = contentFormat
   }
 
   // getContent and getContentAsJSON return the file content as stored on disk
@@ -482,11 +481,11 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
 
-  save(content: any, metadata: ICloudMetaDataOpts, callback: ISaveCallback) {
+  save(content: any, metadata: ICloudMetaDataOpts, callback: callbackSigSave) {
     return this._notImplemented('save')
   }
 
-  saveAsExport(content: any, metadata: ICloudMetaDataOpts, callback: ISaveCallback) {
+  saveAsExport(content: any, metadata: ICloudMetaDataOpts, callback: callbackSigSave) {
     // default implementation invokes save
     if (this.can(ECapabilities.save, metadata)) {
       return this.save(content, metadata, callback)
@@ -495,23 +494,23 @@ class ProviderInterface implements IProviderInterfaceOpts {
     }
   }
 
-  load(callback: ILoadCallback) {
+  load(callback: callbackSigLoad) {
     return this._notImplemented('load')
   }
 
-  list(metadata: ICloudMetaDataOpts, callback: IListCallback) {
+  list(metadata: ICloudMetaDataOpts, callback: callbackSigList) {
     return this._notImplemented('list')
   }
 
-  remove(metadata: ICloudMetaDataOpts, callback: IRemoveCallback) {
+  remove(metadata: ICloudMetaDataOpts, callback: callbackSigRemove) {
     return this._notImplemented('remove')
   }
 
-  rename(metadata: ICloudMetaDataOpts, newName: string, callback: IRenameCallback) {
+  rename(metadata: ICloudMetaDataOpts, newName: string, callback: callbackSigRename) {
     return this._notImplemented('rename')
   }
 
-  close(metadata: ICloudMetaDataOpts, callback: ICloseCallback) {
+  close(metadata: ICloudMetaDataOpts, callback: callbackSigClose) {
     return this._notImplemented('close')
   }
 
@@ -521,7 +520,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
 
   canOpenSaved() { return false }
 
-  openSaved(openSavedParams: any, callback: IOpenSaveCallback) {
+  openSaved(openSavedParams: any, callback: callbackSigOpenSave) {
     return this._notImplemented('openSaved')
   }
 
