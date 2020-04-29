@@ -6,8 +6,6 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * DS103: Rewrite code to no longer use __guard__
  * DS203: Remove `|| {}` from converted for-own loops
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS206: Consider reworking classes to avoid initClass
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
@@ -33,13 +31,11 @@ import { cloudContentFactory }  from './providers/provider-interface'
 import { CloudContent }  from './providers/provider-interface'
 import { CloudMetadata }  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
-class CloudFileManagerClientEvent {
-  static initClass() {
-  
-    this.id = 0
-    this.events = {}
-  }
 
+
+let CLOUDFILEMANAGER_EVENT_ID =0
+const CLOUDFILEMANAGER_EVENTS   ={}
+class CloudFileManagerClientEvent {
   constructor(type, data, callback = null, state) {
     this.type = type
     if (data == null) { data = {} }
@@ -47,13 +43,13 @@ class CloudFileManagerClientEvent {
     this.callback = callback
     if (state == null) { state = {} }
     this.state = state
-    CloudFileManagerClientEvent.id++
-    this.id = CloudFileManagerClientEvent.id
+    CLOUDFILEMANAGER_EVENT_ID++
+    this.id = CLOUDFILEMANAGER_EVENT_ID
   }
 
   postMessage(iframe) {
     if (this.callback) {
-      CloudFileManagerClientEvent.events[this.id] = this
+      CLOUDFILEMANAGER_EVENTS[this.id] = this
     }
     // remove client from data to avoid structured clone error in postMessage
     const eventData = _.clone(this.data)
@@ -62,10 +58,8 @@ class CloudFileManagerClientEvent {
     return iframe.postMessage(message, "*")
   }
 }
-CloudFileManagerClientEvent.initClass()
 
 class CloudFileManagerClient {
-
   constructor(options) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
     this.state =
@@ -194,21 +188,19 @@ class CloudFileManagerClient {
   }
 
   setProviderOptions(name, newOptions) {
-    return (() => {
-      const result = []
-      for (let provider of Array.from(this.state.availableProviders)) {
-        if (provider.name === name) {
-          if (provider.options == null) { provider.options = {} }
-          for (let key in newOptions) {
-            provider.options[key] = newOptions[key]
-          }
-          break
-        } else {
-          result.push(undefined)
+    const result = []
+    for (let provider of Array.from(this.state.availableProviders)) {
+      if (provider.name === name) {
+        if (provider.options == null) { provider.options = {} }
+        for (let key in newOptions) {
+          provider.options[key] = newOptions[key]
         }
+        break
+      } else {
+        result.push(undefined)
       }
-      return result
-    })()
+    }
+    return result
   }
 
   connect() {
@@ -1178,7 +1170,7 @@ class CloudFileManagerClient {
             return reply('cfm::event:reply', {eventId: data.eventId, callbackArgs})
         })
         case 'cfm::event:reply':
-          var event = CloudFileManagerClientEvent.events[data.eventId]
+          var event = CLOUDFILEMANAGER_EVENTS[data.eventId]
           return __guard__(event != null ? event.callback : undefined, x => x.apply(this, JSON.parse(data.callbackArgs)))
         case 'cfm::setDirty':
           return this.dirty(data.isDirty)
