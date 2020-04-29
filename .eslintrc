@@ -3,7 +3,8 @@
     "browser": true,
     "es6": true,
     "amd": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
   "parser": "babel-eslint",
   "parserOptions": {
@@ -23,7 +24,7 @@
     // "sc_super": false, "static_url": false, "NO": false, "YES": false,
     // "module": false, "require": false
   },
-  "plugins": ["react", "@typescript-eslint", "babel"],
+  "plugins": ["react", "@typescript-eslint", "babel", "jest"],
   "extends": [ "eslint:recommended", "plugin:react/recommended" ],
   "settings": {
     "react": {

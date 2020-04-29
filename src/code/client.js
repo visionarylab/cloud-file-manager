@@ -34,7 +34,8 @@ import { reportError } from "./utils/report-error"
 
 
 let CLOUDFILEMANAGER_EVENT_ID =0
-const CLOUDFILEMANAGER_EVENTS   ={}
+const CLOUDFILEMANAGER_EVENTS ={}
+
 class CloudFileManagerClientEvent {
   constructor(type, data, callback = null, state) {
     this.type = type
@@ -44,6 +45,7 @@ class CloudFileManagerClientEvent {
     if (state == null) { state = {} }
     this.state = state
     CLOUDFILEMANAGER_EVENT_ID++
+    /** @type {number} */
     this.id = CLOUDFILEMANAGER_EVENT_ID
   }
 
