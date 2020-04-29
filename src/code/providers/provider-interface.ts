@@ -1,14 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS201: Simplify complex destructure assignments
- * DS203: Remove `|| {}` from converted for-own loops
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-
 import isString  from '../utils/is-string'
 import _ from 'lodash'
 
@@ -277,7 +266,6 @@ class CloudContentFactory {
 
   // envelops content in {content: content} if needed, returns an object
   _wrapIfNeeded(content: string | CloudContent) {
-    debugger
     if (isString(content)) {
       try { content = JSON.parse(content as string) } catch (error) {
         // noop, just cecking if it's json or plain text
