@@ -111,7 +111,6 @@ const FileDialogTab = createReactClass({
   displayName: 'FileDialogTab',
 
   getInitialState() {
-    console.error("YES getInitialState has been called")
     this._isMounted = true
     const initialState = this.getStateForFolder(this.props.client.state.metadata != null ? this.props.client.state.metadata.parent : undefined, true) || null
     initialState.filename = (initialState.metadata != null ? initialState.metadata.name : undefined) || ''
