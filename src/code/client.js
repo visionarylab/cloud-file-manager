@@ -3,8 +3,6 @@
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS203: Remove `|| {}` from converted for-own loops
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
@@ -322,7 +320,7 @@ class CloudFileManagerClient {
   }
 
   openFile(metadata, callback = null) {
-    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.can('load', metadata))) {
+    if (metadata?.provider?.can('load', metadata)) {
       this._event('willOpenFile', {op: "openFile"})
       return metadata.provider.load(metadata, (err, content) => {
         if (err) { return this.alert(err, () => this.ready()) }
@@ -532,7 +530,7 @@ class CloudFileManagerClient {
 
   saveFile(stringContent, metadata, callback = null) {
     // must be able to 'resave' to save silently, i.e. without save dialog
-    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.can('resave', metadata))) {
+    if (metadata?.provider?.can('resave', metadata)) {
       return this.saveFileNoDialog(stringContent, metadata, callback)
     } else {
       return this.saveFileDialog(stringContent, callback)
@@ -821,7 +819,7 @@ class CloudFileManagerClient {
       return (typeof callback === 'function' ? callback(newName) : undefined)
     }
     if (newName !== (this.state.metadata != null ? this.state.metadata.name : undefined)) {
-      if (__guard__(this.state.metadata != null ? this.state.metadata.provider : undefined, x => x.can('rename', metadata))) {
+      if (metadata?.provider?.can('rename', metadata)) {
         return this.state.metadata.provider.rename(this.state.metadata, newName, (err, metadata) => {
           if (err) { return this.alert(err) }
           return _rename(metadata)
@@ -886,7 +884,7 @@ class CloudFileManagerClient {
   // Saves a file to backend, but does not update current metadata.
   // Used e.g. when exporting .csv files from CODAP
   saveSecondaryFile(stringContent, metadata, callback = null) {
-    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.can('export', metadata))) {
+    if (metadata?.provider?.can('export', metadata)) {
       return metadata.provider.saveAsExport(stringContent, metadata, (err, statusCode) => {
         if (err) {
           return this.alert(err)
@@ -909,10 +907,13 @@ class CloudFileManagerClient {
   }
 
   shouldAutoSave() {
-    return this.state.dirty &&
-      !(this.state.metadata != null ? this.state.metadata.autoSaveDisabled : undefined) &&
-      !this.isSaveInProgress() &&
-      __guard__(this.state.metadata != null ? this.state.metadata.provider : undefined, x => x.can('resave', this.state.metadata))
+    const { metadata } = this.state
+    return (
+      this.state.dirty
+      &&!(metadata != null ? metadata.autoSaveDisabled : undefined)
+      && !this.isSaveInProgress()
+      && metadata?.provider?.can('resave', metadata)
+    )
   }
 
   autoSave(interval) {
@@ -1112,8 +1113,9 @@ class CloudFileManagerClient {
   }
 
   _closeCurrentFile() {
-    if (__guard__(this.state.metadata != null ? this.state.metadata.provider : undefined, x => x.can('close', this.state.metadata))) {
-      return this.state.metadata.provider.close(this.state.metadata)
+    const { metadata } = this.state
+    if (metadata?.provider?.can('close', metadata)) {
+      return metadata.provider.close(metadata)
     }
   }
 
@@ -1132,14 +1134,25 @@ class CloudFileManagerClient {
   }
 
   _setWindowTitle(name) {
-    if (!this.appOptions.appSetsWindowTitle && __guard__(this.appOptions != null ? this.appOptions.ui : undefined, x => x.windowTitleSuffix)) {
-      return document.title = `${(name != null ? name.length : undefined) > 0 ? name : (tr("~MENUBAR.UNTITLED_DOCUMENT"))}${this.appOptions.ui.windowTitleSeparator}${this.appOptions.ui.windowTitleSuffix}`
+    if (this.appOptions?.appSetsWindowTitle) {
+      return
+    }
+    const {ui } = this.appOptions
+    if(ui) {
+      const { windowTitleSeparator, windowTitleSuffix } = ui
+      if (windowTitleSuffix) {
+          const displayName = (name || "").length > 0
+            ? name
+            : tr("~MENUBAR.UNTITLED_DOCUMENT")
+          document.title = `${displayName}${windowTitleSeparator}${windowTitleSuffix}`
+      }
     }
   }
 
   _getHashParams(metadata) {
-    let openSavedParams
-    if (__guard__(metadata != null ? metadata.provider : undefined, x => x.canOpenSaved()) && ((openSavedParams = __guard__(metadata != null ? metadata.provider : undefined, x1 => x1.getOpenSavedParams(metadata))) != null)) {
+    let openSavedParams = metadata?.provider?.getOpenSavedParams(metadata) || null
+    const canOpenSaved = metadata?.provider?.canOpenSaved() || false
+    if (canOpenSaved && (openSavedParams != null)) {
       return `#file=${metadata.provider.urlDisplayName || metadata.provider.name}:${encodeURIComponent(openSavedParams)}`
     } else if ((metadata != null ? metadata.provider : undefined) instanceof URLProvider &&
         (window.location.hash.indexOf("#file=http") === 0)) {
@@ -1170,9 +1183,11 @@ class CloudFileManagerClient {
             const callbackArgs = JSON.stringify(Array.prototype.slice.call(arguments))
             return reply('cfm::event:reply', {eventId: data.eventId, callbackArgs})
         })
-        case 'cfm::event:reply':
-          var event = CLOUDFILEMANAGER_EVENTS[data.eventId]
-          return __guard__(event != null ? event.callback : undefined, x => x.apply(this, JSON.parse(data.callbackArgs)))
+        case 'cfm::event:reply': {
+          const event = CLOUDFILEMANAGER_EVENTS[data.eventId]
+          const callbackData = JSON.parse(data.callbackArgs)
+          return event?.callback?.apply(this, callbackData)
+        }
         case 'cfm::setDirty':
           return this.dirty(data.isDirty)
         case 'cfm::iframedClientConnected':
@@ -1195,8 +1210,4 @@ class CloudFileManagerClient {
 export {
   CloudFileManagerClientEvent,
   CloudFileManagerClient
-}
-
-function __guard__(value, transform) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined
 }

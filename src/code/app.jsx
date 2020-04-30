@@ -1,11 +1,4 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
+
 import AppView from './views/app-view'
 import React from 'react'
 import { CloudFileManagerUIMenu } from './ui'
@@ -37,7 +30,7 @@ class CloudFileManager {
       newInFolderParams: getHashParam("newInFolder")
     }
 
-    return this.client.setAppOptions(this.appOptions)
+    this.client.setAppOptions(this.appOptions)
   }
 
   // Convenience function for setting up CFM with an iframe-wrapped client app
@@ -47,7 +40,7 @@ class CloudFileManager {
     this.appOptions.appOrMenuElemId = appElemId
     this.init(this.appOptions)
     this.client.listen(eventCallback)
-    return this._renderApp(document.getElementById(appElemId))
+    this._renderApp(document.getElementById(appElemId))
   }
 
   clientConnect(eventCallback) {
@@ -68,21 +61,21 @@ class CloudFileManager {
 
     // if iframed let the parent know about the connect
     if (window.parent !== window) {
-      return window.parent.postMessage({type: "cfm::iframedClientConnected"}, "*")
+      window.parent.postMessage({type: "cfm::iframedClientConnected"}, "*")
     }
   }
 
   _createHiddenApp() {
     const anchor = document.createElement("div")
     document.body.appendChild(anchor)
-    return this._renderApp(anchor)
+    this._renderApp(anchor)
   }
 
   _renderApp(anchor) {
     this.appOptions.client = this.client
   ReactDOM.render(<AppView {... this.appOptions} />, anchor)
     this.client.iframe = anchor.getElementsByTagName('iframe')[0]
-    return this.client.rendered()
+    this.client.rendered()
   }
 }
 
