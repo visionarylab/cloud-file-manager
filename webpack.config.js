@@ -21,14 +21,10 @@ module.exports = (env) => ({
   },
   module: {
     rules: [
-      // {
-      //   test: /\.coffee$/,
-      //   use: ['coffee-loader']
-      // },
       {
         test: /(\.tsx?|\.jsx?)$/,
         use: 'ts-loader',
-        exclude: /node_modules/,
+        exclude: [/node_modules/,/\.test\./]
       },
       {
         test: /\.styl$/,

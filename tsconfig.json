@@ -10,5 +10,11 @@
     "allowJs": true,
     "diagnostics": true,
     "experimentalDecorators": true
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.jsx",
+    "src/**/*.js"
+  ]
 }

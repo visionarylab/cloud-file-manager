@@ -2,12 +2,9 @@
 // Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
  * DS103: Rewrite code to no longer use __guard__
  * DS203: Remove `|| {}` from converted for-own loops
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS206: Consider reworking classes to avoid initClass
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
@@ -33,13 +30,12 @@ import { cloudContentFactory }  from './providers/provider-interface'
 import { CloudContent }  from './providers/provider-interface'
 import { CloudMetadata }  from './providers/provider-interface'
 import { reportError } from "./utils/report-error"
-class CloudFileManagerClientEvent {
-  static initClass() {
-  
-    this.id = 0
-    this.events = {}
-  }
 
+
+let CLOUDFILEMANAGER_EVENT_ID =0
+const CLOUDFILEMANAGER_EVENTS ={}
+
+class CloudFileManagerClientEvent {
   constructor(type, data, callback = null, state) {
     this.type = type
     if (data == null) { data = {} }
@@ -47,13 +43,14 @@ class CloudFileManagerClientEvent {
     this.callback = callback
     if (state == null) { state = {} }
     this.state = state
-    CloudFileManagerClientEvent.id++
-    this.id = CloudFileManagerClientEvent.id
+    CLOUDFILEMANAGER_EVENT_ID++
+    /** @type {number} */
+    this.id = CLOUDFILEMANAGER_EVENT_ID
   }
 
   postMessage(iframe) {
     if (this.callback) {
-      CloudFileManagerClientEvent.events[this.id] = this
+      CLOUDFILEMANAGER_EVENTS[this.id] = this
     }
     // remove client from data to avoid structured clone error in postMessage
     const eventData = _.clone(this.data)
@@ -62,10 +59,8 @@ class CloudFileManagerClientEvent {
     return iframe.postMessage(message, "*")
   }
 }
-CloudFileManagerClientEvent.initClass()
 
 class CloudFileManagerClient {
-
   constructor(options) {
     this.shouldAutoSave = this.shouldAutoSave.bind(this)
     this.state =
@@ -98,7 +93,7 @@ class CloudFileManagerClient {
       LocalFileProvider,
       PostMessageProvider
     ]
-    for (Provider of Array.from(providerList)) {
+    for (Provider of providerList) {
       if (Provider.Available()) {
         allProviders[Provider.Name] = Provider
       }
@@ -127,11 +122,11 @@ class CloudFileManagerClient {
     }
     const availableProviders = []
     let shareProvider = null
-    for (let providerSpec of Array.from(requestedProviders)) {
+    for (let providerSpec of requestedProviders) {
       let providerOptions;
-      [providerName, providerOptions] = Array.from(isString(providerSpec) 
-                                          ? [providerSpec, {}] 
-                                          : [providerSpec.name, providerSpec])
+      [providerName, providerOptions] = isString(providerSpec)
+                                          ? [providerSpec, {}]
+                                          : [providerSpec.name, providerSpec]
       // merge in other options as needed
       if (providerOptions.mimeType == null) { providerOptions.mimeType = this.appOptions.mimeType }
       providerOptions.readableMimetypes = readableMimetypes
@@ -194,21 +189,19 @@ class CloudFileManagerClient {
   }
 
   setProviderOptions(name, newOptions) {
-    return (() => {
-      const result = []
-      for (let provider of Array.from(this.state.availableProviders)) {
-        if (provider.name === name) {
-          if (provider.options == null) { provider.options = {} }
-          for (let key in newOptions) {
-            provider.options[key] = newOptions[key]
-          }
-          break
-        } else {
-          result.push(undefined)
+    const result = []
+    for (let provider of this.state.availableProviders) {
+      if (provider.name === name) {
+        if (provider.options == null) { provider.options = {} }
+        for (let key in newOptions) {
+          provider.options[key] = newOptions[key]
         }
+        break
+      } else {
+        result.push(undefined)
       }
-      return result
-    })()
+    }
+    return result
   }
 
   connect() {
@@ -233,20 +226,20 @@ class CloudFileManagerClient {
         return this.openUrlFile(hashParams.fileParams)
       } else {
         let providerParams;
-        [providerName, providerParams] = Array.from(hashParams.fileParams.split(':'))
+        [providerName, providerParams] = hashParams.fileParams.split(':')
         return this.openProviderFile(providerName, providerParams)
       }
     } else if (hashParams.copyParams) {
       return this.openCopiedFile(hashParams.copyParams)
     } else if (hashParams.newInFolderParams) {
       let folder;
-      [providerName, folder] = Array.from(hashParams.newInFolderParams.split(':'))
+      [providerName, folder] = hashParams.newInFolderParams.split(':')
       return this.createNewInFolder(providerName, folder)
     } else if (this.haveTempFile()) {
       return this.openAndClearTempFile()
     } else {
       // give providers a chance to process url params
-      for (let provider of Array.from(this.state.availableProviders)) {
+      for (let provider of this.state.availableProviders) {
         if (provider.handleUrlParams()) { return }
       }
 
@@ -277,7 +270,7 @@ class CloudFileManagerClient {
   }
 
   autoProvider(capability) {
-    for (let provider of Array.from(this.state.availableProviders)) {
+    for (let provider of this.state.availableProviders) {
       if (provider.canAuto(capability)) { return provider }
     }
   }
@@ -422,7 +415,7 @@ class CloudFileManagerClient {
   // must be called as a result of user action (e.g. click) to avoid popup blockers
   parseUrlAuthorizeAndOpen() {
     if ((this.appOptions.hashParams != null ? this.appOptions.hashParams.fileParams : undefined) != null) {
-      const [providerName, providerParams] = Array.from(this.appOptions.hashParams.fileParams.split(':'))
+      const [providerName, providerParams] = this.appOptions.hashParams.fileParams.split(':')
       const provider = this.providers[providerName]
       if (provider) {
         return provider.authorize(() => {
@@ -984,7 +977,7 @@ class CloudFileManagerClient {
     let url = window.location.href
     const hash = url.split('#')
 
-    for (let key of Array.from(params)) {
+    for (let key of params) {
       const re = new RegExp(`([?&])${key}=.*?(&|#|$)(.*)`, "g")
 
       if (re.test(url)) {
@@ -1085,7 +1078,7 @@ class CloudFileManagerClient {
   _event(type, data, eventCallback = null) {
     if (data == null) { data = {} }
     const event = new CloudFileManagerClientEvent(type, data, eventCallback, this.state)
-    for (let listener of Array.from(this._listeners)) {
+    for (let listener of this._listeners) {
       listener(event)
     }
     // Workaround to fix https://www.pivotaltracker.com/story/show/162392580
@@ -1178,7 +1171,7 @@ class CloudFileManagerClient {
             return reply('cfm::event:reply', {eventId: data.eventId, callbackArgs})
         })
         case 'cfm::event:reply':
-          var event = CloudFileManagerClientEvent.events[data.eventId]
+          var event = CLOUDFILEMANAGER_EVENTS[data.eventId]
           return __guard__(event != null ? event.callback : undefined, x => x.apply(this, JSON.parse(data.callbackArgs)))
         case 'cfm::setDirty':
           return this.dirty(data.isDirty)

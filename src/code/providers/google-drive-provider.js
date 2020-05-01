@@ -11,13 +11,16 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const {div, button, span} = ReactDOMFactories
+
 
 import tr  from '../utils/translate'
 import { ProviderInterface }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
+import ReactDOMFactories from 'react-dom-factories'
+import { createReactClassFactory } from '../globals'
 
+const {div, button, span} = ReactDOMFactories
 const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 
