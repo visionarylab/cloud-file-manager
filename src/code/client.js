@@ -19,6 +19,7 @@ import GoogleDriveProvider  from './providers/google-drive-provider'
 import LaraProvider  from './providers/lara-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
 import DocumentStoreShareProvider  from './providers/document-store-share-provider'
+import S3ShareProvider  from './providers/s3-share-provider'
 import LocalFileProvider  from './providers/local-file-provider'
 import PostMessageProvider  from './providers/post-message-provider'
 import URLProvider  from './providers/url-provider'
@@ -89,7 +90,8 @@ class CloudFileManagerClient {
       LaraProvider,
       DocumentStoreProvider,
       LocalFileProvider,
-      PostMessageProvider
+      PostMessageProvider,
+      S3ShareProvider
     ]
     for (Provider of providerList) {
       if (Provider.Available()) {
