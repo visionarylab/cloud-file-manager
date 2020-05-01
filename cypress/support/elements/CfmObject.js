@@ -57,7 +57,7 @@ class CfmObject{
     }
 
     //Modal Tabs
-    getTab(tab){['Example Documents','Google Drive','Local Storage','Local File','URL', 'Read Only']
+    getTab(tab){//['Example Documents','Google Drive','Local Storage','Local File','URL', 'Read Only']
         return cy.get('.workspace-tabs').contains(tab)
     }
 

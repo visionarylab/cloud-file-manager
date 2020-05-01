@@ -111,18 +111,39 @@ Cypress.Commands.add("getAppIframe", () => {
               .then((blob) => {
                 console.log(blob)
                 const el = subject[0]
-                const testFile = new File([blob], filename, { type });
-                const dataTransfer = new DataTransfer();
+                const testFile = new File([blob], filename, { type })
+                const dataTransfer = new DataTransfer()
                 console.log(testFile)
-                dataTransfer.items.add(testFile);
+                dataTransfer.items.add(testFile)
                 // dataTransfer.items.add(blob);
                 console.log(dataTransfer)
-                el.files = dataTransfer.files;
+                el.files = dataTransfer.files
                 console.log(subject)
-                return subject;
+                return subject
             })
         })
     })
+
+    Cypress.Commands.add("iframeUploadFile",(selector, filename, type="")=>{
+        // cy.fixture(filename).as("file");
+    
+        return cy.getAppIframe().find(selector).then((subject) => {
+            return cy.fixture(filename)
+                .then((blob) => {
+                  console.log(blob)
+                  const el = subject[0]
+                  const testFile = new File([blob], filename, { type })
+                  const dataTransfer = new DataTransfer();
+                  console.log(testFile)
+                  dataTransfer.items.add(testFile);
+                  // dataTransfer.items.add(blob);
+                  console.log(dataTransfer)
+                  el.files = dataTransfer.files;
+                  console.log(subject)
+                  return subject;
+              })
+          })
+      })    
 
 Cypress.Commands.add("saveLocalStorageCache", () => {
   Object.keys(localStorage).forEach(key => {

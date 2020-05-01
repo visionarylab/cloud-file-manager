@@ -1,8 +1,8 @@
 import CfmObject from "../../support/elements/CfmObject"
 import DocumentObject from "../../support/elements/DocumentObject"
 
-const cfm = new CfmObject;
-const docArea = new DocumentObject;
+const cfm = new CfmObject()
+const docArea = new DocumentObject()
 const filename = 'Local_File_Save'
 
 before(()=>{
@@ -23,13 +23,19 @@ context('Import from different providers',()=>{
             docArea.getTextArea().should('contain',text)
         })
     })
-    describe.skip('import from button',()=>{//not working. Can't interact with the element
+    //there's a WIP in main code line that's causing this to fail
+    describe.skip('import from button',()=>{//not working. doesn't show the content in the textarea
         before(()=>{
-            docArea.getTextArea().clear()
+            cy.visit('http://127.0.0.1:8080/examples/example-app/index.html')
+            cy.get('[data-test="document-content').clear()
+        //     docArea.getTextArea().clear()
         })
         it('import from button',()=>{
-            cy.uploadFile(docArea.getImportButton(),filename);
-            docArea.getTextArea().should('contain','name": "Local_File_Save",')
+         //If using the iframed version, use cy.iframeUploadFile('[data-test="import-button"]',filename,'text')
+            cy.uploadFile('[data-test="import-button"]',filename,'text')
+            // cy.get('[data-test="document-content').should('contain','"content":"saving to Local File')
+
+            // docArea.getTextArea().should('contain','name": "Local_File_Save",')
         })
     })
 })
