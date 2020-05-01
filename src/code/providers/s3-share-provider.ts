@@ -10,13 +10,14 @@ import {
   ICloudMetaDataOpts,
   callbackSigShare,
   callbackSigLoad,
+  callbackSigSave,
   ProviderInterface,
   IProviderInterfaceOpts,
   ICloudFileTypes,
   CloudContent,
   CloudMetadata
 }  from './provider-interface'
-
+import { createFile } from './s3-share-provider-token-service-helper'
 import pako  from 'pako'
 
 interface IClientInterface {
@@ -53,7 +54,6 @@ interface IDocStoreUrlHelper {
 class S3ShareProvider extends ProviderInterface {
   public static Name ='s3-share-provider'
   client: IClientInterface
-  provider: ProviderInterface
   docStoreUrlHelper: IDocStoreUrlHelper
   options: IProviderInterfaceOpts
   constructor(opts: IProviderInterfaceOpts, client:IClientInterface) {
@@ -67,7 +67,8 @@ class S3ShareProvider extends ProviderInterface {
         resave: false,
         export: true,
         load: true,
-        list: true,
+        // NP For now no listing
+        list: false,
         remove: false,
         rename: false,
         close: false
@@ -83,7 +84,24 @@ class S3ShareProvider extends ProviderInterface {
       type: ICloudFileTypes.File,
       overwritable: false
     })
-    this.provider.load(sharedMetadata, (err, content) => callback(err, content, sharedMetadata))
+  }
+
+  save(content: any, metadata: ICloudMetaDataOpts, callback: callbackSigSave) {
+    let payloadContent = content;
+    if(typeof(payloadContent) !== "string") {
+      payloadContent = JSON.stringify(payloadContent)
+    }
+    const result = createFile({
+      filename: metadata.name,
+      fileContent: payloadContent,
+      tokenServiceEnv: "staging"});
+
+    result.then( ({publicUrl, resourceId, readWriteToken}) => {
+      console.log(publicUrl)
+      console.log(resourceId)
+      console.log(readWriteToken)
+      callback(publicUrl);
+    });
   }
 
   getSharingMetadata(shared: boolean) {
