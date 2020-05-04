@@ -38,6 +38,9 @@ class CfmObject{
         this.openCFMMenu();
         this.selectCFMMenuItem('Close')
     }
+    getConfirmDialogMessage(){
+        return cy.get('.confirm-dialog-message')
+    }
     closeConfirmDialogMessage(){
         cy.get('.confirm-dialog button').contains('Yes').click();
     }
