@@ -3,7 +3,7 @@ import _ from 'lodash'
 
 const FILE_EXTENSION_DELIMETER = "."
 
-type providerType = string
+type providerType = ProviderInterface
 type providerDataType = any  // Not sure what this is
 type documentId = string
 type key = string
@@ -19,7 +19,8 @@ export type callbackSigSave = GenericFileCallback
 export type callbackSigLoad = (err:AnyForNow, content:AnyForNow, metadata?: CloudMetadata) => AnyForNow
 
 // TODO: What does a list callback signature really looklike?
-export type callbackSigList = GenericFileCallback
+export type callbackSigList = (err:AnyForNow, content:AnyForNow, metadata?: CloudMetadata) => AnyForNow
+
 
 // TODO: What does a rename callback signature really looklike?
 export type callbackSigRename = GenericFileCallback
@@ -281,7 +282,7 @@ class CloudContentFactory {
         // noop, just cecking if it's json or plain text
       }
     }
-    if ((content as CloudContent).content != null) {
+    if ((content as CloudContent)?.content != null) {
       return content
     } else {
       return {content}
@@ -313,8 +314,9 @@ class CloudContent {
   getContent() {
     if (CloudContent.wrapFileContent) { return this.content } else { return this.content.content }
   }
+
   getContentAsJSON() {
-    return JSON.stringify(CloudContent.wrapFileContent ? this.content : this.content.content)
+    return JSON.stringify(this.getContent())
   }
 
   // returns the client-visible content (excluding wrapper for wrapped clients)
