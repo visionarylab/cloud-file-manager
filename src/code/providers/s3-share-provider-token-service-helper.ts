@@ -131,7 +131,11 @@ export const updateFile = async ({ filename, newFileContent, resourceId, firebas
     ContentEncoding: "UTF-8",
     CacheControl: "no-cache"
   }).promise();
-  console.log(result);
+  return {
+    result,
+    bucket,
+    publicPath
+  }
 };
 
 export const getAllResources = async (firebaseJwt: string, amOwner: boolean, tokenServiceEnv: "dev" | "staging") => {
