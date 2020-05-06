@@ -7,7 +7,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import {
-  ICloudMetaDataOpts,
+  ICloudMetaDataSpec,
   callbackSigShare,
   callbackSigLoad,
   callbackSigSave,
