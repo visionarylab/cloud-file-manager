@@ -910,7 +910,7 @@ class CloudFileManagerClient {
     const { metadata } = this.state
     return (
       this.state.dirty
-      &&!(metadata != null ? metadata.autoSaveDisabled : undefined)
+      && !metadata?.autoSaveDisabled
       && !this.isSaveInProgress()
       && metadata?.provider?.can('resave', metadata)
     )
@@ -1150,7 +1150,7 @@ class CloudFileManagerClient {
   }
 
   _getHashParams(metadata) {
-    let openSavedParams = metadata?.provider?.getOpenSavedParams(metadata) || null
+    let openSavedParams = metadata?.provider?.getOpenSavedParams(metadata)
     const canOpenSaved = metadata?.provider?.canOpenSaved() || false
     if (canOpenSaved && (openSavedParams != null)) {
       return `#file=${metadata.provider.urlDisplayName || metadata.provider.name}:${encodeURIComponent(openSavedParams)}`
@@ -1185,7 +1185,7 @@ class CloudFileManagerClient {
         })
         case 'cfm::event:reply': {
           const event = CLOUDFILEMANAGER_EVENTS[data.eventId]
-          const callbackData = JSON.parse(data.callbackArgs)
+          const callbackData = JSON.parse(data?.callbackArgs || null)
           return event?.callback?.apply(this, callbackData)
         }
         case 'cfm::setDirty':
