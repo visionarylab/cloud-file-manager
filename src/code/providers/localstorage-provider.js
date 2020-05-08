@@ -2,12 +2,7 @@
 // Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
- * DS001: Remove Babel/TypeScript constructor workaround
- * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
- * DS203: Remove `|| {}` from converted for-own loops
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS206: Consider reworking classes to avoid initClass
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
@@ -18,11 +13,6 @@ import { cloudContentFactory }  from './provider-interface'
 import { CloudMetadata }  from './provider-interface'
 
 class LocalStorageProvider extends ProviderInterface {
-  static initClass() {
-  
-    this.Name = 'localStorage'
-  }
-
   constructor(options, client) {
     const opts = options || {}
     super({
@@ -44,14 +34,14 @@ class LocalStorageProvider extends ProviderInterface {
     this.client = client
   }
   static Available() {
-    return (() => { try {
+    try {
       const test = 'LocalStorageProvider::auth'
       window.localStorage.setItem(test, test)
       window.localStorage.removeItem(test)
       return true
     } catch (error) {
       return false
-    } })()
+    }
   }
 
   save(content, metadata, callback) {
@@ -79,7 +69,7 @@ class LocalStorageProvider extends ProviderInterface {
     for (let key of Object.keys(window.localStorage || {})) {
       if (key.substr(0, prefix.length) === prefix) {
         // eslint-disable-next-line no-unused-vars
-        const [filename, ...remainder] = Array.from(key.substr(prefix.length).split('/'))
+        const [filename, ...remainder] = key.substr(prefix.length).split('/')
         const name = key.substr(prefix.length)
         if (this.matchesExtension(name)) {
           list.push(new CloudMetadata({
@@ -137,6 +127,6 @@ class LocalStorageProvider extends ProviderInterface {
     return `cfm::${name.replace(/\t/g, ' ')}`
   }
 }
-LocalStorageProvider.initClass()
 
+LocalStorageProvider.Name='localStorage'
 export default LocalStorageProvider

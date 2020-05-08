@@ -1,13 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS001: Remove Babel/TypeScript constructor workaround
- * DS102: Remove unnecessary code created because of implicit returns
- * DS206: Consider reworking classes to avoid initClass
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import tr  from '../utils/translate'
 
 import { ProviderInterface }  from './provider-interface'
@@ -19,11 +9,6 @@ const LocalFileListTab = createReactFactory(localFileTabListView)
 const LocalFileSaveTab = createReactFactory(localFileTabSaveView)
 
 class LocalFileProvider extends ProviderInterface {
-  static initClass() {
-  
-    this.Name = 'localFile'
-  }
-
   constructor(options, client) {
     const opts = options || {}
     super({
@@ -73,6 +58,6 @@ class LocalFileProvider extends ProviderInterface {
     return false
   }
 }
-LocalFileProvider.initClass()
+LocalFileProvider.Name = 'localFile'
 
 export default LocalFileProvider
