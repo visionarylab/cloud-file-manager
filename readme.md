@@ -114,7 +114,7 @@ The ZERO-WIDTH-SPACE character can be used to indicate that the empty string is 
 To add a new language:
 1. Add the language to the POEditor project
 2. Add the language code to the list of languages in `bin/strings-pull-project.sh`
-3. Load the new language file in `src/code/utils/translate.coffee`
+3. Load the new language file in `src/code/utils/translate.js`
 
 Note that there is probably a way to eliminate the need for step 3 above by requiring all JSON files in the `src/code/utils/lang` directory (except for `en-US-master.json`), but that has not been implemented yet.
 
@@ -129,7 +129,5 @@ Note that there is probably a way to eliminate the need for step 3 above by requ
 
 # Javascript conversion notes:
 
-1. There is one Mixin: AuthorizeMixin, which is only consumed by one class. It will be inlined into the consumer `file-dialog-tab-view`
-2. There is some component is being called without a Factory wrapper, and I can't work out which it is.
-3. Maybe we should get rid of all factory whatever things and just use jsx.
-4. https://reactjs.org/blog/2020/02/26/react-v16.13.0.html#deprecating-reactcreatefactory
+We should move to using jsx for components instead of react-create-factory:
+see [this deprecation warning](https://reactjs.org/blog/2020/02/26/react-v16.13.0.html#deprecating-reactcreatefactory)
