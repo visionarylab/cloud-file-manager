@@ -143,6 +143,8 @@ class CloudFileManagerClient {
           // if we're using the DocumentStoreProvider, instantiate the ShareProvider
           if (providerName === DocumentStoreProvider.Name) {
             shareProvider = new DocumentStoreShareProvider(this, provider)
+          } else {
+            shareProvider = new S3ShareProvider(this)
           }
           if (provider.urlDisplayName) {        // also add to here in providers list so we can look it up when parsing url hash
             this.providers[provider.urlDisplayName] = provider
@@ -1020,7 +1022,8 @@ class CloudFileManagerClient {
       })
     }
   }
-  // Will mutate metadata:
+  // The purpose of this seems to be to definitely set whether or not the content
+  // can be overwritten? Will mutate metadata:
   _updateMetaDataOverwritable(metadata) {
     if (metadata != null) {
       metadata.overwritable = (metadata.overwritable != null)

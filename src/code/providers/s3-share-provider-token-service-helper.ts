@@ -2,11 +2,15 @@ import ClientOAuth2 from "client-oauth2";
 import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service";
 import * as AWS from "aws-sdk";
 
+type EnvironmentName = "dev" | "staging" | "production"
+const tokenServiceEnv = (process.env["TOKEN_SERVICE_ENV"] || "staging") as EnvironmentName
+
 // Copied from the Token-Service repo. see @concord-consortium/token-service
 // This file provides simple recipes showing how to use TokenServiceClient
-// and how to get other necessary prerequisites (auth in Portal, firebase JWT).
+// and how to get other necessary prerequisites (auth in Portal, firebase JWT).f
 
 const PORTAL_AUTH_PATH = "/auth/oauth_authorize";
+export const TokenServiceToolName = "document-store";
 
 const getURLParam = (name: string) => {
   const url = (self || window).location.href;
@@ -44,9 +48,9 @@ interface ICreateFile {
   filename: string;
   fileContent: string;
   firebaseJwt?: string;
-  tokenServiceEnv: "dev" | "staging";
 }
-export const createFile = async ({ filename, fileContent, firebaseJwt, tokenServiceEnv }: ICreateFile) => {
+
+export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreateFile) => {
   // This function optionally accepts firebaseJWT. There are three things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - createResource call. If user is not authenticated, "readWriteToken" accessRule type must be used. Token Service will generate and return readWriteToken.
@@ -55,10 +59,10 @@ export const createFile = async ({ filename, fileContent, firebaseJwt, tokenServ
 
   const client = anonymous ? new TokenServiceClient({ env: tokenServiceEnv }) : new TokenServiceClient({ env: tokenServiceEnv, jwt: firebaseJwt })
   const resource: S3Resource = await client.createResource({
-    tool: "example-app",
+    tool: TokenServiceToolName,
     type: "s3Folder",
-    name: "test file" + filename,
-    description: "test file",
+    name: filename,
+    description: "Document created by CFM",
     accessRuleType: anonymous ? "readWriteToken" : "user"
   }) as S3Resource;
   console.log("new resource:", resource);
@@ -70,8 +74,10 @@ export const createFile = async ({ filename, fileContent, firebaseJwt, tokenServ
     console.log("read write token:", readWriteToken);
   }
 
-  const credentials = anonymous ? await client.getCredentials(resource.id, readWriteToken) :  await client.getCredentials(resource.id);
-  console.log("credentials:", credentials);
+  const credentials = anonymous
+    ? await client.getCredentials(resource.id, readWriteToken)
+    : await client.getCredentials(resource.id);
+
 
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource;
@@ -102,27 +108,28 @@ interface IUpdateFileArgs {
   resourceId: string;
   firebaseJwt?: string;
   readWriteToken?: string;
-  tokenServiceEnv: "dev" | "staging";
 }
-export const updateFile = async ({ filename, newFileContent, resourceId, firebaseJwt, readWriteToken, tokenServiceEnv}: IUpdateFileArgs) => {
+export const updateFile = async ({ filename, newFileContent, resourceId, firebaseJwt, readWriteToken}: IUpdateFileArgs) => {
   // This function accepts either firebaseJWT or readWriteToken. There are only two things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
   const anonymous = !firebaseJwt && readWriteToken;
 
-  const client = anonymous ? new TokenServiceClient({ env: tokenServiceEnv }) : new TokenServiceClient({ env: tokenServiceEnv, jwt: firebaseJwt })
-  const resource: S3Resource = await client.getResource(resourceId) as S3Resource;
-  console.log("get resource:", resource);
+  const client = anonymous
+    ? new TokenServiceClient({ env: tokenServiceEnv })
+    : new TokenServiceClient({ env: tokenServiceEnv, jwt: firebaseJwt })
 
-  const credentials = anonymous ? await client.getCredentials(resource.id, readWriteToken) : await client.getCredentials(resource.id);
-  console.log("credentials:", credentials);
+  const resource: S3Resource = await client.getResource(resourceId) as S3Resource;
+  const credentials = anonymous
+    ? await client.getCredentials(resource.id, readWriteToken)
+    : await client.getCredentials(resource.id);
 
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource;
   const { accessKeyId, secretAccessKey, sessionToken } = credentials;
   const s3 = new AWS.S3({ region, accessKeyId, secretAccessKey, sessionToken });
   const publicPath = client.getPublicS3Path(resource, filename);
-
+  const publicUrl = client.getPublicS3Url(resource, filename);
   const result = await s3.upload({
     Bucket: bucket,
     Key: publicPath,
@@ -134,11 +141,13 @@ export const updateFile = async ({ filename, newFileContent, resourceId, firebas
   return {
     result,
     bucket,
-    publicPath
+    publicPath,
+    publicUrl
   }
 };
 
-export const getAllResources = async (firebaseJwt: string, amOwner: boolean, tokenServiceEnv: "dev" | "staging") => {
+// When would we do this?
+export const getAllResources = async (firebaseJwt: string, amOwner: boolean) => {
   const client = new TokenServiceClient({ jwt: firebaseJwt, env: tokenServiceEnv });
   const resources = await client.listResources({
     type: "s3Folder",

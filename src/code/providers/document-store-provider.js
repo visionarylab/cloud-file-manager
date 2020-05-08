@@ -219,8 +219,6 @@ class DocumentStoreProvider extends ProviderInterface {
             reportError(e)
           }
         }
-            // console.log e
-
         var poll = setInterval(pollAction, 200)
       }
     }
