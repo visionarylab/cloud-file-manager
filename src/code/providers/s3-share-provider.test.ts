@@ -4,17 +4,18 @@ import S3ShareProvider from "./s3-share-provider"
 import * as helperModule from './s3-share-provider-token-service-helper'
 import * as Client from "../client"
 import { CloudContent, CloudMetadata, ICloudMetaDataSpec } from "./provider-interface"
+import LocalStorageProvider from './localstorage-provider'
 
 const clientMockManager = ImportMock.mockClass(Client, 'CloudFileManagerClient')
 const client = clientMockManager.getMockInstance()
+const localstorageProvider = new LocalStorageProvider({},client)
 
 const publicUrl = 'publicUrl'
 const resourceId = 'resourceId'
 const readWriteToken = 'RWToken'
 
-
 describe("S3ShareProvider", () => {
-  const provider = new S3ShareProvider(client)
+  const provider = new S3ShareProvider(client, localstorageProvider)
   const masterContent = new CloudContent({content: "test"}, "huh")
   const sharedContent = new CloudContent({content: "test 2"}, "huh")
   const metadata = new CloudMetadata({filename: "test"})

@@ -20,6 +20,7 @@ import LaraProvider  from './providers/lara-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
 import DocumentStoreShareProvider  from './providers/document-store-share-provider'
 import S3ShareProvider  from './providers/s3-share-provider'
+import S3Provider  from './providers/s3-provider'
 import LocalFileProvider  from './providers/local-file-provider'
 import PostMessageProvider  from './providers/post-message-provider'
 import URLProvider  from './providers/url-provider'
@@ -91,7 +92,7 @@ class CloudFileManagerClient {
       DocumentStoreProvider,
       LocalFileProvider,
       PostMessageProvider,
-      S3ShareProvider
+      S3Provider
     ]
     for (Provider of providerList) {
       if (Provider.Available()) {
@@ -144,7 +145,7 @@ class CloudFileManagerClient {
           if (providerName === DocumentStoreProvider.Name) {
             shareProvider = new DocumentStoreShareProvider(this, provider)
           } else {
-            shareProvider = new S3ShareProvider(this)
+            shareProvider = new S3ShareProvider(this, provider)
           }
           if (provider.urlDisplayName) {        // also add to here in providers list so we can look it up when parsing url hash
             this.providers[provider.urlDisplayName] = provider
