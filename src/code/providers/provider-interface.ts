@@ -3,95 +3,106 @@ import _ from 'lodash'
 
 const FILE_EXTENSION_DELIMETER = "."
 
-type providerType = string
-type parentType = string // Based on the code, seems like this might path?
+type providerType = ProviderInterface
 type providerDataType = any  // Not sure what this is
 type documentId = string
 type key = string
 type mimeType = string
 
 type AnyForNow = any
-type GenericFileCallback = (arg: AnyForNow) => AnyForNow
+export type GenericFileCallback = (arg: AnyForNow) => AnyForNow
 
 // TODO: What does a save callback signature really looklike?
-type callbackSigSave = GenericFileCallback
+export type callbackSigSave = GenericFileCallback
 
 // TODO: What does a load callback signature really looklike?
-type callbackSigLoad = GenericFileCallback
+export type callbackSigLoad = (err:AnyForNow, content:AnyForNow, metadata?: CloudMetadata) => AnyForNow
 
 // TODO: What does a list callback signature really looklike?
-type callbackSigList = GenericFileCallback
+export type callbackSigList = (err:AnyForNow, content:AnyForNow, metadata?: CloudMetadata) => AnyForNow
+
 
 // TODO: What does a rename callback signature really looklike?
-type callbackSigRename = GenericFileCallback
+export type callbackSigRename = GenericFileCallback
 
 // TODO: What does a list callback signature really looklike?
-type callbackSigRemove = GenericFileCallback
+export type callbackSigRemove = GenericFileCallback
 
 // TODO: What does a close callback signature really looklike?
-type callbackSigClose = GenericFileCallback
+export type callbackSigClose = GenericFileCallback
 
 // TODO: What does a open-save callback signature really looklike?
-type callbackSigOpenSave = GenericFileCallback
+export type callbackSigOpenSave = GenericFileCallback
 
+// TODO: When the document is shared, this is the callback signature
+export type callbackSigShare = (err: string, content: AnyForNow) => void
 
-enum ICloudFileTypes {
+export enum ICloudFileTypes {
   File = "file",
   Folder = "folder",
   Label = "label",
   Extension = "extension"
 }
 
-interface ICloudMetaDataOpts {
+export interface ICloudMetaDataSpec {
   name: string
   description: string
   content: any
   url: string
   type: ICloudFileTypes
   provider: providerType
-  parent: ICloudMetaDataOpts|null
+  parent: ICloudMetaDataSpec|null
   providerData: providerDataType
   overwritable: boolean
   sharedContentId: documentId
   sharedContentSecretKey: key
   mimeType: mimeType
+  filename: string
   ReadableExtensions?: string[]
-}
-interface ISharedMetadata {
   _permissions?: any,
   shareEditKey?: string,
   sharedDocumentId?: string,
-  accessKeys?: string | string[]
+  accessKeys?: {
+    readOnly?: string,
+    readWrite?: string
+  }
 }
 
 type CloudFileContentType = string
 interface ICloudFileOpts {
   content: CloudFileContentType
-  metadata: ICloudMetaDataOpts
+  metadata: ICloudMetaDataSpec
 }
 
 class CloudFile {
   content: CloudFileContentType
-  metadata: ICloudMetaDataOpts
+  metadata: ICloudMetaDataSpec
   constructor(options: ICloudFileOpts) {
     ({content: this.content, metadata: this.metadata} = options)
   }
 }
 
-class CloudMetadata {
+class CloudMetadata implements ICloudMetaDataSpec {
   name: string
   description: string
   content: any
   url: string
   type: ICloudFileTypes
   provider: providerType
-  parent: ICloudMetaDataOpts
+  parent: ICloudMetaDataSpec
   providerData: providerDataType
   overwritable: boolean
   sharedContentId: documentId
   sharedContentSecretKey: key
   mimeType: mimeType
   filename: string|null
+  _permissions?: any
+  shareEditKey?: string
+  sharedDocumentId?: string
+  accessKeys?: {
+    readOnly?: string
+    readWrite?: string
+  }
 
   static Folder = 'folder'
   static File = 'file'
@@ -103,7 +114,7 @@ class CloudMetadata {
   static Extension: string|null = null
   static ReadableExtensions: string[]
 
-  constructor(options: ICloudMetaDataOpts) {
+  constructor(options: Partial<ICloudMetaDataSpec>) {
     let provider, parent, providerData
     this.name = options.name
     this.type = options.type
@@ -271,7 +282,7 @@ class CloudContentFactory {
         // noop, just cecking if it's json or plain text
       }
     }
-    if ((content as CloudContent).content != null) {
+    if ((content as CloudContent)?.content != null) {
       return content
     } else {
       return {content}
@@ -303,8 +314,9 @@ class CloudContent {
   getContent() {
     if (CloudContent.wrapFileContent) { return this.content } else { return this.content.content }
   }
+
   getContentAsJSON() {
-    return JSON.stringify(CloudContent.wrapFileContent ? this.content : this.content.content)
+    return JSON.stringify(this.getContent())
   }
 
   // returns the client-visible content (excluding wrapper for wrapped clients)
@@ -325,7 +337,7 @@ class CloudContent {
   setText(text: string) { return this.content.content = text }
   getText() { if (this.content.content === null) { return '' } else if (isString(this.content.content)) { return this.content.content } else { return JSON.stringify(this.content.content) } }
 
-  addMetadata(metadata: ICloudMetaDataOpts) {
+  addMetadata(metadata: Partial<ICloudMetaDataSpec>) {
     const result = []
     for (let key in metadata) {
       result.push(this.content[key] = (metadata as any)[key])
@@ -348,7 +360,7 @@ class CloudContent {
 
   getSharedMetadata() {
     // only include necessary fields
-    const shared:ISharedMetadata = {}
+    const shared: Partial<ICloudMetaDataSpec> = {}
     if (this.content._permissions != null){
       shared._permissions = this.content._permissions
     }
@@ -363,7 +375,7 @@ class CloudContent {
   }
 
   copyMetadataTo(to: CloudContent) {
-    const metadata: Partial<ICloudMetaDataOpts> = {}
+    const metadata: Partial<ICloudMetaDataSpec> = {}
     for (let key of Object.keys(this.content || {})) {
       const value = this.content[key]
       if (key !== 'content') {
@@ -372,7 +384,7 @@ class CloudContent {
         (metadata as any)[key] = value
       }
     }
-    return to.addMetadata(metadata as ICloudMetaDataOpts)
+    return to.addMetadata(metadata as ICloudMetaDataSpec)
   }
 }
 
@@ -383,14 +395,15 @@ enum ECapabilities {
   list='list',
   remove='remove',
   rename='rename',
-  close='close'
+  close='close',
+  export='export'
 }
 
 type IProviderCapabilities = {
   [c in ECapabilities]?: boolean | 'auto'
 }
 
-interface IProviderInterfaceOpts {
+export interface IProviderInterfaceOpts {
   name: string,
   displayName: string,
   urlDisplayName: string,
@@ -411,7 +424,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
 
   // TODO: do we need metadata, saw two different sigs in code
   // see saveAsExport
-  can(capability: ECapabilities, metadata?: ICloudMetaDataOpts) {
+  can(capability: ECapabilities, metadata?: ICloudMetaDataSpec) {
     return !!this.capabilities[capability]
   }
 
@@ -469,11 +482,11 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
 
-  save(content: any, metadata: ICloudMetaDataOpts, callback: callbackSigSave) {
+  save(content: any, metadata: ICloudMetaDataSpec, callback: callbackSigSave) {
     return this._notImplemented('save')
   }
 
-  saveAsExport(content: any, metadata: ICloudMetaDataOpts, callback: callbackSigSave) {
+  saveAsExport(content: any, metadata: ICloudMetaDataSpec, callback: callbackSigSave) {
     // default implementation invokes save
     if (this.can(ECapabilities.save, metadata)) {
       return this.save(content, metadata, callback)
@@ -482,27 +495,27 @@ class ProviderInterface implements IProviderInterfaceOpts {
     }
   }
 
-  load(callback: callbackSigLoad) {
+  load(metadata: ICloudMetaDataSpec, callback: callbackSigLoad) {
     return this._notImplemented('load')
   }
 
-  list(metadata: ICloudMetaDataOpts, callback: callbackSigList) {
+  list(metadata: ICloudMetaDataSpec, callback: callbackSigList) {
     return this._notImplemented('list')
   }
 
-  remove(metadata: ICloudMetaDataOpts, callback: callbackSigRemove) {
+  remove(metadata: ICloudMetaDataSpec, callback: callbackSigRemove) {
     return this._notImplemented('remove')
   }
 
-  rename(metadata: ICloudMetaDataOpts, newName: string, callback: callbackSigRename) {
+  rename(metadata: ICloudMetaDataSpec, newName: string, callback: callbackSigRename) {
     return this._notImplemented('rename')
   }
 
-  close(metadata: ICloudMetaDataOpts, callback: callbackSigClose) {
+  close(metadata: ICloudMetaDataSpec, callback: callbackSigClose) {
     return this._notImplemented('close')
   }
 
-  setFolder(metadata: ICloudMetaDataOpts) {
+  setFolder(metadata: ICloudMetaDataSpec) {
     return this._notImplemented('setFolder')
   }
 
@@ -512,7 +525,7 @@ class ProviderInterface implements IProviderInterfaceOpts {
     return this._notImplemented('openSaved')
   }
 
-  getOpenSavedParams(metadata: ICloudMetaDataOpts) {
+  getOpenSavedParams(metadata: ICloudMetaDataSpec) {
     return this._notImplemented('getOpenSavedParams')
   }
 

@@ -21,4 +21,7 @@ test('Client creates a list of its providers', () => {
   }
   client.setAppOptions(options)
   expect(Object.keys(client.providers).length).toBe(3)
+  expect((client.providers as any)['localStorage'].name).toBe('localStorage')
+  expect((client.providers as any)['localFile'].name).toBe('localFile')
+  expect((client.providers as any)['lara'].name).toBe('lara')
 })

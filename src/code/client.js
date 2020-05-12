@@ -19,6 +19,8 @@ import GoogleDriveProvider  from './providers/google-drive-provider'
 import LaraProvider  from './providers/lara-provider'
 import DocumentStoreProvider  from './providers/document-store-provider'
 import DocumentStoreShareProvider  from './providers/document-store-share-provider'
+import S3ShareProvider  from './providers/s3-share-provider'
+import S3Provider  from './providers/s3-provider'
 import LocalFileProvider  from './providers/local-file-provider'
 import PostMessageProvider  from './providers/post-message-provider'
 import URLProvider  from './providers/url-provider'
@@ -89,7 +91,8 @@ class CloudFileManagerClient {
       LaraProvider,
       DocumentStoreProvider,
       LocalFileProvider,
-      PostMessageProvider
+      PostMessageProvider,
+      S3Provider
     ]
     for (Provider of providerList) {
       if (Provider.Available()) {
@@ -141,6 +144,8 @@ class CloudFileManagerClient {
           // if we're using the DocumentStoreProvider, instantiate the ShareProvider
           if (providerName === DocumentStoreProvider.Name) {
             shareProvider = new DocumentStoreShareProvider(this, provider)
+          } else {
+            shareProvider = new S3ShareProvider(this, provider)
           }
           if (provider.urlDisplayName) {        // also add to here in providers list so we can look it up when parsing url hash
             this.providers[provider.urlDisplayName] = provider
@@ -1018,7 +1023,8 @@ class CloudFileManagerClient {
       })
     }
   }
-  // Will mutate metadata:
+  // The purpose of this seems to be to definitely set whether or not the content
+  // can be overwritten? Will mutate metadata:
   _updateMetaDataOverwritable(metadata) {
     if (metadata != null) {
       metadata.overwritable = (metadata.overwritable != null)
