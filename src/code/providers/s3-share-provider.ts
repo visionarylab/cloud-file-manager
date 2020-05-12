@@ -4,20 +4,16 @@ import {
   ICloudMetaDataSpec,
   callbackSigShare,
   callbackSigLoad,
-  callbackSigSave,
   ProviderInterface,
-  IProviderInterfaceOpts,
   ICloudFileTypes,
   CloudContent,
-  CloudMetadata,
-  callbackSigList
+  CloudMetadata
 }  from './provider-interface'
 
 import { IShareProvider} from './share-provider-interface'
 import { createFile, updateFile } from './s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 
-const S3TOKENCACHEKEY = 'CFM::__S3KEYCACHE__'
 interface IClientInterface {}
 
 
@@ -29,6 +25,7 @@ interface IClientInterface {}
 class S3ShareProvider implements IShareProvider  {
   public static Name ='s3-share-provider'
   client: IClientInterface
+  // NP 2020-05-11 :  I don't think we need this provider reference...
   provider: ProviderInterface
 
   constructor(client:IClientInterface, _provider: ProviderInterface) {
@@ -36,12 +33,14 @@ class S3ShareProvider implements IShareProvider  {
     this.client = client
   }
 
+
   loadSharedContent(id: string, callback:callbackSigLoad) {
     const sharedMetadata = new CloudMetadata({
       sharedContentId: id,
       type: ICloudFileTypes.File,
       overwritable: false
     })
+    this.provider.load(sharedMetadata, (err, content) => callback(err, content, sharedMetadata))
   }
 
   getSharingMetadata(shared: boolean) {
@@ -78,6 +77,7 @@ class S3ShareProvider implements IShareProvider  {
         readWriteToken: accessKey
 
       }).then( result => {
+        result.publicUrl
         callback(null, documentID)
       }).catch(e => {
         reportError(e)
@@ -98,6 +98,7 @@ class S3ShareProvider implements IShareProvider  {
         masterContent.addMetadata({
           // DocumentId is the same as vortex resourceId
           sharedDocumentId: resourceId,
+          sharedDocumentUrl: publicUrl,
           accessKeys: { readOnly: publicUrl, readWrite: readWriteToken }
         })
         return callback(null, readWriteToken)

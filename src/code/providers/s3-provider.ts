@@ -10,10 +10,11 @@ import {
   ICloudFileTypes,
   CloudContent,
   CloudMetadata,
-  callbackSigList
+  callbackSigList,
+  cloudContentFactory
 }  from './provider-interface'
 
-import { createFile, updateFile } from './s3-share-provider-token-service-helper'
+import { createFile, getLegacyUrl, } from './s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 
 const S3TOKENCACHEKEY = 'CFM::__S3KEYCACHE__'
@@ -38,10 +39,10 @@ class S3Provider extends ProviderInterface {
       displayName: "S3 Provider",
       capabilities: {
         save: true,
-        resave: false,
-        export: true,
         load: true,
-        // NP For now no listing
+        // NP For now none of this stuff:
+        export: false,
+        resave: false,
         list: false,
         remove: false,
         rename: false,
@@ -51,29 +52,6 @@ class S3Provider extends ProviderInterface {
     super(opts)
     this.options = opts
     this.client = client
-  }
-
-  private addLocalIndex(data:Partial<CloudMetadata>) {
-    if(window.localStorage) {
-      const oldDataString: string =
-        window.localStorage[S3TOKENCACHEKEY]?.push
-        ? window.localStorage[S3TOKENCACHEKEY]
-        : "[]"
-      const oldData = JSON.parse(oldDataString)
-      oldData.push(data)
-      window.localStorage[S3TOKENCACHEKEY]=JSON.stringify(oldData)
-    }
-  }
-
-  private getLocalIndex():ICloudMetaDataSpec[] {
-    let found = []
-    try {
-      found = JSON.parse(window.localStorage[S3TOKENCACHEKEY])
-    }
-    catch(e) {
-      console.warn("couldn't find cache of shared documents ... ")
-    }
-    return found
   }
 
   save(content: any, metadata: ICloudMetaDataSpec, callback: callbackSigSave) {
@@ -90,31 +68,60 @@ class S3Provider extends ProviderInterface {
     result.then( ({publicUrl, resourceId, readWriteToken}) => {
       metadata.sharedContentSecretKey=readWriteToken
       metadata.url=publicUrl
-      this.addLocalIndex({
-        name: metadata.filename,
-        url: publicUrl,
-        sharedDocumentId: resourceId,
-        sharedContentSecretKey: readWriteToken,
-        type: CloudMetadata.File as ICloudFileTypes
-      })
+      metadata.sharedDocumentUrl=publicUrl
       callback(publicUrl);
     });
   }
 
-  list(metadata: ICloudMetaDataSpec, callback: callbackSigList) {
-    const list = this.getLocalIndex()
-    const stuff = list.map( e => {
-        return new CloudMetadata({
-          name: e.name,
-          type: e.type,
-          parent: metadata,
-          provider: this
-        })
-      });
-    console.log(stuff)
-    return callback(null, stuff)
-  }
+  load(metadata: CloudMetadata, callback: callbackSigLoad) {
+    let documentUrl = metadata.sharedDocumentUrl
+    // TODO: Why is there both a sharedDocumentId and sharedContentId?
+    const contentId = metadata.sharedContentId
+    const urlRegex = /^http/
+    if(contentId.match(urlRegex)) {
+      documentUrl = contentId
+    }
+    if(!documentUrl) {
+      // we have to look up the document Url using the legacy DocumentID
+      // TODO: Not working yet because of a CORS issue possibly
+      if(contentId) {
+        documentUrl = getLegacyUrl(contentId)
+      }
+    }
+    if(!documentUrl) {
+      documentUrl = metadata.url
+    }
+    if(documentUrl) {
+      fetch(documentUrl)
+        .then(response => response.json())
+        .then(data => {
+          const content = cloudContentFactory.createEnvelopedCloudContent(data)
+          // for documents loaded by id or other means (besides name),
+          // capture the name for use in the CFM interface.
+          // 'docName' at the top level for CFM-wrapped documents
+          // 'name' at the top level for unwrapped documents (e.g. CODAP)
+          // 'name' at the top level of 'content' for wrapped CODAP documents
+          const name =
+            metadata.name
+            || metadata.providerData.name
+            || data.docName
+            || data.name
+            || data.content?.name
+          metadata.rename(name)
+          if (metadata.name) {
+            content.addMetadata({docName: metadata.filename})
+          }
 
+          return callback(null, content)
+        })
+        .catch(e => {
+          callback(`Unable to load '${metadata.name}': ${e.message}`, {})
+        })
+    }
+    else {
+      callback(`dern it cant load ${metadata?.sharedDocumentId}`, {})
+    }
+  }
 }
 
 export default S3Provider

@@ -5,7 +5,7 @@ import * as AWS from "aws-sdk";
 type EnvironmentName = "dev" | "staging" | "production"
 const tokenServiceEnv = (process.env["TOKEN_SERVICE_ENV"] || "staging") as EnvironmentName
 
-// Copied from the Token-Service repo. see @concord-consortium/token-service
+// Modified from the Token-Service repo. see @concord-consortium/token-service
 // This file provides simple recipes showing how to use TokenServiceClient
 // and how to get other necessary prerequisites (auth in Portal, firebase JWT).f
 
@@ -65,13 +65,11 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
     description: "Document created by CFM",
     accessRuleType: anonymous ? "readWriteToken" : "user"
   }) as S3Resource;
-  console.log("new resource:", resource);
 
   // Note that if your file ever needs to get updated, this token MUST BE (SECURELY) SAVED.
   let readWriteToken = "";
   if (anonymous) {
     readWriteToken = client.getReadWriteToken(resource) || "";
-    console.log("read write token:", readWriteToken);
   }
 
   const credentials = anonymous
@@ -145,6 +143,18 @@ export const updateFile = async ({ filename, newFileContent, resourceId, firebas
     publicUrl
   }
 };
+
+export const getLegacyUrl = (documentId: string) => {
+  const stagingBase = "https://token-service-files.concordqa.org/legacy-document-store"
+  // TBD: Production base url will be?
+  const productionBase = "https://models-resources.concord.org/legacy-document-store"
+  const base = tokenServiceEnv === "production"
+    ? productionBase
+    : stagingBase
+    // TODO: Dev?
+  return `${base}/${documentId}`
+};
+
 
 // When would we do this?
 export const getAllResources = async (firebaseJwt: string, amOwner: boolean) => {

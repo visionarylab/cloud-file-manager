@@ -38,8 +38,10 @@ describe("S3ShareProvider", () => {
             // Expect the Read & write token in the callback:
             expect(data).toBe(readWriteToken)
             const originalDoc = masterContent.getContent()
-            // expect the masterConent to now have a documentID:
+            // expect the masterConent to now have a sharedDocumentId:
             expect(originalDoc?.sharedDocumentId).toBe(resourceId)
+            // expect the masterConent to now have a sharedDocumentUrl:
+            expect(originalDoc?.sharedDocumentUrl).toBe(publicUrl)
             // expect the masterConent to now have a readWriteToken:
             expect(originalDoc?.accessKeys?.readWrite).toBe(readWriteToken)
             done()

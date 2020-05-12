@@ -70,23 +70,27 @@ export default createReactClass({
     }
   },
 
-  getSharedDocumentId() {
-    // extract sharedDocumentId from CloudContent
-    if (this.props.client.isShared()) {
-      return (this.props.client.state.currentContent != null ? this.props.client.state.currentContent.get("sharedDocumentId") : undefined)
-    } else {
-      return null
-    }
-  },
-
+  // New S3ShareProvider saves shareDocumentUrl
   getShareLink() {
-    const sharedDocumentId = this.getSharedDocumentId()
-    if (sharedDocumentId) {
-      // share link combines document URL with sharedDocumentId
-      return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`
-    } else {
-      return null
+    const { client } = this.props
+    const shared = client.isShared()
+    const sharedDocumentUrl = client.state?.currentContent?.get("sharedDocumentUrl")
+    const sharedDocumentId = client.state?.currentContent?.get("sharedDocumentId")
+    const useInternalLink = true
+    if (shared) {
+      if(sharedDocumentUrl) {
+        // return sharedDocumentUrl
+        return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(sharedDocumentUrl)}`
+      }
+      if(sharedDocumentId) {
+        if(useInternalLink) {
+          return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`
+        }
+        const legacyUrl="https://token-service-files.concordqa.org/legacy-document-store"
+        return `${legacyUrl}/${sharedDocumentId}`
+      }
     }
+    return null
   },
 
   getEmbed() {

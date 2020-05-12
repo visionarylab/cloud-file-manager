@@ -46,6 +46,7 @@ export enum ICloudFileTypes {
 
 export interface ICloudMetaDataSpec {
   name: string
+  docName?: string  // TODO: why is this used?
   description: string
   content: any
   url: string
@@ -62,6 +63,7 @@ export interface ICloudMetaDataSpec {
   _permissions?: any,
   shareEditKey?: string,
   sharedDocumentId?: string,
+  sharedDocumentUrl?: string,
   accessKeys?: {
     readOnly?: string,
     readWrite?: string
@@ -84,6 +86,7 @@ class CloudFile {
 
 class CloudMetadata implements ICloudMetaDataSpec {
   name: string
+  docName?: string  // TODO: why is this used?
   description: string
   content: any
   url: string
@@ -99,6 +102,7 @@ class CloudMetadata implements ICloudMetaDataSpec {
   _permissions?: any
   shareEditKey?: string
   sharedDocumentId?: string
+  sharedDocumentUrl?: string
   accessKeys?: {
     readOnly?: string
     readWrite?: string
@@ -369,6 +373,8 @@ class CloudContent {
     }
     if (this.content.sharedDocumentId != null) {
       shared.sharedDocumentId = this.content.sharedDocumentId }
+    if (this.content.sharedDocumentUrl != null) {
+      shared.sharedDocumentUrl = this.content.sharedDocumentUrl }
     if (this.content.accessKeys != null) {
       shared.accessKeys = this.content.accessKeys }
     return shared
