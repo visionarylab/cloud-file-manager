@@ -25,7 +25,6 @@ interface IClientInterface {}
 class S3ShareProvider implements IShareProvider  {
   public static Name ='s3-share-provider'
   client: IClientInterface
-  // NP 2020-05-11 :  I don't think we need this provider reference...
   provider: ProviderInterface
 
   constructor(client:IClientInterface, _provider: ProviderInterface) {
