@@ -11,3 +11,6 @@ node_modules/
 
 # test folders
 cypress/screenshots
+
+# Local SSL certificates:
+LocalhostCertificates

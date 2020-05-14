@@ -141,13 +141,9 @@ class CloudFileManagerClient {
           Provider = allProviders[providerName]
           const provider = new Provider(providerOptions, this)
           this.providers[providerName] = provider
-          // if we're using the DocumentStoreProvider, instantiate the ShareProvider
-          if (providerName === DocumentStoreProvider.Name) {
-            shareProvider = new DocumentStoreShareProvider(this, provider)
-          } else {
-            shareProvider = new S3ShareProvider(this, provider)
-          }
-          if (provider.urlDisplayName) {        // also add to here in providers list so we can look it up when parsing url hash
+          shareProvider = this._getShareProvider(provider)
+          // also add to here in providers list so we can look it up when parsing url hash
+          if (provider.urlDisplayName) {
             this.providers[provider.urlDisplayName] = provider
           }
           availableProviders.push(provider)
@@ -189,6 +185,17 @@ class CloudFileManagerClient {
     }
 
     return this._startPostMessageListener()
+  }
+
+  _getShareProvider(inogredParentProvider) {
+    // NP 2020-05-11:
+    // Previous Code to document behavior before S3ShareProvider:
+    // if we're using the DocumentStoreProvider, instantiate the ShareProvider
+    // if (inogredParentProvider === DocumentStoreProvider.Name) {
+    //   shareProvider = new DocumentStoreShareProvider(this, inogredParentProvider)
+    // }
+    // NB: The DocumentStoreShareProvider always used a DocumentStoreProvider ....
+    return new S3ShareProvider(this, new S3Provider(this))
   }
 
   setProviderOptions(name, newOptions) {
@@ -408,11 +415,18 @@ class CloudFileManagerClient {
   }
 
   openSharedContent(id) {
+    const { shareProvider } = this.state
     this._event('willOpenFile', {op: "openSharedContent"})
-    return (this.state.shareProvider != null ? this.state.shareProvider.loadSharedContent(id, (err, content, metadata) => {
-      if (err) { return this.alert(err, () => this.ready()) }
-      return this._fileOpened(content, metadata, {overwritable: false, openedContent: content.clone()})
-  }) : undefined)
+    if(shareProvider.loadSharedContent) {
+      shareProvider.loadSharedContent(id, (err, content, metadata) => {
+        if (err) {
+          this.alert(err, () => this.ready())
+        }
+        else {
+          this._fileOpened(content, metadata, {overwritable: false, openedContent: content.clone()})
+        }
+      })
+    }
   }
 
   // must be called as a result of user action (e.g. click) to avoid popup blockers
@@ -701,7 +715,16 @@ class CloudFileManagerClient {
   }
 
   isShared() {
-    return (this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined) && !(this.state.currentContent != null ? this.state.currentContent.get("isUnshared") : undefined)
+    const currentContent = this.state?.currentContent
+    if(currentContent) {
+      const unshared = currentContent.get("isUnshared")
+      if(!unshared) {
+        const sharedDocumentId = currentContent.get("sharedDocumentId")
+        const sharedDocumentUrl = currentContent.get("sharedDocumentUrl")
+        return (sharedDocumentId || sharedDocumentUrl)
+      }
+    }
+    return false
   }
 
   canEditShared() {
@@ -797,6 +820,7 @@ class CloudFileManagerClient {
       // clone the document so we can delete the share info and not affect the original
       const json = content.clone().getContent()
       delete json.sharedDocumentId
+      delete json.sharedDocumentUrl
       delete json.shareEditKey
       delete json.isUnshared
       delete json.accessKeys

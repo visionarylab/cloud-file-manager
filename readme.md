@@ -14,6 +14,10 @@ The Cloud File Manager is a Javascript library that enables applications to save
 
 and navigate to `http://localhost:8080/examples/`
 
+You can also install SSL certificates in `LocalhostCertificates` and then use
+`npm run start:secure` to start a secure server, which might be useful for integration
+testing with LARA and other services.
+
 ## Deployment
 
 This repository will automatically deploy to S3 using Travis build hooks.
