@@ -4,7 +4,7 @@ import * as AWS from "aws-sdk";
 import {
   PORTAL_AUTH_PATH,
   DEFAULT_MAX_AGE_SECONDS,
-  TOKEN_SERVICE_ENV,
+  getTokenServiceEnv,
   TOKEN_SERVICE_TOOL_NAME,
   TOKEN_SERVICE_TOOL_TYPE,
   S3_SHARED_DOC_PATH_LEGACY,
@@ -57,7 +57,9 @@ export const createFile = async ({ filename, fileContent, firebaseJwt, maxAge=DE
   // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
   const anonymous = !firebaseJwt;
 
-  const client = anonymous ? new TokenServiceClient({ env: TOKEN_SERVICE_ENV }) : new TokenServiceClient({ env: TOKEN_SERVICE_ENV, jwt: firebaseJwt })
+  const client = anonymous
+    ? new TokenServiceClient({ env: getTokenServiceEnv() })
+    : new TokenServiceClient({ env: getTokenServiceEnv(), jwt: firebaseJwt })
   const resource: S3Resource = await client.createResource({
     tool: TOKEN_SERVICE_TOOL_NAME,
     type: TOKEN_SERVICE_TOOL_TYPE,
@@ -117,8 +119,8 @@ export const updateFile = async ({
   const anonymous = !firebaseJwt && readWriteToken;
 
   const client = anonymous
-    ? new TokenServiceClient({ env: TOKEN_SERVICE_ENV })
-    : new TokenServiceClient({ env: TOKEN_SERVICE_ENV, jwt: firebaseJwt })
+    ? new TokenServiceClient({ env: getTokenServiceEnv() })
+    : new TokenServiceClient({ env: getTokenServiceEnv(), jwt: firebaseJwt })
 
   const resource: S3Resource = await client.getResource(resourceId) as S3Resource;
   const credentials = anonymous
@@ -150,7 +152,7 @@ export const updateFile = async ({
 const getBaseDocumentUrl = () => {
   const stagingBase = "https://token-service-files.concordqa.org"
   const productionBase = "https://models-resources.concord.org"
-  const base = TOKEN_SERVICE_ENV === "production"
+  const base = getTokenServiceEnv() === "production"
     ? productionBase
     : stagingBase
   return base
@@ -168,7 +170,7 @@ export const getLegacyUrl = (documentId: string) => {
 
 // When would we do this?
 export const getAllResources = async (firebaseJwt: string, amOwner: boolean) => {
-  const client = new TokenServiceClient({ jwt: firebaseJwt, env: TOKEN_SERVICE_ENV });
+  const client = new TokenServiceClient({ jwt: firebaseJwt, env: getTokenServiceEnv() });
   const resources = await client.listResources({
     type: "s3Folder",
     tool: TOKEN_SERVICE_TOOL_NAME,

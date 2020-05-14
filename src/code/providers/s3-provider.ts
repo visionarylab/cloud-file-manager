@@ -68,7 +68,7 @@ class S3Provider extends ProviderInterface {
     });
   }
 
-  private loadFromUrl(
+  loadFromUrl(
     documentUrl: string,
     metadata: CloudMetadata,
     callback: callbackSigLoad) {
