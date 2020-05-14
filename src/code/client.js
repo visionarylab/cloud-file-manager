@@ -420,9 +420,11 @@ class CloudFileManagerClient {
     if(shareProvider.loadSharedContent) {
       shareProvider.loadSharedContent(id, (err, content, metadata) => {
         if (err) {
-          return this.alert(err, () => this.ready())
+          this.alert(err, () => this.ready())
         }
-        return this._fileOpened(content, metadata, {overwritable: false, openedContent: content.clone()})
+        else {
+          this._fileOpened(content, metadata, {overwritable: false, openedContent: content.clone()})
+        }
       })
     }
   }
@@ -715,7 +717,7 @@ class CloudFileManagerClient {
   isShared() {
     const currentContent = this.state?.currentContent
     if(currentContent) {
-      const unshared = currentContent.get("usUnshared")
+      const unshared = currentContent.get("isUnshared")
       if(!unshared) {
         const sharedDocumentId = currentContent.get("sharedDocumentId")
         const sharedDocumentUrl = currentContent.get("sharedDocumentUrl")

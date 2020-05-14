@@ -20,7 +20,7 @@ import getQueryParam  from '../utils/get-query-param'
 // of the react function, "tr".
 import translate  from '../utils/translate'
 import socialIcons  from 'svg-social-icons/lib/icons.json'
-
+import { getLegacyUrl } from '../providers/s3-share-provider-token-service-helper'
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',
@@ -86,8 +86,7 @@ export default createReactClass({
         if(useInternalLink) {
           return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`
         }
-        const legacyUrl="https://token-service-files.concordqa.org/legacy-document-store"
-        return `${legacyUrl}/${sharedDocumentId}`
+        return getLegacyUrl(sharedDocumentId)
       }
     }
     return null

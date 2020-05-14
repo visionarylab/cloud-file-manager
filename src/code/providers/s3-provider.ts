@@ -78,16 +78,17 @@ class S3Provider extends ProviderInterface {
     // TODO: Why is there both a sharedDocumentId and sharedContentId?
     const contentId = metadata.sharedContentId
     const urlRegex = /^http/
-    if(contentId.match(urlRegex)) {
-      documentUrl = contentId
-    }
-    if(!documentUrl) {
-      // we have to look up the document Url using the legacy DocumentID
-      // TODO: Not working yet because of a CORS issue possibly
-      if(contentId) {
+    if(contentId) {
+      if(contentId.match(urlRegex)) {
+        documentUrl = contentId
+      }
+      if(!documentUrl) {
+        // we have to look up the document Url using the legacy DocumentID
+        // TODO: Not working yet because of a CORS issue possibly
         documentUrl = getLegacyUrl(contentId)
       }
     }
+
     if(!documentUrl) {
       documentUrl = metadata.url
     }
