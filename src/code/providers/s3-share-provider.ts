@@ -11,7 +11,7 @@ import {
 }  from './provider-interface'
 
 import { IShareProvider} from './share-provider-interface'
-import { createFile, updateFile } from './s3-share-provider-token-service-helper'
+import { createFile, updateFile } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 
 interface IClientInterface {}
@@ -46,6 +46,56 @@ class S3ShareProvider implements IShareProvider  {
     return { _permissions: shared ? 1 : 0 }
   }
 
+  private updateShare(
+    contentJSON: string,
+    documentID: string,
+    filename: string,
+    accessKey: string,
+    callback: callbackSigShare) {
+      // Call update:
+      updateFile({
+        filename: filename,
+        newFileContent: contentJSON,
+        // DocumentID is the resourceID for TokenService
+        resourceId: documentID,
+        readWriteToken: accessKey
+
+      }).then( result => {
+        result.publicUrl
+        callback(null, documentID)
+      }).catch(e => {
+        reportError(e)
+        return callback(`Unable to update shared '${filename}' ${e}`, {})
+      })
+  }
+
+  private createShare(
+    masterContent: CloudContent,
+    filename: string,
+    contentJSON: string,
+    metadata:ICloudMetaDataSpec,
+    callback: callbackSigShare,
+    ) {
+    const result = createFile({
+      filename: filename,
+      fileContent: contentJSON
+    });
+    result.then( ({publicUrl, resourceId, readWriteToken}) => {
+      metadata.sharedContentSecretKey=readWriteToken
+      metadata.url=publicUrl
+      // on successful share/save, capture the sharedDocumentId and accessKeys
+      masterContent.addMetadata({
+        // DocumentId is the same as TokenService resourceId
+        sharedDocumentId: resourceId,
+        sharedDocumentUrl: publicUrl,
+        accessKeys: { readOnly: publicUrl, readWrite: readWriteToken }
+      })
+      return callback(null, readWriteToken)
+    }).catch( e => {
+      return callback(`Unable to share '${filename}' ${e}`, {})
+    })
+  }
+
   // Public interface called by client:
   share(
     shared: boolean,
@@ -62,50 +112,18 @@ class S3ShareProvider implements IShareProvider  {
     const accessKeys = masterContent.get('accessKeys')
     const runKey = masterContent.get('shareEditKey')
     const accessKey = accessKeys?.readWrite || runKey
-    const docName = (metadata != null ? metadata.filename : undefined) || 'document'
-
+    const contentJson = sharedContent.getContentAsJSON()
+    const filename = metadata.filename
     // if we already have a documentID and some form of accessKey,
     // then we must be updating an existing shared document
     if (documentID && accessKey) {
-      // Call update:
-      updateFile({
-        filename: metadata.filename,
-        newFileContent: JSON.stringify(sharedContent),
-        // DocumentID is the resourceID for vortex
-        resourceId: documentID,
-        readWriteToken: accessKey
-
-      }).then( result => {
-        result.publicUrl
-        callback(null, documentID)
-      }).catch(e => {
-        reportError(e)
-        return callback(`Unable to update shared '${docName}' ${e}`, {})
-      })
-
+      this.updateShare(contentJson, documentID, filename, accessKey, callback)
     // if we don't have a document ID and some form of accessKey,
     // then we must create a new shared document when sharing is being enabled
     } else if (shared) {
-      const result = createFile({
-        filename: metadata.name,
-        fileContent: sharedContent.getContentAsJSON()
-      });
-      result.then( ({publicUrl, resourceId, readWriteToken}) => {
-        metadata.sharedContentSecretKey=readWriteToken
-        metadata.url=publicUrl
-        // on successful share/save, capture the sharedDocumentId and accessKeys
-        masterContent.addMetadata({
-          // DocumentId is the same as vortex resourceId
-          sharedDocumentId: resourceId,
-          sharedDocumentUrl: publicUrl,
-          accessKeys: { readOnly: publicUrl, readWrite: readWriteToken }
-        })
-        return callback(null, readWriteToken)
-      }).catch( e => {
-        return callback(`Unable to share '${docName}' ${e}`, {})
-      })
+      this.createShare(masterContent, filename, contentJson, metadata, callback)
     } else {
-      return callback(`Unable to unshare '${docName}' (not implemented)`, {})
+      return callback(`Unable to unshare '${filename}' (not implemented)`, {})
     }
   }
 

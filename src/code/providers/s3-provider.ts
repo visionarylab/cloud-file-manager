@@ -7,20 +7,15 @@ import {
   callbackSigSave,
   ProviderInterface,
   IProviderInterfaceOpts,
-  ICloudFileTypes,
-  CloudContent,
   CloudMetadata,
-  callbackSigList,
   cloudContentFactory
 }  from './provider-interface'
 
-import { createFile, getLegacyUrl, } from './s3-share-provider-token-service-helper'
+import { createFile, getLegacyUrl } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 
-const S3TOKENCACHEKEY = 'CFM::__S3KEYCACHE__'
+// TODO: Type the cient
 interface IClientInterface {}
-
-
 
 // New method for sharing read only documents using S3.
 // The readWrite key must be retained in the original document
@@ -73,54 +68,58 @@ class S3Provider extends ProviderInterface {
     });
   }
 
-  load(metadata: CloudMetadata, callback: callbackSigLoad) {
-    let documentUrl = metadata.sharedDocumentUrl
-    // TODO: Why is there both a sharedDocumentId and sharedContentId?
-    const contentId = metadata.sharedContentId
+  private loadFromUrl(
+    documentUrl: string,
+    metadata: CloudMetadata,
+    callback: callbackSigLoad) {
+    fetch(documentUrl)
+    .then(response => response.json())
+    .then(data => {
+      const content = cloudContentFactory.createEnvelopedCloudContent(data)
+      // for documents loaded by id or other means (besides name),
+      // capture the name for use in the CFM interface.
+      // 'docName' at the top level for CFM-wrapped documents
+      // 'name' at the top level for unwrapped documents (e.g. CODAP)
+      // 'name' at the top level of 'content' for wrapped CODAP documents
+      const name =
+        metadata.name
+        || metadata.providerData.name
+        || data.docName
+        || data.name
+        || data.content?.name
+      metadata.rename(name)
+      if (metadata.name) {
+        content.addMetadata({docName: metadata.filename})
+      }
+
+      return callback(null, content)
+    })
+    .catch(e => {
+      callback(`Unable to load '${metadata.name}': ${e.message}`, {})
+    })
+  }
+
+  private getLoadUrlFromSharedContentId(sharedDocumentId: string) {
     const urlRegex = /^http/
-    if(contentId) {
-      if(contentId.match(urlRegex)) {
-        documentUrl = contentId
-      }
-      if(!documentUrl) {
-        // we have to look up the document Url using the legacy DocumentID
-        // TODO: Not working yet because of a CORS issue possibly
-        documentUrl = getLegacyUrl(contentId)
-      }
+    const legacyIDRegex = /^(\d)+$/
+    if (sharedDocumentId.match(urlRegex)) {
+      return sharedDocumentId
     }
-
-    if(!documentUrl) {
-      documentUrl = metadata.url
+    if (sharedDocumentId.match(legacyIDRegex)) {
+      return getLegacyUrl(sharedDocumentId)
     }
-    if(documentUrl) {
-      fetch(documentUrl)
-        .then(response => response.json())
-        .then(data => {
-          const content = cloudContentFactory.createEnvelopedCloudContent(data)
-          // for documents loaded by id or other means (besides name),
-          // capture the name for use in the CFM interface.
-          // 'docName' at the top level for CFM-wrapped documents
-          // 'name' at the top level for unwrapped documents (e.g. CODAP)
-          // 'name' at the top level of 'content' for wrapped CODAP documents
-          const name =
-            metadata.name
-            || metadata.providerData.name
-            || data.docName
-            || data.name
-            || data.content?.name
-          metadata.rename(name)
-          if (metadata.name) {
-            content.addMetadata({docName: metadata.filename})
-          }
+    reportError(`Can't find URL from sharedDocumentId: "${sharedDocumentId}"`)
+    return null
+  }
 
-          return callback(null, content)
-        })
-        .catch(e => {
-          callback(`Unable to load '${metadata.name}': ${e.message}`, {})
-        })
+  load(metadata: CloudMetadata, callback: callbackSigLoad) {
+    const id = metadata.sharedContentId
+    const loadUrl = this.getLoadUrlFromSharedContentId(id)
+    if(loadUrl !== null) {
+      this.loadFromUrl(loadUrl, metadata, callback)
     }
     else {
-      callback(`Unable to load ${metadata?.sharedDocumentId}`, {})
+      callback(`Unable to load ${id}`, {})
     }
   }
 }

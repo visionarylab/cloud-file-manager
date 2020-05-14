@@ -1,16 +1,15 @@
 import ClientOAuth2 from "client-oauth2";
 import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service";
 import * as AWS from "aws-sdk";
-
-type EnvironmentName = "dev" | "staging" | "production"
-const tokenServiceEnv = (process.env["TOKEN_SERVICE_ENV"] || "staging") as EnvironmentName
-
-// Modified from the Token-Service repo. see @concord-consortium/token-service
-// This file provides simple recipes showing how to use TokenServiceClient
-// and how to get other necessary prerequisites (auth in Portal, firebase JWT).f
-
-const PORTAL_AUTH_PATH = "/auth/oauth_authorize";
-export const TokenServiceToolName = "document-store";
+import {
+  PORTAL_AUTH_PATH,
+  DEFAULT_MAX_AGE_SECONDS,
+  TOKEN_SERVICE_ENV,
+  TOKEN_SERVICE_TOOL_NAME,
+  TOKEN_SERVICE_TOOL_TYPE,
+  S3_SHARED_DOC_PATH_LEGACY,
+  S3_SHARED_DOC_PATH_NEW
+} from './config'
 
 const getURLParam = (name: string) => {
   const url = (self || window).location.href;
@@ -48,19 +47,20 @@ interface ICreateFile {
   filename: string;
   fileContent: string;
   firebaseJwt?: string;
+  maxAge?: number;
 }
 
-export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreateFile) => {
+export const createFile = async ({ filename, fileContent, firebaseJwt, maxAge=DEFAULT_MAX_AGE_SECONDS }: ICreateFile) => {
   // This function optionally accepts firebaseJWT. There are three things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - createResource call. If user is not authenticated, "readWriteToken" accessRule type must be used. Token Service will generate and return readWriteToken.
   // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
   const anonymous = !firebaseJwt;
 
-  const client = anonymous ? new TokenServiceClient({ env: tokenServiceEnv }) : new TokenServiceClient({ env: tokenServiceEnv, jwt: firebaseJwt })
+  const client = anonymous ? new TokenServiceClient({ env: TOKEN_SERVICE_ENV }) : new TokenServiceClient({ env: TOKEN_SERVICE_ENV, jwt: firebaseJwt })
   const resource: S3Resource = await client.createResource({
-    tool: TokenServiceToolName,
-    type: "s3Folder",
+    tool: TOKEN_SERVICE_TOOL_NAME,
+    type: TOKEN_SERVICE_TOOL_TYPE,
     name: filename,
     description: "Document created by CFM",
     accessRuleType: anonymous ? "readWriteToken" : "user"
@@ -89,7 +89,8 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
     Body: fileContent,
     ContentType: "text/html",
     ContentEncoding: "UTF-8",
-    CacheControl: "no-cache"
+    CacheControl: `max-age=${maxAge}`
+    // TODO IMPORTANT: Set the `max-age` parameter here
   }).promise();
   console.log(result);
 
@@ -106,16 +107,18 @@ interface IUpdateFileArgs {
   resourceId: string;
   firebaseJwt?: string;
   readWriteToken?: string;
+  maxAge?: number;
 }
-export const updateFile = async ({ filename, newFileContent, resourceId, firebaseJwt, readWriteToken}: IUpdateFileArgs) => {
+export const updateFile = async ({
+  filename, newFileContent, resourceId, firebaseJwt, readWriteToken, maxAge=DEFAULT_MAX_AGE_SECONDS}: IUpdateFileArgs) => {
   // This function accepts either firebaseJWT or readWriteToken. There are only two things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
   const anonymous = !firebaseJwt && readWriteToken;
 
   const client = anonymous
-    ? new TokenServiceClient({ env: tokenServiceEnv })
-    : new TokenServiceClient({ env: tokenServiceEnv, jwt: firebaseJwt })
+    ? new TokenServiceClient({ env: TOKEN_SERVICE_ENV })
+    : new TokenServiceClient({ env: TOKEN_SERVICE_ENV, jwt: firebaseJwt })
 
   const resource: S3Resource = await client.getResource(resourceId) as S3Resource;
   const credentials = anonymous
@@ -134,7 +137,7 @@ export const updateFile = async ({ filename, newFileContent, resourceId, firebas
     Body: newFileContent,
     ContentType: "text/html",
     ContentEncoding: "UTF-8",
-    CacheControl: "no-cache"
+    CacheControl: `max-age=${maxAge}`
   }).promise();
   return {
     result,
@@ -144,24 +147,31 @@ export const updateFile = async ({ filename, newFileContent, resourceId, firebas
   }
 };
 
-export const getLegacyUrl = (documentId: string) => {
-  const stagingBase = "https://token-service-files.concordqa.org/legacy-document-store"
-  // TBD: Production base url will be?
-  const productionBase = "https://models-resources.concord.org/legacy-document-store"
-  const base = tokenServiceEnv === "production"
+const getBaseDocumentUrl = () => {
+  const stagingBase = "https://token-service-files.concordqa.org"
+  const productionBase = "https://models-resources.concord.org"
+  const base = TOKEN_SERVICE_ENV === "production"
     ? productionBase
     : stagingBase
-    // TODO: Dev?
-  return `${base}/${documentId}`
-};
+  return base
+}
 
+export const getModernUrl = (documentId: string, filename:string) => {
+  const path = S3_SHARED_DOC_PATH_NEW
+  return `${getBaseDocumentUrl()}/${path}/${documentId}/${filename}`
+}
+
+export const getLegacyUrl = (documentId: string) => {
+  const path = S3_SHARED_DOC_PATH_LEGACY
+  return `${getBaseDocumentUrl()}/${path}/${documentId}`
+};
 
 // When would we do this?
 export const getAllResources = async (firebaseJwt: string, amOwner: boolean) => {
-  const client = new TokenServiceClient({ jwt: firebaseJwt, env: tokenServiceEnv });
+  const client = new TokenServiceClient({ jwt: firebaseJwt, env: TOKEN_SERVICE_ENV });
   const resources = await client.listResources({
     type: "s3Folder",
-    tool: "example-app",
+    tool: TOKEN_SERVICE_TOOL_NAME,
     amOwner: amOwner ? "true" : "false"
   });
   console.log(resources);

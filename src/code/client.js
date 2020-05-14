@@ -771,7 +771,11 @@ class CloudFileManagerClient {
   }
 
   revertToShared(callback = null) {
-    const id = this.state.currentContent != null ? this.state.currentContent.get("sharedDocumentId") : undefined
+    // Look for sharedDocumentUrl or Url first:
+    const id = this.state.currentContent?.get("sharedDocumentUrl")
+            || this.state.currentContent?.get("url")
+            || this.state.currentContent?.get("sharedDocumentId")
+
     if (id && (this.state.shareProvider != null)) {
       return this.state.shareProvider.loadSharedContent(id, (err, content, metadata) => {
         let docName

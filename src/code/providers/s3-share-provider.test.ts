@@ -1,7 +1,7 @@
 
 import { ImportMock } from 'ts-mock-imports'
 import S3ShareProvider from "./s3-share-provider"
-import * as helperModule from './s3-share-provider-token-service-helper'
+import * as helperModule from '../utils/s3-share-provider-token-service-helper'
 import * as Client from "../client"
 import { CloudContent, CloudMetadata, ICloudMetaDataSpec } from "./provider-interface"
 import LocalStorageProvider from './localstorage-provider'
