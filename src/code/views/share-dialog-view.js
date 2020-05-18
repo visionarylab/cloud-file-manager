@@ -20,7 +20,7 @@ import getQueryParam  from '../utils/get-query-param'
 // of the react function, "tr".
 import translate  from '../utils/translate'
 import socialIcons  from 'svg-social-icons/lib/icons.json'
-import { getLegacyUrl } from '../providers/s3-share-provider-token-service-helper'
+import { getLegacyUrl } from '../utils/s3-share-provider-token-service-helper'
 const SocialIcon = createReactClassFactory({
 
   displayName: 'SocialIcon',
