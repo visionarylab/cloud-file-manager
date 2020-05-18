@@ -19,6 +19,12 @@ getBaseLanguage = (langKey) ->
   return langKey.substring(0, dashLoc) if dashLoc isnt -1
   undefined
 
+# use language of page, which is used by CODAP, with separate build for each language
+getPageLanguage = ->
+  pageLang = document.documentElement.lang
+  return pageLang if pageLang and pageLang isnt "unknown"
+  undefined
+
 getFirstBrowserLanguage = ->
   nav = window.navigator
   languages = if nav then (nav.languages or []).concat([nav.language, nav.browserLanguage, nav.systemLanguage, nav.userLanguage]) else []
@@ -33,7 +39,7 @@ languageFiles.forEach (lang) ->
   baseLang = getBaseLanguage(lang.key)
   translations[baseLang] = lang.contents if baseLang
 
-lang = urlParams.lang or getFirstBrowserLanguage()
+lang = urlParams.lang or getPageLanguage() or getFirstBrowserLanguage()
 baseLang = getBaseLanguage(lang or '')
 defaultLang = if lang and translations[lang] then lang else if baseLang and translations[baseLang] then baseLang else "en"
 
