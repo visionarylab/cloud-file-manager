@@ -14,6 +14,7 @@ const SHOW_LONGEVITY_WARNING = false
 import modalDialogView from './modal-dialog-view'
 const ModalDialog = createReactFactory(modalDialogView)
 import getQueryParam  from '../utils/get-query-param'
+import {ShareLoadingView} from './share-loading-view'
 
 // This function is named "tr" elsewhere in this codeline.
 // Using the fullname, "translate" here, to avoid the potential overloading
@@ -66,7 +67,8 @@ export default createReactClass({
       launchButtonText: "Launch",
       fullscreenScaling: true,
       graphVisToggles: false,
-      tabSelected: 'link'
+      tabSelected: 'link',
+      isLoadingShared: false
     }
   },
 
@@ -101,20 +103,24 @@ export default createReactClass({
   },
 
   getLara() {
-    const sharedDocumentId = this.getSharedDocumentId()
-    if (sharedDocumentId) {
-      let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
-      while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1) }  // remove trailing slash
-      const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
-      // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-      const server = encodeURIComponent(this.state.serverUrl + graphVisToggles)
-      // Other params are handled by document server itself:
-      const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
-      const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
-      return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`
-    } else {
-      return null
-    }
+    // TBD: For now just return the normal share link
+    // See this PT story about creating an auto-launch page to replace this:
+    // https://www.pivotaltracker.com/story/show/172302663
+    return this.getShareLink()
+    // const sharedDocumentId = this.getSharedDocumentId()
+    // if (sharedDocumentId) {
+    //   let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
+    //   while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1) }  // remove trailing slash
+    //   const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
+    //   // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
+    //   const server = encodeURIComponent(this.state.serverUrl + graphVisToggles)
+    //   // Other params are handled by document server itself:
+    //   const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
+    //   const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
+    //   return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`
+    // } else {
+    //   return null
+    // }
   },
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
@@ -182,10 +188,14 @@ export default createReactClass({
 
   toggleShare(e) {
     e.preventDefault()
+    this.setState({
+      isLoadingShared: true
+    })
     return this.props.client.toggleShare(() => {
       return this.setState({
         link: this.getShareLink(),
-        embed: this.getEmbed()
+        embed: this.getEmbed(),
+        isLoadingShared: false
       })
     })
   },
@@ -228,12 +238,16 @@ export default createReactClass({
   },
 
   render() {
-    const sharing = this.state.link !== null
+
+    const { isLoadingShared, link } = this.state
+    const sharing = link !== null
 
     return (ModalDialog({title: (translate('~DIALOG.SHARED')), close: this.props.close},
       (div({className: 'share-dialog'},
         (div({className: 'share-top-dialog'},
-          sharing ?
+          isLoadingShared
+          ? ShareLoadingView({})
+          : sharing ?
             (div({},
               (div({className: 'share-status'},
                 (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_ENABLED"))),
