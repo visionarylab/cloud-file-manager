@@ -1,0 +1,184 @@
+.autolaunch_iframe
+  position: fixed
+  width: 100%
+  height: 100%
+  top: 0
+  right: 0
+  bottom: 0
+  left: 0
+  display: none
+
+.center
+  text-align: center
+
+.data-select-dialog
+  display: none
+  position: absolute
+  width: 100%
+  height: 100%
+  top: 0
+  right: 0
+  bottom: 0
+  left: 0
+  .header
+    background: #214d5a
+    width: 100%
+    color: white
+    font-size: 1.5em
+    padding: 5px
+    text-align: center
+  .content
+    background: white
+    margin-top: 8px
+    padding: 0
+    font-size: 18px
+    color: #666
+    overflow: auto
+  .question
+    padding: 5px 25px
+    text-align: center
+  .versions
+    text-align: center
+  .version-info
+    display: inline-block
+    width: 45%
+    margin: 2% 10px
+  table.version-desc
+    width: 100%
+    border: none
+    td
+      padding: 5px
+      font-size: 14px
+    th
+      width: 100px
+      font-weight: normal
+  .prop
+    font-weight: bold
+  .dialog-button
+    background: #82bec8
+    border-radius: 5px
+    text-align: center
+    padding: 6px 10px
+    margin: 10px
+    width: auto
+    display: inline-block
+    color: white
+    cursor: pointer
+    &:hover
+      background: #679aa1
+  .iframe-wrapper
+    width: 100%
+    height: 100%
+    pointer-events: none
+  .preview
+    width: 100%
+    height: 250px
+    cursor: pointer
+    &:hover
+      box-shadow: 2px 2px 4px #aaa
+  .preview-label
+    font-size: 14px
+    padding: 5px
+    cursor: pointer
+    &:hover
+      color: #333
+  .preview-active
+    position: fixed
+    top: 40px
+    left: 3%
+    width: 94%
+    height: 90%
+    z-index: 100
+    cursor: pointer
+    @media (max-width: 1200px)
+      iframe
+        width: 150%
+        height: 150%
+        transform: scale3d(0.66667, 0.66667, 1)
+    @media (min-width: 1200px)
+      iframe
+        width: 100%
+        height: 100%
+        transform: scale3d(1, 1, 1)
+  .overlay
+    display: none
+    position: fixed
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    z-index: 90
+    background: #6ca0a9
+    padding-top: 10px
+    font-size: 20px
+    color: white
+    text-align: center
+    cursor: pointer
+  iframe
+    width: 300%
+    height: 300%
+    transform: scale3d(0.33333, 0.33333, 1)
+    transform-origin: left top
+    border: solid 1px
+.loading-overlay
+  position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  background: #b6e2eb
+  padding-top: 50px
+  table
+    width: 600px
+    margin: 0 auto
+    border: none
+    td
+      padding: 5px
+      font-size: 15px
+    th
+      width: 100px
+      font-weight: normal
+  .loading-text
+    font-size: 21px
+    vertical-align: middle
+    color: #555
+.copy-overlay
+  display: none
+.fullscreen-help
+  display: none
+  position: fixed
+  left: 0
+  bottom: 12px
+  height: 40px
+  width: calc(100% - 70px)
+  text-align: right
+  line-height: 36px
+  font-size: 0
+  color: #8e8e8e
+  text-shadow: 1px 1px 5px #fff
+  &.hidden
+    opacity: 0
+    visibility: hidden
+    transition: opacity 1.5s ease-out 2s, visibility .01s linear 3.5s
+.fullscreen-icon
+  display: none
+  font-size: 45px
+  height: 50px
+  width: 50px
+  background-size: 50px
+  position: fixed
+  bottom: 10px
+  right: 10px
+  z-index: 10000
+  cursor: pointer
+  background-image: image-url("fullscreen.svg")
+  background-color: transparent
+  background-repeat: no-repeat
+  border-radius: 0
+  color: transparent
+  &:hover
+    background-image: image-url("fullscreen-dark.svg")
+  &.fullscreen
+    background-image: image-url("fullscreen-exit.svg")
+    &:hover
+      background-image: image-url("fullscreen-exit-dark.svg")

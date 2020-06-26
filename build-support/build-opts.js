@@ -55,6 +55,7 @@ if (codap) {
 
 const appEntries = {
   'js/app.js': './code/app.jsx',
+  'js/autoLaunch.js': './code/autolaunch/autolaunch.js',
   'css/app': './style/app.styl'
 }
 
@@ -64,7 +65,7 @@ const entry = noGlobals
 
 const assets = codap
   ? ['img']
-  : ['examples', 'fonts', 'img', 'index.html']
+  : ['examples', 'fonts', 'img', 'index.html', 'autolaunch']
 
 const outputFileName = codap
   ? codapOutputFileName

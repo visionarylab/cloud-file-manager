@@ -93,7 +93,7 @@
     "no-whitespace-before-property": "warn",
     "quote-props": ["error", "as-needed", { "keywords": true, "unnecessary": false }],
     "quotes": "off",
-    "semi": ["error", "never"],
+    "semi": ["off", "never"],
     "react/display-name": "off",
     "react/prop-types": "off", // TODO: FIX THIS
     "react/no-find-dom-node": "off" // TODO: Fix this!!!
