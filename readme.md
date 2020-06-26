@@ -14,9 +14,16 @@ The Cloud File Manager is a Javascript library that enables applications to save
 
 and navigate to `http://localhost:8080/examples/`
 
+### How to setup local SSL: ###
+
 You can also install SSL certificates in `LocalhostCertificates` and then use
 `npm run start:secure` to start a secure server, which might be useful for integration
-testing with LARA and other services.
+testing with LARA and other services. More info:
+
+  1. install [mkcert](https://github.com/FiloSottile/mkcert) :  `brew install mkcert`
+  2. Create and install the trusted CA in keychain:   `mkcert -install`
+  3. Ensure you have a certificate directory: `cd LocalhostCertificates`
+  4. Make certs: `mkcert -cert-file localhost.crt -key-file localhost.key localhost 127.0.0.1 ::1`
 
 ## Deployment
 
