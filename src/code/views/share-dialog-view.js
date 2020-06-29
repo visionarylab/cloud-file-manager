@@ -103,24 +103,23 @@ export default createReactClass({
   },
 
   getLara() {
-    // TBD: For now just return the normal share link
-    // See this PT story about creating an auto-launch page to replace this:
+    // TODO: Next we need to update the LARA share link as per this story:
     // https://www.pivotaltracker.com/story/show/172302663
-    return this.getShareLink()
-    // const sharedDocumentId = this.getSharedDocumentId()
-    // if (sharedDocumentId) {
-    //   let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
-    //   while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1) }  // remove trailing slash
-    //   const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
-    //   // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-    //   const server = encodeURIComponent(this.state.serverUrl + graphVisToggles)
-    //   // Other params are handled by document server itself:
-    //   const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
-    //   const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
-    //   return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`
-    // } else {
-    //   return null
-    // }
+    // It will point to SPA hosted in this repo -- NP 2020-06-29
+    const sharedDocumentId = this.getSharedDocumentId()
+    if (sharedDocumentId) {
+      let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
+      while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1) }  // remove trailing slash
+      const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
+      // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
+      const server = encodeURIComponent(this.state.serverUrl + graphVisToggles)
+      // Other params are handled by document server itself:
+      const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
+      const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
+      return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`
+    } else {
+      return null
+    }
   },
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
