@@ -64,6 +64,11 @@ export default createReactClass({
       pageType: "autolaunch",
       serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
+
+      // TODO: Maybe change the defaults to point at http://cloud-file-manager.concord.org/?
+      CFMOrigin: this.props.settings.CFMOrigin || window.location.origin,
+      CFMOriginLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.CFM_ORIGIN_URL"),
+
       launchButtonText: "Launch",
       fullscreenScaling: true,
       graphVisToggles: false,
@@ -87,7 +92,6 @@ export default createReactClass({
     const useInternalLink = true
     if (shared) {
       if(sharedDocumentUrl) {
-        // return sharedDocumentUrl
         return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(sharedDocumentUrl)}`
       }
       if(sharedDocumentId) {
@@ -126,45 +130,35 @@ export default createReactClass({
   },
 
   getLara() {
-    // TODO: Next we need to update the LARA share link as per this story:
+    // Update the LARA share link as per this story:
     // https://www.pivotaltracker.com/story/show/172302663
+    //
     // General form of the link is:
     //  `<AutoLaunchPageUrl>?documentId=<XX>&server=<CODAP SERVER>&scaling`
     // <AutoLaunchPageUrl> expects a `documentId` param (was a path in DocStore)
     //    and a `server` param, that points usually to some CODAP release.
     // <CODAP SERVER> can have url encoded params too such as `FcfmBaseUrl=`
     // where URL is the url to the /js folder for CFM
+    //
     // It will point to SPA hosted in this repo -- NP 2020-06-29
-    // 🌼🌺🦄🌈 The Happy Path 🌈🦄🌺🌼
     //  1: Get the resource URL (S3 shared document public URL)
     //  2: Get the URL for the autoLauch page (hosted here ...)
     //  3: Construct a URL to <AutlaunchPage
-
-    // For now this is a bit of a hack, we will abstract later:
-    // TODO: use QueryParams Library
-    const getAutoLaunchPageUrl = (documentUrl) => {
-      const localAutoLaunchpage = "https://localhost:8888/autolaunch/autolaunch.html"
-      const localCFMBaseUrl = "https://localhost:8888/js"
-      const encodedCFMBase = encodeURIComponent(localCFMBaseUrl)
-      const encodedDocUrl = encodeURIComponent(documentUrl)
-      const CODAPBaseUrl = "https://codap.concord.org/releases/latest/static/dg/en/cert/index.html"
-      const CODAPUrl = `${CODAPBaseUrl}?cfmBaseUrl=${encodedCFMBase}`
-      return `${localAutoLaunchpage}?documentId=${encodedDocUrl}&server=${CODAPUrl}&`
-    }
-    // return getAutoLaunchPageUrl(this.getShareLink())
-
-    const localCFMBaseUrl = "https://localhost:8888/js"
+    // TODO: What happens if we are launched from CFM build inside CODAP?
+    const CFMOrigin = this.state.CFMOrigin
+    const autoLaunchpage = `${CFMOrigin}/autolaunch/autolaunch.html`
+    const localCFMBaseUrl = `${CFMOrigin}/js`
     const encodedCFMBase = encodeURIComponent(localCFMBaseUrl)
 
-    let documentServer = encodeURIComponent(this.getShareLink())
+    const documentServer = encodeURIComponent(this.getShareLink())
     const graphVisToggles = this.state.graphVisToggles ? '&app=is' : ''
     // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-    const server = encodeURIComponent(`${this.state.serverUrl}?cfmBasUrl=${encodedCFMBase}${graphVisToggles}`)
+    const server = encodeURIComponent(`${this.state.serverUrl}?cfmBaseUrl=${encodedCFMBase}${graphVisToggles}`)
     // Other params are handled by document server itself:
     const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
     const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
-    // TODO: how about cover launch.html as well as autolaunch
-    return `https://localhost:8888/autolaunch/autolaunch.html?documentId=${documentServer}&server=${server}${buttonText}${fullscreenScaling}`
+
+    return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${buttonText}${fullscreenScaling}`
   },
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
@@ -257,8 +251,11 @@ export default createReactClass({
   },
 
   changedServerUrl(event) {
-    return this.setState({
-      serverUrl: event.target.value})
+    return this.setState({serverUrl: event.target.value})
+  },
+
+  changedCFMOrigin(event) {
+    return this.setState({CFMOrigin: event.target.value})
   },
 
   changedLaunchButtonText(event) {
@@ -347,6 +344,12 @@ export default createReactClass({
                         this.state.serverUrlLabel,
                         (div({},
                           (input({value: this.state.serverUrl, onChange: this.changedServerUrl}))
+                        ))
+                      )),
+                      (div({className: 'cfm-origin'},
+                        this.state.CFMOriginLabel,
+                        (div({},
+                          (input({value: this.state.CFMOrigin, onChange: this.changedCFMOrigin}))
                         ))
                       )),
                       (div({className: 'autolaunch'},
