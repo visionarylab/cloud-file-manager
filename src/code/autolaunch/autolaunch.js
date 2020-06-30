@@ -52,11 +52,6 @@ export default function autolaunchInteractive() {
   const server = getURLParam("server")
   const launchUrl = codap_v2_link(server)
 
-  // used to be the DBID of the shared document, passed in as rails path ....
-  console.log(documentId)
-  console.log(server)
-
-  console.log(launchUrl)
   var fullscreenScaling = getURLParam('scaling');
 
   var CURRENT_VS_LINKED = "Another page contains more recent data. Which would you like to use?";
