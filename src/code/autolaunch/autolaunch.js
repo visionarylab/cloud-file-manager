@@ -1,6 +1,6 @@
 import iframePhone from "iframe-phone"
 import $ from "jquery"
-import fullscreenSupport from "./fullscreen"
+import { fullscreenSupport } from "./fullscreen"
 import { Base64 } from "js-base64"
 import queryString from "query-string"
 
@@ -21,26 +21,26 @@ function getURLParam (name) {
   }
 }
 
-
 // Adds query params to CODAP urls
 // this was taken from the document server `documents_v2_helper.rb`
-// It would add a documentServer queryParam ... I think for now we will skip
-// that part ...
+// We could also add documentServer parameter, or check query params
 function codap_v2_link(codapServer) {
   const defaultCodapUrl = "https://codap.concord.org/releases/latest/"
-  const defaultDocStoreUrl = "https://document-store.concord.org/"
-
-  const data = {
-    documentServer: defaultDocStoreUrl
+  const documentServer = "https://document-store.concord.org/"
+  const CFMOrigin = window.location.origin
+  const cfmBaseUrl = `${CFMOrigin}/js`
+  const extraData = {
+    documentServer,
+    cfmBaseUrl
   }
-
   const baseUrl = codapServer || defaultCodapUrl
-  const urlParts = queryString.parseUrl(baseUrl)
-  return queryString.stringifyUrl({
-    url: urlParts.url,
-    query: Object.assign({}, data, urlParts.query),
-    fragmentIdentifier: urlParts.fragmentIdentifier
+  const {url, query, fragmentIdentifier} = queryString.parseUrl(baseUrl, {fragmentIdentifier: true})
+  const newCodapUrl = queryString.stringifyUrl({
+    url: url,
+    query: Object.assign({}, extraData, query),
+    fragmentIdentifier: fragmentIdentifier
   })
+  return newCodapUrl
 }
 
 export default function autolaunchInteractive() {
@@ -56,10 +56,7 @@ export default function autolaunchInteractive() {
   console.log(documentId)
   console.log(server)
 
-  // @codap_server = launch_params[:server]
-  // @launch_url = codap_v2_link(@codap_server)
   console.log(launchUrl)
-
   var fullscreenScaling = getURLParam('scaling');
 
   var CURRENT_VS_LINKED = "Another page contains more recent data. Which would you like to use?";
@@ -185,7 +182,6 @@ export default function autolaunchInteractive() {
   function launchInteractive () {
     var linkedState = mostRecentLinkedState && mostRecentLinkedState.interactiveState;
     var launchParams = {url: interactiveData.interactiveStateUrl, source: documentId, collaboratorUrls: interactiveData.collaboratorUrls};
-
     // If there is a linked state and no interactive state then change the source document to point to the linked recordid and add the access key.
     if (stateValid(linkedState) && !interactiveStateAvailable) {
       launchParams.source = linkedState.docStore.recordid;
@@ -251,7 +247,6 @@ export default function autolaunchInteractive() {
 
     interactiveData = _interactiveData;
     interactiveStateAvailable = stateValid(interactiveData.interactiveState);
-
     var linkedStates = interactiveData.allLinkedStates && interactiveData.allLinkedStates.filter(function (el) {
       return stateValid(el.interactiveState);
     });

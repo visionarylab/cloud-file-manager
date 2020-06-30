@@ -1,4 +1,4 @@
-.autolaunch_iframe {
+#autolaunch_iframe {
   position: fixed;
   width: 100%;
   height: 100%;
@@ -24,20 +24,20 @@
 .data-select-dialog .header {
   background: #214d5a;
   width: 100%;
-  color: #fff;
+  color: white;
   font-size: 1.5em;
   padding: 5px;
   text-align: center;
 }
 .data-select-dialog .content {
-  background: #fff;
+  background: white;
   margin-top: 8px;
   padding: 0;
   font-size: 18px;
   color: #666;
   overflow: auto;
 }
-.data-select-dialog .question {
+.data-select-dialog #question {
   padding: 5px 25px;
   text-align: center;
 }
@@ -72,7 +72,7 @@
   margin: 10px;
   width: auto;
   display: inline-block;
-  color: #fff;
+  color: white;
   cursor: pointer;
 }
 .data-select-dialog .dialog-button:hover {
@@ -112,15 +112,15 @@
   .data-select-dialog .preview-active iframe {
     width: 150%;
     height: 150%;
-    transform: scale3d(0.66667, 0.66667, 1);
-  }
+    transform: scale3d(0.666666, 0.666666, 1);
+ }
 }
 @media (min-width: 1200px) {
   .data-select-dialog .preview-active iframe {
     width: 100%;
     height: 100%;
     transform: scale3d(1, 1, 1);
-  }
+ }
 }
 .data-select-dialog .overlay {
   display: none;
@@ -133,14 +133,14 @@
   background: #6ca0a9;
   padding-top: 10px;
   font-size: 20px;
-  color: #fff;
+  color: white;
   text-align: center;
   cursor: pointer;
 }
 .data-select-dialog iframe {
   width: 300%;
   height: 300%;
-  transform: scale3d(0.33333, 0.33333, 1);
+  transform: scale3d(0.333333, 0.333333, 1);
   transform-origin: left top;
   border: solid 1px;
 }
@@ -171,10 +171,10 @@
   vertical-align: middle;
   color: #555;
 }
-.copy-overlay {
+#copy-overlay {
   display: none;
 }
-.fullscreen-help {
+#fullscreen-help {
   display: none;
   position: fixed;
   left: 0;
@@ -187,7 +187,7 @@
   color: #8e8e8e;
   text-shadow: 1px 1px 5px #fff;
 }
-.fullscreen-help.hidden {
+#fullscreen-help.hidden {
   opacity: 0;
   visibility: hidden;
   transition: opacity 1.5s ease-out 2s, visibility 0.01s linear 3.5s;
@@ -203,18 +203,18 @@
   right: 10px;
   z-index: 10000;
   cursor: pointer;
-  background-image: image-url("fullscreen.svg");
+  background-image: url("../img/fullscreen.svg");
   background-color: transparent;
   background-repeat: no-repeat;
   border-radius: 0;
   color: transparent;
 }
 .fullscreen-icon:hover {
-  background-image: image-url("fullscreen-dark.svg");
+  background-image: url("../img/fullscreen-dark.svg");
 }
 .fullscreen-icon.fullscreen {
-  background-image: image-url("fullscreen-exit.svg");
+  background-image: url("../img/fullscreen-exit.svg");
 }
 .fullscreen-icon.fullscreen:hover {
-  background-image: image-url("fullscreen-exit-dark.svg");
+  background-image: url("../img/fullscreen-exit-dark.svg");
 }

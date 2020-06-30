@@ -18,7 +18,7 @@ window.GetIframeTransforms = function(_window, _screen) {
   }
 }
 
-export default function fullscreenSupport (iframe) {
+export function fullscreenSupport (iframe) {
   var $target = $(iframe)
   function setScaling () {
     if (!screenfull.isFullscreen) {
@@ -34,32 +34,29 @@ export default function fullscreenSupport (iframe) {
       $target.css('transform', 'scale3d(1,1,1)')
     }
     // Help text.
-    $('#fullscreen-help').css('fontSize', Math.round(Math.pow(window.innerWidth / 5, 0.65)) + 'px')
+    const fontSize =Math.round(Math.pow(window.innerWidth / 5, 0.65))
+    $('#fullscreen-help').css('fontSize', `${fontSize}px`)
   }
 
   function setupFullsceenButton () {
-    $('#fullscreen-help').show()
-    var $button = $('.fullscreen-icon')
-    $button.show()
-    $button.on('click', function () {
-      if (!screenfull.isFullscreen) {
-        screenfull.request()
-      } else {
-        screenfull.exit()
+    $('#fullscreen-help').show();
+    var $button = $('.fullscreen-icon');
+    $button.show();
+    $button.on('click', () => screenfull.toggle())
+    screenfull.on('change', () => {
+      console.log(`we are fullsreen? ${screenfull.isFullscreen}`)
+      if(screenfull.isFullscreen) {
+        $button.addClass('fullscreen');
       }
-    })
-    document.addEventListener(screenfull.raw.fullscreenchange, function () {
-      if (screenfull.isFullscreen) {
-        $button.addClass('fullscreen')
-      } else {
-        $button.removeClass('fullscreen')
+      else {
+        $button.removeClass('fullscreen');
       }
     })
   }
 
-  setScaling()
-  if (screenfull.enabled) {
-    setupFullsceenButton()
+  setScaling();
+  if (screenfull.isEnabled) {
+    setupFullsceenButton();
   }
   $(window).on('resize', setScaling)
 }
