@@ -129,13 +129,16 @@ export default function autolaunchInteractive() {
 
     $('.overlay').on('click', hidePreview);
     $('.preview').on('click', function () {
+      // eslint-disable-next-line babel/no-invalid-this
       if ($(this).hasClass('preview-active')) {
         hidePreview();
       } else {
+        // eslint-disable-next-line babel/no-invalid-this
         showPreview(this);
       }
     });
     $('.preview-label').on('click', function () {
+      // eslint-disable-next-line babel/no-invalid-this
       showPreview($(this).closest('.version-info').find('.preview')[0]);
     });
     $('#state1-button').on('click', function () {
