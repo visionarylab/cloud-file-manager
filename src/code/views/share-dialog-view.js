@@ -66,7 +66,7 @@ export default createReactClass({
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
 
       // TODO: Maybe change the defaults to point at http://cloud-file-manager.concord.org/?
-      CFMOrigin: this.props.settings.CFMOrigin || "https://cloud-file-manager.concord.org"
+      CFMOrigin: this.props.settings.CFMOrigin || "https://cloud-file-manager.concord.org",
       CFMOriginLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.CFM_ORIGIN_URL"),
 
       launchButtonText: "Launch",
