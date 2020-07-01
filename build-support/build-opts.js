@@ -55,7 +55,7 @@ if (codap) {
 
 const appEntries = {
   'js/app.js': './code/app.jsx',
-  'js/autoLaunch.js': './code/autolaunch/autolaunch.js',
+  'js/autolaunch.js': './code/autolaunch/autolaunch.js',
   'css/app': './style/app.styl'
 }
 
