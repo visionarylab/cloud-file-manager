@@ -116,14 +116,6 @@ export default function autolaunchInteractive() {
 
     var src1 = state1.interactiveState.lara_options.reporting_url;
     var src2 = state2.interactiveState.lara_options.reporting_url;
-    if (window.location.origin !== "https://document-store.concord.org") {
-      // document-server, CFM or CODAP aren't very good in making sure that correct URLs are being used.
-      // Even if you create a document pointing to some other instance of document-server, it gets lost
-      // somewhere and CODAP/CFM will try to use the default one. This little hack lets you test things
-      // locally or with a custom document server deployment.
-      src1 += "&documentServer=" + window.location.origin;
-      src2 += "&documentServer=" + window.location.origin;
-    }
     $('#state1-preview').attr('src', src1);
     $('#state2-preview').attr('src', src2);
 

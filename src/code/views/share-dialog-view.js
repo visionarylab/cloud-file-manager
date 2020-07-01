@@ -65,7 +65,6 @@ export default createReactClass({
       serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
 
-      // TODO: Maybe change the defaults to point at http://cloud-file-manager.concord.org/?
       CFMOrigin: this.props.settings.CFMOrigin || "https://cloud-file-manager.concord.org",
       CFMOriginLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.CFM_ORIGIN_URL"),
 
@@ -144,7 +143,6 @@ export default createReactClass({
     //  1: Get the resource URL (S3 shared document public URL)
     //  2: Get the URL for the autoLauch page (hosted here ...)
     //  3: Construct a URL to <AutlaunchPage
-    // TODO: What happens if we are launched from CFM build inside CODAP?
     const CFMOrigin = this.state.CFMOrigin
     const autoLaunchpage = `${CFMOrigin}/autolaunch/autolaunch.html`
     const localCFMBaseUrl = `${CFMOrigin}/js`
@@ -160,6 +158,7 @@ export default createReactClass({
 
     return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${buttonText}${fullscreenScaling}`
   },
+  // TODO: Consider using queryparams to make URL construction less janky⬆ 
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy(e) {
