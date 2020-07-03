@@ -80,11 +80,13 @@
   "~SHARE_DIALOG.EMBED_MESSAGE": "Embed code for including in webpages or other web-based content",
   "~SHARE_DIALOG.LARA_MESSAGE": "Use this link when creating an activity in LARA",
   "~SHARE_DIALOG.LARA_CODAP_URL": "CODAP Server URL:",
+  "~SHARE_DIALOG.CFM_ORIGIN_URL": "CFM Origin:",
   "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "Autolaunch page",
   "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Fullscreen button and scaling",
   "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Launch Button Text:",
   "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Display data visibility toggles on graphs",
-
+  "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
+  
   "~SHARE_UPDATE.TITLE": "Shared View Updated",
   "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully.",
 

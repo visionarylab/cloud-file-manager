@@ -1,0 +1,133 @@
+<html>
+
+<head>
+  <Title>CFM AutoLauching Interactive</Title>
+  <link rel="stylesheet" href="./autolaunch.css">
+  <script src="../js/autolaunch.js"></script>
+</head>
+<body>
+<div class='row launch-error'>
+  <div class='small-12 text-center columns'>
+    There was a problem setting up this interactive. Please try refreshing your page.
+  </div>
+</div>
+<div class='loading-overlay'>
+  <div class='center'>
+    <img src="../img/loading.gif" alt="loading-spinner"/>
+    <span class='loading-text'>
+      Loading interactive...
+    </span>
+  </div>
+</div>
+<iframe id='autolaunch_iframe'></iframe>
+<div id='fullscreen-help'>
+  Click here to enter/exit fullscreen →
+</div>
+<div class='fullscreen-icon'></div>
+<div class='loading-overlay' id='copy-overlay'>
+  <div class='center'>
+    <img src="../img/loading.gif" alt="loading-spinner"/>
+    <span class='loading-text'>
+      Copying work from...
+    </span>
+    <table>
+      <tr>
+        <th>Page</th>
+        <td>
+          <span id='copy-page-idx'></span>
+          <span id='copy-page-name'></span>
+        </td>
+      </tr>
+      <tr>
+        <th>Activity</th>
+        <td id='copy-activity-name'></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class='data-select-dialog'>
+  <div class='overlay'>
+    This is read-only preview of your data. Click anywhere to close it.
+  </div>
+  <div class='header'>
+    WHAT WOULD YOU LIKE TO DO?
+  </div>
+  <div class='content'>
+    <div id='question'></div>
+    <div class='scroll-wrapper'>
+      <div class='versions'>
+        <div class='version-info'>
+          <div class='dialog-button' id='state1-button'>
+            Use this version
+          </div>
+          <div class='preview'>
+            <div class='iframe-wrapper'>
+              <iframe id='state1-preview'></iframe>
+            </div>
+          </div>
+          <div class='center preview-label'>
+            Click to preview
+          </div>
+          <table class='version-desc'>
+            <tr>
+              <th>Updated at</th>
+              <td id='state1-time'></td>
+            </tr>
+            <tr>
+              <th>Page</th>
+              <td>
+                <span id='state1-page-idx'></span>
+                <span id='state1-page-name'></span>
+              </td>
+            </tr>
+            <tr>
+              <th>Activity</th>
+              <td id='state1-activity-name'></td>
+            </tr>
+          </table>
+        </div>
+        <div class='version-info'>
+          <div class='center'>
+            <div class='dialog-button' id='state2-button'>
+              Use this version
+            </div>
+          </div>
+          <div class='preview'>
+            <div class='iframe-wrapper'>
+              <iframe id='state2-preview'></iframe>
+            </div>
+          </div>
+          <div class='center preview-label'>
+            Click to preview
+          </div>
+          <table class='version-desc'>
+            <tr>
+              <th>Updated at</th>
+              <td id='state2-time'></td>
+            </tr>
+            <tr>
+              <th>Page</th>
+              <td>
+                <span id='state2-page-idx'></span>
+                <span id='state2-page-name'></span>
+              </td>
+            </tr>
+            <tr>
+              <th>Activity</th>
+              <td id='state2-activity-name'></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var init = function () { autolaunchInteractive(); };
+  if (document.readyState === "complete") { init(); }
+  else { document.addEventListener("DOMContentLoaded", init); }
+</script>
+</body>
+
+</html>

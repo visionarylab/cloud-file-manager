@@ -14,6 +14,7 @@ const SHOW_LONGEVITY_WARNING = false
 import modalDialogView from './modal-dialog-view'
 const ModalDialog = createReactFactory(modalDialogView)
 import getQueryParam  from '../utils/get-query-param'
+import {ShareLoadingView} from './share-loading-view'
 
 // This function is named "tr" elsewhere in this codeline.
 // Using the fullname, "translate" here, to avoid the potential overloading
@@ -63,11 +64,22 @@ export default createReactClass({
       pageType: "autolaunch",
       serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
+
+      CFMOrigin: this.props.settings.CFMOrigin || "https://cloud-file-manager.concord.org",
+      CFMOriginLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.CFM_ORIGIN_URL"),
+
       launchButtonText: "Launch",
       fullscreenScaling: true,
       graphVisToggles: false,
-      tabSelected: 'link'
+      tabSelected: 'link',
+      isLoadingShared: false
     }
+  },
+
+  // To support legacy shares:
+  getSharedDocumentId() {
+    const { client } = this.props
+    return client.state?.currentContent?.get("sharedDocumentId")
   },
 
   // New S3ShareProvider saves shareDocumentUrl
@@ -75,11 +87,10 @@ export default createReactClass({
     const { client } = this.props
     const shared = client.isShared()
     const sharedDocumentUrl = client.state?.currentContent?.get("sharedDocumentUrl")
-    const sharedDocumentId = client.state?.currentContent?.get("sharedDocumentId")
+    const sharedDocumentId = this.getSharedDocumentId()
     const useInternalLink = true
     if (shared) {
       if(sharedDocumentUrl) {
-        // return sharedDocumentUrl
         return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(sharedDocumentUrl)}`
       }
       if(sharedDocumentId) {
@@ -100,7 +111,7 @@ export default createReactClass({
     }
   },
 
-  getLara() {
+  getLegacyLara() {
     const sharedDocumentId = this.getSharedDocumentId()
     if (sharedDocumentId) {
       let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
@@ -116,6 +127,38 @@ export default createReactClass({
       return null
     }
   },
+
+  getLara() {
+    // Update the LARA share link as per this story:
+    // https://www.pivotaltracker.com/story/show/172302663
+    //
+    // General form of the link is:
+    //  `<AutoLaunchPageUrl>?documentId=<XX>&server=<CODAP SERVER>&scaling`
+    // <AutoLaunchPageUrl> expects a `documentId` param (was a path in DocStore)
+    //    and a `server` param, that points usually to some CODAP release.
+    // <CODAP SERVER> can have url encoded params too such as `FcfmBaseUrl=`
+    // where URL is the url to the /js folder for CFM
+    //
+    // It will point to SPA hosted in this repo -- NP 2020-06-29
+    //  1: Get the resource URL (S3 shared document public URL)
+    //  2: Get the URL for the autoLauch page (hosted here ...)
+    //  3: Construct a URL to <AutlaunchPage
+    const CFMOrigin = this.state.CFMOrigin
+    const autoLaunchpage = `${CFMOrigin}/autolaunch/autolaunch.html`
+    const localCFMBaseUrl = `${CFMOrigin}/js`
+    const encodedCFMBase = encodeURIComponent(localCFMBaseUrl)
+
+    const documentServer = encodeURIComponent(this.getShareLink())
+    const graphVisToggles = this.state.graphVisToggles ? '&app=is' : ''
+    // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
+    const server = encodeURIComponent(`${this.state.serverUrl}?cfmBaseUrl=${encodedCFMBase}${graphVisToggles}`)
+    // Other params are handled by document server itself:
+    const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
+    const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
+
+    return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${buttonText}${fullscreenScaling}`
+  },
+  // TODO: Consider using queryparams to make URL construction less janky⬆ 
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy(e) {
@@ -182,10 +225,14 @@ export default createReactClass({
 
   toggleShare(e) {
     e.preventDefault()
+    this.setState({
+      isLoadingShared: true
+    })
     return this.props.client.toggleShare(() => {
       return this.setState({
         link: this.getShareLink(),
-        embed: this.getEmbed()
+        embed: this.getEmbed(),
+        isLoadingShared: false
       })
     })
   },
@@ -203,8 +250,11 @@ export default createReactClass({
   },
 
   changedServerUrl(event) {
-    return this.setState({
-      serverUrl: event.target.value})
+    return this.setState({serverUrl: event.target.value})
+  },
+
+  changedCFMOrigin(event) {
+    return this.setState({CFMOrigin: event.target.value})
   },
 
   changedLaunchButtonText(event) {
@@ -228,12 +278,16 @@ export default createReactClass({
   },
 
   render() {
-    const sharing = this.state.link !== null
+
+    const { isLoadingShared, link } = this.state
+    const sharing = link !== null
 
     return (ModalDialog({title: (translate('~DIALOG.SHARED')), close: this.props.close},
       (div({className: 'share-dialog'},
         (div({className: 'share-top-dialog'},
-          sharing ?
+          isLoadingShared
+          ? ShareLoadingView({})
+          : sharing ?
             (div({},
               (div({className: 'share-status'},
                 (translate("~SHARE_DIALOG.SHARE_STATE")), (strong({}, translate("~SHARE_DIALOG.SHARE_STATE_ENABLED"))),
@@ -289,6 +343,12 @@ export default createReactClass({
                         this.state.serverUrlLabel,
                         (div({},
                           (input({value: this.state.serverUrl, onChange: this.changedServerUrl}))
+                        ))
+                      )),
+                      (div({className: 'cfm-origin'},
+                        this.state.CFMOriginLabel,
+                        (div({},
+                          (input({value: this.state.CFMOrigin, onChange: this.changedCFMOrigin}))
                         ))
                       )),
                       (div({className: 'autolaunch'},

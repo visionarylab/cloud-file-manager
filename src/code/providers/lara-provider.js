@@ -15,10 +15,10 @@ import { CloudMetadata }  from './provider-interface'
 import DocumentStoreUrl  from './document-store-url'
 import PatchableContent  from './patchable-content'
 import getQueryParam  from '../utils/get-query-param'
-import Base64  from 'js-base64'
+import queryString from "query-string"
+import { Base64 }  from 'js-base64'
 import pako  from 'pako'
 
-const { base64 }  = Base64
 // This provider supports the lara:... protocol used for documents launched
 // from LARA. It looks up the document ID and access keys from the LARA
 // interactive run state and then uses the V2 DocStore API to read/write
@@ -66,13 +66,13 @@ class LaraProvider extends ProviderInterface {
   }
 
   encodeParams(params) {
-    return base64.encodeURI(JSON.stringify(params))
+    return Base64.encodeURI(JSON.stringify(params))
   }
 
   decodeParams(params) {
     let decoded
     try {
-      decoded = JSON.parse(base64.decode(params))
+      decoded = JSON.parse(Base64.decode(params))
     } catch (e) {
       decoded = null
     }
@@ -444,25 +444,12 @@ class LaraProvider extends ProviderInterface {
         return
       }
 
-      // (2b) request a copy of the shared document
-      const createParams = { source: sourceID }
-      // add a key if given (for copying linked run states)
-      if (readOnlyKey) {
-        createParams.accessKey = `RO::${readOnlyKey}`
-      }
-      const {method, url} = this.docStoreUrl.v2CreateDocument(createParams)
-      return $.ajax({
-        type: method,
-        url,
-        dataType: 'json'
-      })
-      .done((createResponse, status, jqXHR) => {
-
+      // Called after docstore has created a document for us.
+      const afterCreateCopy = (createResponse, status, jqXHR) => {
         processCreateResponse(createResponse)
         if (haveCollaborators) {
           docStore.collaborator = 'leader'
         }
-
         const providerData = _.merge({}, docStore, { url: runStateUrl })
         const updateFinished = () => loadProviderFile(providerData, callback)
 
@@ -483,7 +470,61 @@ class LaraProvider extends ProviderInterface {
             return updateFinished()
           }
         })
-    }).fail((jqXHR, status, error) => callback("Could not open the specified document because an error occurred [createCopy]"))
+      }
+
+      const onError = (jqXHR, status, error) => {
+        callback("Could not open the specified document because an error occurred [createCopy]")
+      }
+
+      // NP 2020-06-29 Read the contents from a shared URL in the SourceID
+      // This includes the CODAP part of the URL, (TBD: has this always been the case?)
+
+      // See if the `#shared` hash parameter looks like a public URL:
+      const sourceUrl = queryString.parseUrl(sourceID, {parseFragmentIdentifier: true})
+      const parsedHash = queryString.parse(sourceUrl.fragmentIdentifier)
+      const sharedDocParam = parsedHash?.shared
+      const S3MatchRegex = /^http?s/
+      const sharedDocIsUrl = sharedDocParam && sharedDocParam.match(S3MatchRegex)
+
+      // The `#shared` hash param is a public URL, just read the contents
+      // and use that as the post body to v2CreateDocument.
+      if (sharedDocIsUrl) {
+        $.ajax({
+          url: sharedDocParam,
+        })
+        .done((data) => {
+          const {method, url} = this.docStoreUrl.v2CreateDocument({})
+          return $.ajax({
+            type: method,
+            dataType: 'json',
+            data,
+            url
+          })
+          .done(afterCreateCopy)
+          .fail(onError)
+        })
+        .fail(onError)
+      }
+
+      // The `#shared` hash-param is assumed to be docstore document ID.
+      // Use the docstore server-side copy version of create, which expects
+      // a `source` parameter.
+      else {
+        // (2b) request a copy of the shared document
+        const createParams = { source: sourceID }
+        // add a key if given (for copying linked run states)
+        if (readOnlyKey) {
+          createParams.accessKey = `RO::${readOnlyKey}`
+        }
+        const {method, url} = this.docStoreUrl.v2CreateDocument(createParams)
+        return $.ajax({
+          type: method,
+          url,
+          dataType: 'json'
+        })
+        .done(afterCreateCopy)
+        .fail(onError)
+      }
     }
 
     //
