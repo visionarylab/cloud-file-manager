@@ -38,6 +38,7 @@
   "~FILE_STATUS.SAVED": "All changes saved",
   "~FILE_STATUS.SAVED_TO_PROVIDER": "All changes saved to %{providerName}",
   "~FILE_STATUS.UNSAVED": "Unsaved",
+  "~FILE_STATUS.FAILURE": "Retrying...",
 
   "~FILE_DIALOG.FILENAME": "Filename",
   "~FILE_DIALOG.OPEN": "Open",
@@ -86,7 +87,7 @@
   "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Launch Button Text:",
   "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Display data visibility toggles on graphs",
   "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
-  
+
   "~SHARE_UPDATE.TITLE": "Shared View Updated",
   "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully.",
 

@@ -87,6 +87,8 @@ class AppView extends React.Component {
           ? tr('~FILE_STATUS.SAVED_TO_PROVIDER', { providerName })
           : tr('~FILE_STATUS.SAVED')
         return {message, type: 'info'}
+      } else if (event.state.failures) {
+        return {message: tr('~FILE_STATUS.FAILURE'), type: 'alert'}
       } else if (event.state.dirty) {
         return {message: tr('~FILE_STATUS.UNSAVED'), type: 'alert'}
       } else {
