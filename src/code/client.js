@@ -1076,7 +1076,7 @@ class CloudFileManagerClient {
     this._updateState(content, metadata, additionalState, hashParams)
     // add metadata contentType to event for CODAP to load via postmessage API (for SageModeler standalone)
     const contentType = metadata.mimeType || metadata.contentType
-    if (contentType) { eventData.metadata = {contentType} }
+    eventData.metadata = {contentType, url: metadata.url, filename: metadata.filename}
     return this._event('openedFile', eventData, (iError, iSharedMetadata) => {
       if (iError) { return this.alert(iError, () => this.ready()) }
 
