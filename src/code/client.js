@@ -561,23 +561,35 @@ class CloudFileManagerClient {
       saving: metadata})
     const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
     return metadata.provider.save(currentContent, metadata, (err, statusCode) => {
+      let failures
       if (err) {
-        // disable autosave on save failure; clear "Saving..." message
-        metadata.autoSaveDisabled = true
         this._setState({ metadata, saving: null })
         if (statusCode === 403) {
           return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
-          return this.alert(err)
+          failures = this.state.failures
+          if (!failures) {
+            failures = 1
+          } else {
+            failures++
+          }
+          this._setState({ failures })
+          if (failures === 1) {
+            return this.alert(err)
+          }
         }
+      } else {
+        this._setState({ failures: 0 })
+        if (this.state.metadata !== metadata) {
+          this._closeCurrentFile()
+        }
+        // reenable autosave on save success if this isn't a local file save
+        if (metadata.autoSaveDisabled != null) {
+          delete metadata.autoSaveDisabled
+        }
+        this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
+        return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
       }
-      if (this.state.metadata !== metadata) {
-        this._closeCurrentFile()
-      }
-      // reenable autosave on save success if this isn't a local file save
-      if (metadata.autoSaveDisabled != null) { delete metadata.autoSaveDisabled }
-      this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
-      return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
     })
   }
 
@@ -1142,7 +1154,8 @@ class CloudFileManagerClient {
       metadata: null,
       dirty: false,
       saving: null,
-      saved: false
+      saved: false,
+      failures: 0
     })
   }
 

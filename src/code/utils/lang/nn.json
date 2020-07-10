@@ -120,5 +120,6 @@
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Fullskjerm-knapp og skalering",
     "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Tekst på \"Last\"-knapp:",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Vis knapp for synlegheit av data i grafar",
-    "~CONFIRM.CHANGE_LANGUAGE": "Du har endringer som ikkje er lagra. Er du sikker på at vil byte språk?"
+    "~CONFIRM.CHANGE_LANGUAGE": "Du har endringer som ikkje er lagra. Er du sikker på at vil byte språk?",
+    "~FILE_STATUS.FAILURE": "Retrying..."
 }
