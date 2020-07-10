@@ -47,10 +47,9 @@ interface ICreateFile {
   filename: string;
   fileContent: string;
   firebaseJwt?: string;
-  maxAge?: number;
 }
 
-export const createFile = async ({ filename, fileContent, firebaseJwt, maxAge=DEFAULT_MAX_AGE_SECONDS }: ICreateFile) => {
+export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreateFile) => {
   // This function optionally accepts firebaseJWT. There are three things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - createResource call. If user is not authenticated, "readWriteToken" accessRule type must be used. Token Service will generate and return readWriteToken.
@@ -91,7 +90,8 @@ export const createFile = async ({ filename, fileContent, firebaseJwt, maxAge=DE
     Body: fileContent,
     ContentType: "text/html",
     ContentEncoding: "UTF-8",
-    CacheControl: `max-age=${maxAge}`
+    // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
+    CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
     // TODO IMPORTANT: Set the `max-age` parameter here
   }).promise();
   console.log(result);
@@ -109,10 +109,9 @@ interface IUpdateFileArgs {
   resourceId: string;
   firebaseJwt?: string;
   readWriteToken?: string;
-  maxAge?: number;
 }
 export const updateFile = async ({
-  filename, newFileContent, resourceId, firebaseJwt, readWriteToken, maxAge=DEFAULT_MAX_AGE_SECONDS}: IUpdateFileArgs) => {
+  filename, newFileContent, resourceId, firebaseJwt, readWriteToken }: IUpdateFileArgs) => {
   // This function accepts either firebaseJWT or readWriteToken. There are only two things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
@@ -139,7 +138,8 @@ export const updateFile = async ({
     Body: newFileContent,
     ContentType: "text/html",
     ContentEncoding: "UTF-8",
-    CacheControl: `max-age=${maxAge}`
+    // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
+    CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
   }).promise();
   return {
     result,
