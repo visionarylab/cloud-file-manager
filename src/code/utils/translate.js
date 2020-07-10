@@ -30,15 +30,13 @@ const languageFiles = [
   {key: 'nb',    contents: nb},     // Norwegian Bokmål
   {key: 'nn',    contents: nn},     // Norwegian Nynorsk
   {key: 'tr',    contents: tr},     // Turkish
-  {key: 'zh-tw', contents: zhHans}, // Traditional Chinese (Taiwan)
-  {key: 'zh-hans', contents: zhTW}  // Simplified Chinese
+  {key: 'zh',    contents: zhHans}, // Simplified Chinese
+  {key: 'zh-TW', contents: zhTW}    // Traditional Chinese (Taiwan)
 ]
 
 // returns baseLANG from baseLANG-REGION if REGION exists
 const getBaseLanguage = function(langKey) {
-  const dashLoc = langKey.indexOf('-')
-  if (dashLoc !== -1) { return langKey.substring(0, dashLoc) }
-  return undefined
+  return langKey.split("-")[0]
 }
 
 const getFirstBrowserLanguage = function() {
@@ -55,12 +53,16 @@ languageFiles.forEach(function(lang) {
   translations[lang.key] = lang.contents
   // accept full key with region code or just the language code
   const baseLang = getBaseLanguage(lang.key)
-  if (baseLang) { return translations[baseLang] = lang.contents }
+  if (baseLang && !translations[baseLang]) {
+    translations[baseLang] = lang.contents
+  }
 })
 
 const lang = urlParams.lang || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
 const defaultLang = lang && translations[lang] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
+
+console.log(`CFM: using ${defaultLang} for translation (lang is "${urlParams.lang}" || "${getFirstBrowserLanguage()}")`);
 
 const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 
