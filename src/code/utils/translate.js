@@ -10,24 +10,28 @@
 import urlParams  from './url-params'
 import de from './lang/de'
 import el from './lang/el'
-import enUs from './lang/en-US'
+import enUS from './lang/en-US'
 import es from './lang/es'
 import he from './lang/he'
+import ja from './lang/ja'
 import nb from './lang/nb'
 import nn from './lang/nn'
 import tr from './lang/tr'
-import zh from './lang/zh-TW'
+import zhHans from './lang/zh-Hans'
+import zhTW from './lang/zh-TW'
 
 const languageFiles = [
-  {key: 'de',    contents: de},  // German
-  {key: 'el',    contents: el},  // Greek
-  {key: 'en-US', contents: enUs},// US English
-  {key: 'es',    contents: es},  // Spanish
-  {key: 'he',    contents: he},  // Hebrew
-  {key: 'nb',    contents: nb},  // Norwegian Bokmål
-  {key: 'nn',    contents: nn},  // Norwegian Nynorsk
-  {key: 'tr',    contents: tr},  // Turkish
-  {key: 'zh-TW', contents: zh}   // Chinese (Taiwan)
+  {key: 'de',    contents: de},     // German
+  {key: 'el',    contents: el},     // Greek
+  {key: 'en-US', contents: enUS},   // US English
+  {key: 'es',    contents: es},     // Spanish
+  {key: 'he',    contents: he},     // Hebrew
+  {key: 'ja' ,   contents: ja},     // Japanese
+  {key: 'nb',    contents: nb},     // Norwegian Bokmål
+  {key: 'nn',    contents: nn},     // Norwegian Nynorsk
+  {key: 'tr',    contents: tr},     // Turkish
+  {key: 'zh-tw', contents: zhHans}, // Traditional Chinese (Taiwan)
+  {key: 'zh-hans', contents: zhTW}  // Simplified Chinese
 ]
 
 // returns baseLANG from baseLANG-REGION if REGION exists
