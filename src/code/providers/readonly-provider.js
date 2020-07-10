@@ -137,11 +137,12 @@ class ReadOnlyProvider extends ProviderInterface {
         }
       })
     } else if (this.options.src) {
+      const baseUrl = this.options.src.replace(/\/[^/]*$/, '/')
       return $.ajax({
         dataType: 'json',
         url: this.options.src,
         success: iResponse => {
-          this.tree = this._convertJSONToMetadataTree(iResponse)
+          this.tree = this._convertJSONToMetadataTree(iResponse, baseUrl)
           // alphabetize remotely loaded folder contents if requested
           if (this.options.alphabetize) {
             this.tree.sort(function(iMeta1, iMeta2) {
@@ -163,7 +164,7 @@ class ReadOnlyProvider extends ProviderInterface {
     }
   }
 
-  _convertJSONToMetadataTree(json, parent = null) {
+  _convertJSONToMetadataTree(json, baseUrl, parent = null) {
     let metadata, type
     const tree = []
 
@@ -172,13 +173,17 @@ class ReadOnlyProvider extends ProviderInterface {
       // [{ name: "...", content: "..."}, { name: "...", type: 'folder', children: [...] }]
       for (let item of Array.from(json)) {
         type = CloudMetadata.mapTypeToCloudMetadataType(item.type)
+        let url = item.url || item.location
+        if (baseUrl && !(url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//'))) {
+          url = baseUrl + url;
+        }
         metadata = new CloudMetadata({
           name: item.name,
           type,
           description: item.description,
           mimeType: item.mimeType,
           content: (item.content != null) ? cloudContentFactory.createEnvelopedCloudContent(item.content) : undefined,
-          url: item.url || item.location,
+          url,
           parent,
           provider: this,
           providerData: {
@@ -189,14 +194,14 @@ class ReadOnlyProvider extends ProviderInterface {
           const newFolderPromise = (iItem, iMetadata) => {
             return new Promise((resolve, reject) => {
               if (iItem.children != null) {
-                iMetadata.providerData.children = this._convertJSONToMetadataTree(iItem.children, iMetadata)
+                iMetadata.providerData.children = this._convertJSONToMetadataTree(iItem.children, baseUrl, iMetadata)
                 return resolve(iMetadata)
               } else if (iItem.url != null) {
                 return $.ajax({
                   dataType: 'json',
                   url: iItem.url,
                   success: iResponse => {
-                    iMetadata.providerData.children = this._convertJSONToMetadataTree(iResponse, iMetadata)
+                    iMetadata.providerData.children = this._convertJSONToMetadataTree(iResponse, baseUrl, iMetadata)
                     // alphabetize remotely loaded folder contents if requested
                     if (this.options.alphabetize || iItem.alphabetize) {
                       iMetadata.providerData.children.sort(function(iMeta1, iMeta2) {
@@ -238,7 +243,7 @@ class ReadOnlyProvider extends ProviderInterface {
           }
         })
         if (type === CloudMetadata.Folder) {
-          metadata.providerData.children = this._convertJSONToMetadataTree(itemContent, metadata)
+          metadata.providerData.children = this._convertJSONToMetadataTree(itemContent, baseUrl, metadata)
         }
         tree.push(metadata)
       }
