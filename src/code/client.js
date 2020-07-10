@@ -1197,8 +1197,8 @@ class CloudFileManagerClient {
   }
 
   _getHashParams(metadata) {
-    let openSavedParams = metadata?.provider?.getOpenSavedParams(metadata)
     const canOpenSaved = metadata?.provider?.canOpenSaved() || false
+    let openSavedParams = canOpenSaved ? metadata?.provider?.getOpenSavedParams(metadata) : null
     if (canOpenSaved && (openSavedParams != null)) {
       return `#file=${metadata.provider.urlDisplayName || metadata.provider.name}:${encodeURIComponent(openSavedParams)}`
     } else if ((metadata != null ? metadata.provider : undefined) instanceof URLProvider &&
