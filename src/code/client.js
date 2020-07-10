@@ -561,36 +561,36 @@ class CloudFileManagerClient {
       saving: metadata})
     const currentContent = this._createOrUpdateCurrentContent(stringContent, metadata)
     return metadata.provider.save(currentContent, metadata, (err, statusCode) => {
-      let failures;
+      let failures
       if (err) {
-        this._setState({ metadata, saving: null });
+        this._setState({ metadata, saving: null })
         if (statusCode === 403) {
-          return this.confirmAuthorizeAndSave(stringContent, callback);
+          return this.confirmAuthorizeAndSave(stringContent, callback)
         } else {
           failures = this.state.failures
           if (!failures) {
-            failures = 1;
+            failures = 1
           } else {
-            failures++;
+            failures++
           }
-          this._setState({ failures });
+          this._setState({ failures })
           if (failures === 1) {
-            return this.alert(err);
+            return this.alert(err)
           }
         }
       } else {
-        this._setState({ failures: 0 });
+        this._setState({ failures: 0 })
         if (this.state.metadata !== metadata) {
-          this._closeCurrentFile();
+          this._closeCurrentFile()
         }
         // reenable autosave on save success if this isn't a local file save
         if (metadata.autoSaveDisabled != null) {
-          delete metadata.autoSaveDisabled;
+          delete metadata.autoSaveDisabled
         }
-        this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata));
-        return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined);
+        this._fileChanged('savedFile', currentContent, metadata, {saved: true}, this._getHashParams(metadata))
+        return (typeof callback === 'function' ? callback(currentContent, metadata) : undefined)
       }
-    });
+    })
   }
 
   saveFileDialog(stringContent = null, callback = null) {
