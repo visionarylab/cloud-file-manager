@@ -1,4 +1,5 @@
 module.exports = {
+  "testURL": "https://cloud-file-manager.concord.org",
   "roots": [
     "<rootDir>/src"
   ],
