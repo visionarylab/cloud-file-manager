@@ -769,6 +769,15 @@ class CloudFileManagerClient {
   }
 
   share(callback) {
+    if (!this.state.metadata) {
+      // PJ, 07/10/2020: Without these lines the sharing process will fail (it looks for filename and later tries to
+      // update metadata object). Apparently, there's an assumption that metadata already exists. It can initialized
+      // in a few random places, but a new document that has never been renamed won't have this object available.
+      this.state.metadata = new CloudMetadata({
+        name: tr("~MENUBAR.UNTITLED_DOCUMENT"),
+        type: CloudMetadata.File
+      })
+    }
     return this.setShareState(true, (err, sharedContentId, currentContent) => {
       this._fileChanged('sharedFile', currentContent, this.state.metadata)
       return (typeof callback === 'function' ? callback(null, sharedContentId) : undefined)
