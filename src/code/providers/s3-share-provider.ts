@@ -1,5 +1,3 @@
-
-
 import {
   ICloudMetaDataSpec,
   callbackSigShare,
@@ -15,8 +13,6 @@ import { createFile, updateFile } from '../utils/s3-share-provider-token-service
 import { reportError } from '../utils/report-error'
 
 interface IClientInterface {}
-
-
 
 // New method for sharing read only documents using S3.
 // The readWrite key must be retained in the original document
