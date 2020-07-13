@@ -24,23 +24,24 @@ function getURLParam (name) {
 // Adds query params to CODAP urls
 // this was taken from the document server `documents_v2_helper.rb`
 // We could also add documentServer parameter, or check query params
-function codap_v2_link(codapServer) {
+export function codap_v2_link(codapServer) {
   const defaultCodapUrl = "https://codap.concord.org/releases/latest/"
-  const documentServer = "https://document-store.concord.org/"
-  const CFMOrigin = window.location.origin
-  const cfmBaseUrl = `${CFMOrigin}/js`
-  const extraData = {
-    documentServer,
-    cfmBaseUrl
+  const extraData = {}
+  // Default production pathname would be just: "/autolaunch/autolaunch.html".
+  // Custom version example: "/branch/master/autolaunch/autolaunch.html".
+  const customCfmVersion = window.location.pathname.replace("/autolaunch/autolaunch.html", "")
+  if (customCfmVersion) {
+    // define cfmBaseUrl for CODAP ONLY if we're using custom CFM version. Otherwise, let CODAP use its own CFM.
+    const CFMOrigin = window.location.origin
+    extraData.cfmBaseUrl = `${CFMOrigin + customCfmVersion}/js`
   }
   const baseUrl = codapServer || defaultCodapUrl
   const {url, query, fragmentIdentifier} = queryString.parseUrl(baseUrl, {fragmentIdentifier: true})
-  const newCodapUrl = queryString.stringifyUrl({
+  return queryString.stringifyUrl({
     url: url,
     query: Object.assign({}, extraData, query),
     fragmentIdentifier: fragmentIdentifier
   })
-  return newCodapUrl
 }
 
 export default function autolaunchInteractive() {
