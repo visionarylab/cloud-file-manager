@@ -53,6 +53,8 @@ const SocialIcon = createReactClassFactory({
   }
 })
 
+const CFM_PRODUCTION = "https://cloud-file-manager.concord.org"
+
 export default createReactClass({
 
   displayName: 'ShareDialogView',
@@ -64,10 +66,6 @@ export default createReactClass({
       pageType: "autolaunch",
       serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
-
-      CFMOrigin: this.props.settings.CFMOrigin || "https://cloud-file-manager.concord.org",
-      CFMOriginLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.CFM_ORIGIN_URL"),
-
       launchButtonText: "Launch",
       fullscreenScaling: true,
       graphVisToggles: false,
@@ -143,22 +141,18 @@ export default createReactClass({
     //  1: Get the resource URL (S3 shared document public URL)
     //  2: Get the URL for the autoLauch page (hosted here ...)
     //  3: Construct a URL to <AutlaunchPage
-    const CFMOrigin = this.state.CFMOrigin
-    const autoLaunchpage = `${CFMOrigin}/autolaunch/autolaunch.html`
-    const localCFMBaseUrl = `${CFMOrigin}/js`
-    const encodedCFMBase = encodeURIComponent(localCFMBaseUrl)
-
+    const autoLaunchpage = `${CFM_PRODUCTION}/autolaunch/autolaunch.html`
     const documentServer = encodeURIComponent(this.getShareLink())
-    const graphVisToggles = this.state.graphVisToggles ? '&app=is' : ''
+    const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
     // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-    const server = encodeURIComponent(`${this.state.serverUrl}?cfmBaseUrl=${encodedCFMBase}${graphVisToggles}`)
+    const server = encodeURIComponent(`${this.state.serverUrl}${graphVisToggles}`)
     // Other params are handled by document server itself:
     const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
     const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
 
     return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${buttonText}${fullscreenScaling}`
   },
-  // TODO: Consider using queryparams to make URL construction less janky⬆ 
+  // TODO: Consider using queryparams to make URL construction less janky⬆
 
   // adapted from https://github.com/sudodoki/copy-to-clipboard/blob/master/index.js
   copy(e) {
@@ -253,10 +247,6 @@ export default createReactClass({
     return this.setState({serverUrl: event.target.value})
   },
 
-  changedCFMOrigin(event) {
-    return this.setState({CFMOrigin: event.target.value})
-  },
-
   changedLaunchButtonText(event) {
     return this.setState({
       launchButtonText: event.target.value})
@@ -343,12 +333,6 @@ export default createReactClass({
                         this.state.serverUrlLabel,
                         (div({},
                           (input({value: this.state.serverUrl, onChange: this.changedServerUrl}))
-                        ))
-                      )),
-                      (div({className: 'cfm-origin'},
-                        this.state.CFMOriginLabel,
-                        (div({},
-                          (input({value: this.state.CFMOrigin, onChange: this.changedCFMOrigin}))
                         ))
                       )),
                       (div({className: 'autolaunch'},
