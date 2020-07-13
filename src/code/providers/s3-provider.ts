@@ -1,8 +1,5 @@
-
-
 import {
   ICloudMetaDataSpec,
-  callbackSigShare,
   callbackSigLoad,
   callbackSigSave,
   ProviderInterface,

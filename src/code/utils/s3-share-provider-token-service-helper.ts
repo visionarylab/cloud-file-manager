@@ -1,47 +1,12 @@
-import ClientOAuth2 from "client-oauth2";
 import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service";
 import * as AWS from "aws-sdk";
 import {
-  PORTAL_AUTH_PATH,
   DEFAULT_MAX_AGE_SECONDS,
   getTokenServiceEnv,
   TOKEN_SERVICE_TOOL_NAME,
   TOKEN_SERVICE_TOOL_TYPE,
-  S3_SHARED_DOC_PATH_LEGACY,
-  S3_SHARED_DOC_PATH_NEW
+  S3_SHARED_DOC_PATH_LEGACY
 } from './config'
-
-const getURLParam = (name: string) => {
-  const url = (self || window).location.href;
-  name = name.replace(/[[]]/g, "\\$&");
-  const regex = new RegExp(`[#?&]${name}(=([^&#]*)|&|#|$)`);
-  const results = regex.exec(url);
-  if (!results) return null;
-  return decodeURIComponent(results[2].replace(/\+/g, " "));
-};
-
-export const authorizeInPortal = (portalUrl: string, oauthClientName: string) => {
-  const portalAuth = new ClientOAuth2({
-    clientId: oauthClientName,
-    redirectUri: window.location.origin + window.location.pathname + window.location.search,
-    authorizationUri: `${portalUrl}${PORTAL_AUTH_PATH}`
-  });
-  // Redirect
-  window.location.href = portalAuth.token.getUri();
-};
-
-export const readPortalAccessToken = (): string => {
-  // No error handling to keep the code minimal.
-  return getURLParam("access_token") || "";
-};
-
-export const getFirebaseJwt = (portalUrl: string, portalAccessToken: string, firebaseAppName: string): Promise<string> => {
-  const authHeader = { Authorization: `Bearer ${portalAccessToken}` };
-  const firebaseTokenGettingUrl = `${portalUrl}/api/v1/jwt/firebase?firebase_app=${firebaseAppName}`;
-  return fetch(firebaseTokenGettingUrl, { headers: authHeader })
-    .then(response => response.json())
-    .then(json => json.token)
-};
 
 interface ICreateFile {
   filename: string;
@@ -92,7 +57,6 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
     ContentEncoding: "UTF-8",
     // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
     CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
-    // TODO IMPORTANT: Set the `max-age` parameter here
   }).promise();
   console.log(result);
 
@@ -152,29 +116,11 @@ export const updateFile = async ({
 const getBaseDocumentUrl = () => {
   const stagingBase = "https://token-service-files.concordqa.org"
   const productionBase = "https://models-resources.concord.org"
-  const base = getTokenServiceEnv() === "production"
-    ? productionBase
-    : stagingBase
-  return base
+  return getTokenServiceEnv() === "production" ? productionBase : stagingBase
 }
 
-export const getModernUrl = (documentId: string, filename:string) => {
-  const path = S3_SHARED_DOC_PATH_NEW
-  return `${getBaseDocumentUrl()}/${path}/${documentId}/${filename}`
-}
-
+// documentId is a legacy DocStore document ID. DocStore migration script creates a special folder that has object
+// with names matching these IDs. They redirect to a final location in S3.
 export const getLegacyUrl = (documentId: string) => {
-  const path = S3_SHARED_DOC_PATH_LEGACY
-  return `${getBaseDocumentUrl()}/${path}/${documentId}`
-};
-
-// When would we do this?
-export const getAllResources = async (firebaseJwt: string, amOwner: boolean) => {
-  const client = new TokenServiceClient({ jwt: firebaseJwt, env: getTokenServiceEnv() });
-  const resources = await client.listResources({
-    type: "s3Folder",
-    tool: TOKEN_SERVICE_TOOL_NAME,
-    amOwner: amOwner ? "true" : "false"
-  });
-  console.log(resources);
+  return `${getBaseDocumentUrl()}/${S3_SHARED_DOC_PATH_LEGACY}/${documentId}`
 };
