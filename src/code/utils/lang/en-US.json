@@ -89,7 +89,7 @@
   "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
 
   "~SHARE_UPDATE.TITLE": "Shared View Updated",
-  "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully.",
+  "~SHARE_UPDATE.MESSAGE": "The shared view was updated successfully. Updates can take up to 1 minute.",
 
   "~CONFIRM.OPEN_FILE": "You have unsaved changes. Are you sure you want to open a new document?",
   "~CONFIRM.NEW_FILE": "You have unsaved changes. Are you sure you want to create a new document?",
