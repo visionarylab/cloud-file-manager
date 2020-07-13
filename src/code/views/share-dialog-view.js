@@ -13,7 +13,6 @@ const SHOW_LONGEVITY_WARNING = false
 
 import modalDialogView from './modal-dialog-view'
 const ModalDialog = createReactFactory(modalDialogView)
-import getQueryParam  from '../utils/get-query-param'
 import {ShareLoadingView} from './share-loading-view'
 
 // This function is named "tr" elsewhere in this codeline.
@@ -63,10 +62,8 @@ export default createReactClass({
     return {
       link: this.getShareLink(),
       embed: this.getEmbed(),
-      pageType: "autolaunch",
       serverUrl: this.props.settings.serverUrl || "https://codap.concord.org/releases/latest/",
       serverUrlLabel: this.props.settings.serverUrlLabel || translate("~SHARE_DIALOG.LARA_CODAP_URL"),
-      launchButtonText: "Launch",
       fullscreenScaling: true,
       graphVisToggles: false,
       tabSelected: 'link',
@@ -109,23 +106,6 @@ export default createReactClass({
     }
   },
 
-  getLegacyLara() {
-    const sharedDocumentId = this.getSharedDocumentId()
-    if (sharedDocumentId) {
-      let documentServer = getQueryParam('documentServer') || 'https://document-store.concord.org'
-      while (documentServer.substr(-1) === '/') { documentServer = documentServer.slice(0, -1) }  // remove trailing slash
-      const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
-      // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
-      const server = encodeURIComponent(this.state.serverUrl + graphVisToggles)
-      // Other params are handled by document server itself:
-      const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
-      const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
-      return `${documentServer}/v2/documents/${sharedDocumentId}/${this.state.pageType}?server=${server}${buttonText}${fullscreenScaling}`
-    } else {
-      return null
-    }
-  },
-
   getLara() {
     // Update the LARA share link as per this story:
     // https://www.pivotaltracker.com/story/show/172302663
@@ -147,10 +127,9 @@ export default createReactClass({
     // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
     const server = encodeURIComponent(`${this.state.serverUrl}${graphVisToggles}`)
     // Other params are handled by document server itself:
-    const buttonText = this.state.pageType === 'launch' ? `&buttonText=${encodeURIComponent(this.state.launchButtonText)}` : ''
-    const fullscreenScaling = (this.state.pageType === 'autolaunch') && this.state.fullscreenScaling ? '&scaling' : ''
+    const fullscreenScaling = this.state.fullscreenScaling ? '&scaling' : ''
 
-    return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${buttonText}${fullscreenScaling}`
+    return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${fullscreenScaling}`
   },
   // TODO: Consider using queryparams to make URL construction less janky⬆
 
@@ -247,16 +226,6 @@ export default createReactClass({
     return this.setState({serverUrl: event.target.value})
   },
 
-  changedLaunchButtonText(event) {
-    return this.setState({
-      launchButtonText: event.target.value})
-  },
-
-  changedAutoscalingPage(event) {
-    return this.setState({
-      pageType: event.target.checked ? 'autolaunch' : 'launch'})
-  },
-
   changedFullscreenScaling(event) {
     return this.setState({
       fullscreenScaling: event.target.checked})
@@ -335,20 +304,10 @@ export default createReactClass({
                           (input({value: this.state.serverUrl, onChange: this.changedServerUrl}))
                         ))
                       )),
-                      (div({className: 'autolaunch'},
-                        (input({type: 'checkbox', checked: this.state.pageType === 'autolaunch', onChange: this.changedAutoscalingPage})),
-                        translate("~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE")
+                      (div({className: 'fullsceen-scaling'},
+                        (input({type: 'checkbox', checked: this.state.fullscreenScaling, onChange: this.changedFullscreenScaling})),
+                        translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")
                       )),
-                      this.state.pageType === 'autolaunch' ?
-                        (div({className: 'fullsceen-scaling'},
-                          (input({type: 'checkbox', checked: this.state.fullscreenScaling, onChange: this.changedFullscreenScaling})),
-                          translate("~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING")
-                        )) : undefined,
-                      this.state.pageType === 'launch' ?
-                        (div({className: 'launch-button-text'},
-                          translate("~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT"),
-                          (input({value: this.state.launchButtonText, onChange: this.changedLaunchButtonText}))
-                        )) : undefined,
                       (div({},
                         (input({type: 'checkbox', checked: this.state.graphVisToggles, onChange: this.changedGraphVisToggles})),
                         translate("~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES")

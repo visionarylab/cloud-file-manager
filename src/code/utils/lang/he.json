@@ -116,9 +116,7 @@
     "~SHARE_DIALOG.EMBED_MESSAGE": "שילוב הקוד להוספה בעמודי רשת או תוכן רשתי אחר",
     "~SHARE_DIALOG.LARA_MESSAGE": "השתמשו בקישור זה בעת יצירת פעילות LARA",
     "~SHARE_DIALOG.LARA_CODAP_URL": "URL של שרת CODAP:",
-    "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "הפעלה אוטומטית של הדף",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "כפתור מסך מלא ומירכוז",
-    "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "הפעלת כפתור טקסט:",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "הצגת מידע ויזואלי בגרפים",
     "~CONFIRM.CHANGE_LANGUAGE": "יש לכם שינויים לא שמורים. אתם בטוחים שתרצו להחליף שפה?",
     "~FILE_STATUS.FAILURE": "Retrying..."
