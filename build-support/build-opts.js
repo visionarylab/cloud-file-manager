@@ -45,10 +45,6 @@ const assets = codap
   ? ['img']
   : ['autolaunch', 'examples', 'favicon.ico', 'fonts', 'img', 'index.html']
 
-const outputFileName = codap
-  ? codapOutputFileName
-  : '[name]'
-
 module.exports = {
   assets,
   replacementStrings

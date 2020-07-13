@@ -99,42 +99,12 @@ const appConfig = (env) => ({
     // 'app.js': './code/app.jsx' to put at top level rather than in js/css subdirs
   },
   externals : {
-    'create-react-class': {
-      root: 'createReactClass',
-      commonjs2: 'create-react-class',
-      commonjs: 'create-react-class',
-      amd: 'create-react-class'
-    },
-    'jquery' : {
-      root: '$',
-      commonjs2: 'jquery',
-      commonjs: 'jquery',
-      amd: 'jquery'
-    },
-    'lodash' : {
-      root: '_',
-      commonjs2: 'lodash',
-      commonjs: 'lodash',
-      amd: 'lodash'
-    },
-    'react': {
-      root: 'React',
-      commonjs2: 'react',
-      commonjs: 'react',
-      amd: 'react'
-    },
-    'react-dom': {
-      root: 'ReactDOM',
-      commonjs2: 'react-dom',
-      commonjs: 'react-dom',
-      amd: 'react-dom'
-		},
-    'react-dom-factories': {
-      root: 'ReactDOMFactories',
-      commonjs2: 'react-dom-factories',
-      commonjs: 'react-dom-factories',
-      amd: 'react-dom-factories'
-		}
+    'create-react-class': 'createReactClass',
+    'jquery' : '$',
+    'lodash' : '_',
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+    'react-dom-factories': 'ReactDOMFactories'
   }
 })
 
