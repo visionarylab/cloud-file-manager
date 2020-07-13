@@ -1,5 +1,5 @@
 import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service";
-import * as AWS from "aws-sdk";
+import S3 from "aws-sdk/clients/s3";
 import {
   DEFAULT_MAX_AGE_SECONDS,
   getTokenServiceEnv,
@@ -46,7 +46,7 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource;
   const { accessKeyId, secretAccessKey, sessionToken } = credentials;
-  const s3 = new AWS.S3({ region, accessKeyId, secretAccessKey, sessionToken });
+  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken });
   const publicPath = client.getPublicS3Path(resource, filename);
 
   const result = await s3.upload({
@@ -93,7 +93,7 @@ export const updateFile = async ({
   // S3 configuration is based both on resource and credentials info.
   const { bucket, region } = resource;
   const { accessKeyId, secretAccessKey, sessionToken } = credentials;
-  const s3 = new AWS.S3({ region, accessKeyId, secretAccessKey, sessionToken });
+  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken });
   const publicPath = client.getPublicS3Path(resource, filename);
   const publicUrl = client.getPublicS3Url(resource, filename);
   const result = await s3.upload({

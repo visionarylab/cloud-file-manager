@@ -6,6 +6,8 @@ import { CloudFileManagerClient } from './client'
 
 import getHashParam  from './utils/get-hash-param'
 
+import '../style/app.styl'
+
 class CloudFileManager {
 
   constructor(options) {
