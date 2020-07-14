@@ -20,9 +20,7 @@ const baseConfig = (env) => ({
   performance: { hints: false },
   devtool: noMap
             ? false
-            : isProduction
-                ? 'source-map'
-                : 'eval-cheap-module-source-map',
+            : 'source-map',
   context: srcDir,
   output: {
     filename: '[name]',
