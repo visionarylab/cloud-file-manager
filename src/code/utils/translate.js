@@ -39,6 +39,14 @@ const getBaseLanguage = function(langKey) {
   return langKey.split("-")[0]
 }
 
+// use language of page, which is used by CODAP, with separate build for each language
+const getPageLanguage = function() {
+  const pageLang = document.documentElement.lang
+  return pageLang && (pageLang !== "unknown")
+          ? pageLang
+          : undefined
+}
+
 const getFirstBrowserLanguage = function() {
   const nav = window.navigator
   const languages = nav ? (nav.languages || []).concat([nav.language, nav.browserLanguage, nav.systemLanguage, nav.userLanguage]) : []
@@ -58,7 +66,7 @@ languageFiles.forEach(function(lang) {
   }
 })
 
-const lang = urlParams.lang || getFirstBrowserLanguage()
+const lang = urlParams.lang || getPageLanguage() || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
 const defaultLang = lang && translations[lang] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
 
