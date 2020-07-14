@@ -10,31 +10,33 @@
 import urlParams  from './url-params'
 import de from './lang/de'
 import el from './lang/el'
-import enUs from './lang/en-US'
+import enUS from './lang/en-US'
 import es from './lang/es'
 import he from './lang/he'
+import ja from './lang/ja'
 import nb from './lang/nb'
 import nn from './lang/nn'
 import tr from './lang/tr'
-import zh from './lang/zh-TW'
+import zhHans from './lang/zh-Hans'
+import zhTW from './lang/zh-TW'
 
 const languageFiles = [
-  {key: 'de',    contents: de},  // German
-  {key: 'el',    contents: el},  // Greek
-  {key: 'en-US', contents: enUs},// US English
-  {key: 'es',    contents: es},  // Spanish
-  {key: 'he',    contents: he},  // Hebrew
-  {key: 'nb',    contents: nb},  // Norwegian Bokmål
-  {key: 'nn',    contents: nn},  // Norwegian Nynorsk
-  {key: 'tr',    contents: tr},  // Turkish
-  {key: 'zh-TW', contents: zh}   // Chinese (Taiwan)
+  {key: 'de',    contents: de},     // German
+  {key: 'el',    contents: el},     // Greek
+  {key: 'en-US', contents: enUS},   // US English
+  {key: 'es',    contents: es},     // Spanish
+  {key: 'he',    contents: he},     // Hebrew
+  {key: 'ja' ,   contents: ja},     // Japanese
+  {key: 'nb',    contents: nb},     // Norwegian Bokmål
+  {key: 'nn',    contents: nn},     // Norwegian Nynorsk
+  {key: 'tr',    contents: tr},     // Turkish
+  {key: 'zh',    contents: zhHans}, // Simplified Chinese
+  {key: 'zh-TW', contents: zhTW}    // Traditional Chinese (Taiwan)
 ]
 
 // returns baseLANG from baseLANG-REGION if REGION exists
 const getBaseLanguage = function(langKey) {
-  const dashLoc = langKey.indexOf('-')
-  if (dashLoc !== -1) { return langKey.substring(0, dashLoc) }
-  return undefined
+  return langKey.split("-")[0]
 }
 
 const getFirstBrowserLanguage = function() {
@@ -51,12 +53,16 @@ languageFiles.forEach(function(lang) {
   translations[lang.key] = lang.contents
   // accept full key with region code or just the language code
   const baseLang = getBaseLanguage(lang.key)
-  if (baseLang) { return translations[baseLang] = lang.contents }
+  if (baseLang && !translations[baseLang]) {
+    translations[baseLang] = lang.contents
+  }
 })
 
 const lang = urlParams.lang || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
 const defaultLang = lang && translations[lang] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
+
+console.log(`CFM: using ${defaultLang} for translation (lang is "${urlParams.lang}" || "${getFirstBrowserLanguage()}")`);
 
 const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 

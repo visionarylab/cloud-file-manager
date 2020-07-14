@@ -1,13 +1,17 @@
 #!/bin/bash
 PROJECT_ID=125177
 OUTPUT_DIR=src/code/utils/lang
-# zh-TW: Chinese (TW)
 # de: German
 # el: Greek
-# he: Hebrew
 # es: Spanish
+# he: Hebrew
+# ja: Japanese
+# nb: Norwegian Bokmal
+# nn: Norwegian Nynorsk
 # tr: Turkish
-LANGUAGES=("zh-TW" "de" "el" "he" "es" "tr" "nb" "nn")
+# zh-Hans: Simplified Chinese
+# zh-TW: Traditional Chinese (Taiwan)
+LANGUAGES=("de" "el" "es" "he" "ja" "nb" "nn" "tr" "zh-Hans" "zh-TW")
 
 # argument processing from https://stackoverflow.com/a/14203146
 while [[ $# -gt 1 ]]
