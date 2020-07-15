@@ -9,12 +9,20 @@ import {
 } from './config'
 
 interface ICreateFile {
-  filename: string;
   fileContent: string;
   firebaseJwt?: string;
 }
 
-export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreateFile) => {
+// Token Service creates a (sub)folder in a S3 bucket and gives access to it. Multiple files can be created there,
+// but it's not desired in CFM. In fact each new subfolder should include just one file - CFM document.
+// Note that this filename should probably be NEVER changed. Users might want to update shared view and things
+// work as long as they write to a correct file. Why file.json? That's what document-store migration script used:
+// https://github.com/concord-consortium/document-store/blob/master/token-service-migration/index.js#L173
+// These helpers were using CFM document filename before. But it's incorrect, as each time user changes this name,
+// sharing functionality will break. See: https://www.pivotaltracker.com/story/show/173817843
+const FILENAME = "file.json"
+
+export const createFile = async ({ fileContent, firebaseJwt }: ICreateFile) => {
   // This function optionally accepts firebaseJWT. There are three things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - createResource call. If user is not authenticated, "readWriteToken" accessRule type must be used. Token Service will generate and return readWriteToken.
@@ -27,7 +35,7 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
   const resource: S3Resource = await client.createResource({
     tool: TOKEN_SERVICE_TOOL_NAME,
     type: TOKEN_SERVICE_TOOL_TYPE,
-    name: filename,
+    name: FILENAME,
     description: "Document created by CFM",
     accessRuleType: anonymous ? "readWriteToken" : "user"
   }) as S3Resource;
@@ -47,7 +55,7 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
   const { bucket, region } = resource;
   const { accessKeyId, secretAccessKey, sessionToken } = credentials;
   const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken });
-  const publicPath = client.getPublicS3Path(resource, filename);
+  const publicPath = client.getPublicS3Path(resource, FILENAME);
 
   const result = await s3.upload({
     Bucket: bucket,
@@ -61,21 +69,19 @@ export const createFile = async ({ filename, fileContent, firebaseJwt }: ICreate
   console.log(result);
 
   return {
-    publicUrl: client.getPublicS3Url(resource, filename),
+    publicUrl: client.getPublicS3Url(resource, FILENAME),
     resourceId: resource.id,
     readWriteToken
   };
 };
 
 interface IUpdateFileArgs {
-  filename: string;
   newFileContent: string;
   resourceId: string;
   firebaseJwt?: string;
   readWriteToken?: string;
 }
-export const updateFile = async ({
-  filename, newFileContent, resourceId, firebaseJwt, readWriteToken }: IUpdateFileArgs) => {
+export const updateFile = async ({ newFileContent, resourceId, firebaseJwt, readWriteToken }: IUpdateFileArgs) => {
   // This function accepts either firebaseJWT or readWriteToken. There are only two things that depend on authentication method:
   // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
   // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
@@ -94,8 +100,8 @@ export const updateFile = async ({
   const { bucket, region } = resource;
   const { accessKeyId, secretAccessKey, sessionToken } = credentials;
   const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken });
-  const publicPath = client.getPublicS3Path(resource, filename);
-  const publicUrl = client.getPublicS3Url(resource, filename);
+  const publicPath = client.getPublicS3Path(resource, FILENAME);
+  const publicUrl = client.getPublicS3Url(resource, FILENAME);
   const result = await s3.upload({
     Bucket: bucket,
     Key: publicPath,

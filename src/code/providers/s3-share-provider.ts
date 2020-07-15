@@ -46,12 +46,10 @@ class S3ShareProvider implements IShareProvider  {
   private updateShare(
     contentJSON: string,
     documentID: string,
-    filename: string,
     readWriteToken: string,
     callback: callbackSigShare) {
       // Call update:
       updateFile({
-        filename: filename,
         newFileContent: contentJSON,
         // DocumentID is the resourceID for TokenService
         resourceId: documentID,
@@ -62,19 +60,17 @@ class S3ShareProvider implements IShareProvider  {
         callback(null, documentID)
       }).catch(e => {
         reportError(e)
-        return callback(`Unable to update shared '${filename}' ${e}`, {})
+        return callback(`Unable to update shared file ${e}`, {})
       })
   }
 
   private createShare(
     masterContent: CloudContent,
-    filename: string,
     contentJSON: string,
     metadata:ICloudMetaDataSpec,
     callback: callbackSigShare,
     ) {
     const result = createFile({
-      filename: filename,
       fileContent: contentJSON
     });
     result.then( ({publicUrl, resourceId, readWriteToken}) => {
@@ -89,7 +85,7 @@ class S3ShareProvider implements IShareProvider  {
       })
       return callback(null, readWriteToken)
     }).catch( e => {
-      return callback(`Unable to share '${filename}' ${e}`, {})
+      return callback(`Unable to share file ${e}`, {})
     })
   }
 
@@ -110,7 +106,6 @@ class S3ShareProvider implements IShareProvider  {
     const runKey = masterContent.get('shareEditKey')
     let readWriteToken = accessKeys?.readWrite || runKey
     const contentJson = sharedContent.getContentAsJSON()
-    const filename = metadata.filename
     // if we already have a documentID and some form of accessKey,
     // then we must be updating an existing shared document
     if (documentID && readWriteToken) {
@@ -134,13 +129,13 @@ class S3ShareProvider implements IShareProvider  {
         // Again, follow document-store migration code.
         readWriteToken = "read-write-token:doc-store-imported:" + readWriteToken
       }
-      this.updateShare(contentJson, documentID, filename, readWriteToken, callback)
+      this.updateShare(contentJson, documentID, readWriteToken, callback)
     // if we don't have a document ID and some form of accessKey,
     // then we must create a new shared document when sharing is being enabled
     } else if (shared) {
-      this.createShare(masterContent, filename, contentJson, metadata, callback)
+      this.createShare(masterContent, contentJson, metadata, callback)
     } else {
-      return callback(`Unable to unshare '${filename}' (not implemented)`, {})
+      return callback(`Unable to unshare file (not implemented)`, {})
     }
   }
 

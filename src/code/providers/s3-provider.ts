@@ -53,7 +53,6 @@ class S3Provider extends ProviderInterface {
     }
 
     const result = createFile({
-      filename: metadata.name,
       fileContent: payloadContent
     });
 
