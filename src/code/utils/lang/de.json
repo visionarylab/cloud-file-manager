@@ -116,9 +116,7 @@
     "~SHARE_DIALOG.EMBED_MESSAGE": "Code einbetten für Webseiten oder andere Inhalte",
     "~SHARE_DIALOG.LARA_MESSAGE": "Diesen Link verwenden, um eine Aktivität in LARA zu erstellen",
     "~SHARE_DIALOG.LARA_CODAP_URL": "CODAP Server URL:",
-    "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "Autolaunch Seite",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Vollbild und Skalieren",
-    "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Textbutton",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Datensichtbarkeit in Graphen anzeigen",
     "~CONFIRM.CHANGE_LANGUAGE": "Einige Änderungen wurden nicht gespeichert. Sind Sie sicher, dass Sie die Sprache wechseln wollen?",
     "~FILE_STATUS.FAILURE": "Retrying..."

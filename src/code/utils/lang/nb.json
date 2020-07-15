@@ -116,9 +116,7 @@
     "~SHARE_DIALOG.EMBED_MESSAGE": "Embedkode for å sette inn på nettsteder eller annet nett-basert innhold",
     "~SHARE_DIALOG.LARA_MESSAGE": "Bruk denne lenken når du lager en oppgave i LARA",
     "~SHARE_DIALOG.LARA_CODAP_URL": "CODAP-server URL",
-    "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "Last side automatisk",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "Fullskjermknapp og skalering",
-    "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "Tekst på \"Last\"-knapp:",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Vis knapp for synlighet av data i grafer",
     "~CONFIRM.CHANGE_LANGUAGE": "Du har endringer som ikke er lagret. Er du sikker på at du vil endre språk?",
     "~FILE_STATUS.FAILURE": "Retrying..."
