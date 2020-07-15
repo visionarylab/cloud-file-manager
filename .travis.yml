@@ -6,17 +6,17 @@ node_js:
 cache:
   bundler: true
   pip: true
-  yarn: true
+  npm: true
   directories:
     - "$HOME/.npm"
     - "$HOME/.cache"
 install:
 - travis_retry gem install s3_website -v 3.4.0
 - travis_retry pip install awscli --upgrade --user
-- travis_retry yarn install --frozen-lockfile
+- travis_retry npm ci
 script:
 - npm run lint
 - npm run test
 - npm run build
-after_script:
+after_success:
 - ./s3_deploy.sh
