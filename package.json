@@ -88,7 +88,7 @@
     "start": "npm-run-all --parallel watch:server watch:build",
     "start:secure": "npm-run-all --parallel watch:server:secure watch:build",
     "watch:build": "webpack --watch --mode development",
-    "watch:server": "live-server --port=8888 ./dist --open=examples",
+    "watch:server": "live-server --host=localhost --port=8888 ./dist --open=examples",
     "watch:server:secure": "live-server --port=8888 --https=live-server-ssl-config.js ./dist --open=examples",
     "test:local": "cypress open --env testEnv=local",
     "test": "jest",

@@ -83,15 +83,11 @@ export default createReactClass({
     const shared = client.isShared()
     const sharedDocumentUrl = client.state?.currentContent?.get("sharedDocumentUrl")
     const sharedDocumentId = this.getSharedDocumentId()
-    const useInternalLink = true
     if (shared) {
       if(sharedDocumentUrl) {
-        return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(sharedDocumentUrl)}`
+        return sharedDocumentUrl
       }
       if(sharedDocumentId) {
-        if(useInternalLink) {
-          return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`
-        }
         return getLegacyUrl(sharedDocumentId)
       }
     }
@@ -114,7 +110,7 @@ export default createReactClass({
     //  `<AutoLaunchPageUrl>?documentId=<XX>&server=<CODAP SERVER>&scaling`
     // <AutoLaunchPageUrl> expects a `documentId` param (was a path in DocStore)
     //    and a `server` param, that points usually to some CODAP release.
-    // <CODAP SERVER> can have url encoded params too such as `FcfmBaseUrl=`
+    // <CODAP SERVER> can have url encoded params too such as `cfmBaseUrl=`
     // where URL is the url to the /js folder for CFM
     //
     // It will point to SPA hosted in this repo -- NP 2020-06-29
