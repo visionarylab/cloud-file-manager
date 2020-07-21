@@ -77,23 +77,30 @@ export default createReactClass({
     return client.state?.currentContent?.get("sharedDocumentId")
   },
 
-  // New S3ShareProvider saves shareDocumentUrl
-  getShareLink() {
+  // Get a documentID, or going forward, always return a URL to a document
+  getShareUrl() {
     const { client } = this.props
     const shared = client.isShared()
     const sharedDocumentUrl = client.state?.currentContent?.get("sharedDocumentUrl")
     const sharedDocumentId = this.getSharedDocumentId()
-    const useInternalLink = true
     if (shared) {
       if(sharedDocumentUrl) {
-        return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(sharedDocumentUrl)}`
+        return sharedDocumentUrl
       }
+      // 2020-07-20 NP: We still need to support simple numeric IDs for now
+      // in the future we can convert w getLegacyUrl(sharedDocumentId)
       if(sharedDocumentId) {
-        if(useInternalLink) {
-          return `${this.props.client.getCurrentUrl()}#shared=${sharedDocumentId}`
-        }
-        return getLegacyUrl(sharedDocumentId)
+        return sharedDocumentId
       }
+    }
+    return null
+  },
+
+  // Return a sharable link to this document (includes the app CODAP)
+  getShareLink() {
+    const shareRef = this.getShareUrl()
+    if (shareRef) {
+      return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(shareRef)}`
     }
     return null
   },
@@ -122,14 +129,14 @@ export default createReactClass({
     //  2: Get the URL for the autoLauch page (hosted here ...)
     //  3: Construct a URL to <AutlaunchPage
     const autoLaunchpage = `${CFM_PRODUCTION}/autolaunch/autolaunch.html`
-    const documentServer = encodeURIComponent(this.getShareLink())
+    const documentId = encodeURIComponent(this.getShareUrl())
     const graphVisToggles = this.state.graphVisToggles ? '?app=is' : ''
     // graphVisToggles is a parameter handled by CODAP, so it needs to be added to its URL.
     const server = encodeURIComponent(`${this.state.serverUrl}${graphVisToggles}`)
     // Other params are handled by document server itself:
     const fullscreenScaling = this.state.fullscreenScaling ? '&scaling' : ''
 
-    return `${autoLaunchpage}?documentId=${documentServer}&server=${server}${fullscreenScaling}`
+    return `${autoLaunchpage}?documentId=${documentId}&server=${server}${fullscreenScaling}`
   },
   // TODO: Consider using queryparams to make URL construction less janky⬆
 

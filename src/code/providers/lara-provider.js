@@ -480,24 +480,22 @@ class LaraProvider extends ProviderInterface {
       // This includes the CODAP part of the URL, (TBD: has this always been the case?)
 
       // See if the `#shared` hash parameter looks like a public URL:
-      const sourceUrl = queryString.parseUrl(sourceID, {parseFragmentIdentifier: true})
-      const parsedHash = queryString.parse(sourceUrl.fragmentIdentifier)
-      const sharedDocParam = parsedHash?.shared
       const S3MatchRegex = /^http?s/
-      const sharedDocIsUrl = sharedDocParam && sharedDocParam.match(S3MatchRegex)
+      const sharedDocIsUrl = (typeof sourceID === "string") && sourceID.match(S3MatchRegex)
 
       // The `#shared` hash param is a public URL, just read the contents
       // and use that as the post body to v2CreateDocument.
       if (sharedDocIsUrl) {
         $.ajax({
-          url: sharedDocParam,
+          url: sourceID,
         })
         .done((data) => {
           const {method, url} = this.docStoreUrl.v2CreateDocument({})
+          const dataJson = typeof(data) === "string" ? data : JSON.stringify(data)
           return $.ajax({
             type: method,
             dataType: 'json',
-            data,
+            data: dataJson,
             url
           })
           .done(afterCreateCopy)
