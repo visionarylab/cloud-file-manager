@@ -495,6 +495,8 @@ class LaraProvider extends ProviderInterface {
           return $.ajax({
             type: method,
             dataType: 'json',
+            contentType: 'application/json', // Document Store requires JSON currently
+            processData: false, // https://api.jquery.com/jquery.ajax/
             data: dataJson,
             url
           })
