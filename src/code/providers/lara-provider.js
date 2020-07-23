@@ -495,7 +495,12 @@ class LaraProvider extends ProviderInterface {
           return $.ajax({
             type: method,
             dataType: 'json',
-            data: dataJson,
+            contentType: 'application/json', // Document Store requires JSON currently
+            processData: false, // https://api.jquery.com/jquery.ajax/
+            data: pako.deflate(dataJson),
+            beforeSend(xhr) {
+              return xhr.setRequestHeader('Content-Encoding', 'deflate')
+            },
             url
           })
           .done(afterCreateCopy)
