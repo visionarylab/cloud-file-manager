@@ -9,7 +9,7 @@ import {
 }  from './provider-interface'
 
 import { IShareProvider} from './share-provider-interface'
-import { createFile, updateFile } from '../utils/s3-share-provider-token-service-helper'
+import { createFile, updateFile, deleteFile } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
 import { sha256 } from 'js-sha256';
 
@@ -55,13 +55,25 @@ class S3ShareProvider implements IShareProvider  {
         resourceId: documentID,
         readWriteToken: readWriteToken
 
-      }).then( result => {
-        result.publicUrl
+      }).then(() => {
         callback(null, documentID)
       }).catch(e => {
         reportError(e)
         return callback(`Unable to update shared file ${e}`, {})
       })
+  }
+
+  private deleteShare(documentID: string, readWriteToken: string, callback: callbackSigShare) {
+    deleteFile({
+      // DocumentID is the resourceID for TokenService
+      resourceId: documentID,
+      readWriteToken: readWriteToken
+    }).then(() => {
+      callback(null, documentID)
+    }).catch((e: Error) => {
+      reportError(e)
+      return callback(`Unable to delete shared file ${e}`, {})
+    })
   }
 
   private createShare(
@@ -129,13 +141,17 @@ class S3ShareProvider implements IShareProvider  {
         // Again, follow document-store migration code.
         readWriteToken = "read-write-token:doc-store-imported:" + readWriteToken
       }
-      this.updateShare(contentJson, documentID, readWriteToken, callback)
-    // if we don't have a document ID and some form of accessKey,
-    // then we must create a new shared document when sharing is being enabled
+      if (shared) {
+        this.updateShare(contentJson, documentID, readWriteToken, callback)
+      } else {
+        this.deleteShare(documentID, readWriteToken, callback)
+      }
+      // if we don't have a document ID and some form of accessKey,
+      // then we must create a new shared document when sharing is being enabled
     } else if (shared) {
       this.createShare(masterContent, contentJson, metadata, callback)
     } else {
-      return callback(`Unable to unshare file (not implemented)`, {})
+      return callback(`Unable to stop sharing the file - no access key`, {})
     }
   }
 

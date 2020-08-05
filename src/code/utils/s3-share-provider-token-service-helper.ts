@@ -1,5 +1,5 @@
-import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service";
-import S3 from "aws-sdk/clients/s3";
+import { TokenServiceClient, S3Resource } from "@concord-consortium/token-service"
+import S3 from "aws-sdk/clients/s3"
 import {
   DEFAULT_MAX_AGE_SECONDS,
   getTokenServiceEnv,
@@ -7,11 +7,6 @@ import {
   TOKEN_SERVICE_TOOL_TYPE,
   S3_SHARED_DOC_PATH_LEGACY
 } from './config'
-
-interface ICreateFile {
-  fileContent: string;
-  firebaseJwt?: string;
-}
 
 // Token Service creates a (sub)folder in a S3 bucket and gives access to it. Multiple files can be created there,
 // but it's not desired in CFM. In fact each new subfolder should include just one file - CFM document.
@@ -22,42 +17,28 @@ interface ICreateFile {
 // sharing functionality will break. See: https://www.pivotaltracker.com/story/show/173817843
 const FILENAME = "file.json"
 
-export const createFile = async ({ fileContent, firebaseJwt }: ICreateFile) => {
-  // This function optionally accepts firebaseJWT. There are three things that depend on authentication method:
-  // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
-  // - createResource call. If user is not authenticated, "readWriteToken" accessRule type must be used. Token Service will generate and return readWriteToken.
-  // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
-  const anonymous = !firebaseJwt;
-
-  const client = anonymous
-    ? new TokenServiceClient({ env: getTokenServiceEnv() })
-    : new TokenServiceClient({ env: getTokenServiceEnv(), jwt: firebaseJwt })
+interface ICreateFileArgs {
+  fileContent: string
+}
+export const createFile = async ({ fileContent }: ICreateFileArgs) => {
+  const client = new TokenServiceClient({ env: getTokenServiceEnv() })
   const resource: S3Resource = await client.createResource({
     tool: TOKEN_SERVICE_TOOL_NAME,
     type: TOKEN_SERVICE_TOOL_TYPE,
     name: FILENAME,
     description: "Document created by CFM",
-    accessRuleType: anonymous ? "readWriteToken" : "user"
-  }) as S3Resource;
-
+    accessRuleType: "readWriteToken"
+  }) as S3Resource
   // Note that if your file ever needs to get updated, this token MUST BE (SECURELY) SAVED.
-  let readWriteToken = "";
-  if (anonymous) {
-    readWriteToken = client.getReadWriteToken(resource) || "";
-  }
-
-  const credentials = anonymous
-    ? await client.getCredentials(resource.id, readWriteToken)
-    : await client.getCredentials(resource.id);
-
-
+  const readWriteToken = client.getReadWriteToken(resource) || ""
+  const credentials = await client.getCredentials(resource.id, readWriteToken)
   // S3 configuration is based both on resource and credentials info.
-  const { bucket, region } = resource;
-  const { accessKeyId, secretAccessKey, sessionToken } = credentials;
-  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken });
-  const publicPath = client.getPublicS3Path(resource, FILENAME);
+  const { bucket, region } = resource
+  const { accessKeyId, secretAccessKey, sessionToken } = credentials
+  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken })
+  const publicPath = client.getPublicS3Path(resource, FILENAME)
 
-  const result = await s3.upload({
+  await s3.upload({
     Bucket: bucket,
     Key: publicPath,
     Body: fileContent,
@@ -65,44 +46,31 @@ export const createFile = async ({ fileContent, firebaseJwt }: ICreateFile) => {
     ContentEncoding: "UTF-8",
     // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
     CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
-  }).promise();
-  console.log(result);
+  }).promise()
 
   return {
     publicUrl: client.getPublicS3Url(resource, FILENAME),
     resourceId: resource.id,
     readWriteToken
-  };
-};
+  }
+}
 
 interface IUpdateFileArgs {
-  newFileContent: string;
-  resourceId: string;
-  firebaseJwt?: string;
-  readWriteToken?: string;
+  newFileContent: string
+  resourceId: string
+  readWriteToken?: string
 }
-export const updateFile = async ({ newFileContent, resourceId, firebaseJwt, readWriteToken }: IUpdateFileArgs) => {
-  // This function accepts either firebaseJWT or readWriteToken. There are only two things that depend on authentication method:
-  // - TokenServiceClient constructor arguments. If user should be authenticated during every call to the API, provide `jwt` param.
-  // - getCredentials call. If user is not authenticated, readWriteToken needs to be provided instead.
-  const anonymous = !firebaseJwt && readWriteToken;
-
-  const client = anonymous
-    ? new TokenServiceClient({ env: getTokenServiceEnv() })
-    : new TokenServiceClient({ env: getTokenServiceEnv(), jwt: firebaseJwt })
-
-  const resource: S3Resource = await client.getResource(resourceId) as S3Resource;
-  const credentials = anonymous
-    ? await client.getCredentials(resource.id, readWriteToken)
-    : await client.getCredentials(resource.id);
-
+export const updateFile = async ({ newFileContent, resourceId, readWriteToken }: IUpdateFileArgs) => {
+  const client = new TokenServiceClient({ env: getTokenServiceEnv() })
+  const resource: S3Resource = await client.getResource(resourceId) as S3Resource
+  const credentials = await client.getCredentials(resource.id, readWriteToken)
   // S3 configuration is based both on resource and credentials info.
-  const { bucket, region } = resource;
-  const { accessKeyId, secretAccessKey, sessionToken } = credentials;
-  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken });
-  const publicPath = client.getPublicS3Path(resource, FILENAME);
-  const publicUrl = client.getPublicS3Url(resource, FILENAME);
-  const result = await s3.upload({
+  const { bucket, region } = resource
+  const { accessKeyId, secretAccessKey, sessionToken } = credentials
+  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken })
+  const publicPath = client.getPublicS3Path(resource, FILENAME)
+
+  await s3.upload({
     Bucket: bucket,
     Key: publicPath,
     Body: newFileContent,
@@ -110,14 +78,28 @@ export const updateFile = async ({ newFileContent, resourceId, firebaseJwt, read
     ContentEncoding: "UTF-8",
     // Remember to update "~SHARE_UPDATE.MESSAGE" message when caching time is updated.
     CacheControl: `max-age=${DEFAULT_MAX_AGE_SECONDS}`
-  }).promise();
-  return {
-    result,
-    bucket,
-    publicPath,
-    publicUrl
-  }
-};
+  }).promise()
+}
+
+interface IDeleteFileArgs {
+  resourceId: string
+  readWriteToken?: string
+}
+export const deleteFile = async ({ resourceId, readWriteToken }: IDeleteFileArgs) => {
+  const client = new TokenServiceClient({ env: getTokenServiceEnv() })
+  const resource: S3Resource = await client.getResource(resourceId) as S3Resource
+  const credentials = await client.getCredentials(resource.id, readWriteToken)
+  // S3 configuration is based both on resource and credentials info.
+  const { bucket, region } = resource
+  const { accessKeyId, secretAccessKey, sessionToken } = credentials
+  const s3 = new S3({ region, accessKeyId, secretAccessKey, sessionToken })
+  const publicPath = client.getPublicS3Path(resource, FILENAME)
+
+  await s3.deleteObject({
+    Bucket: bucket,
+    Key: publicPath,
+  }).promise()
+}
 
 const getBaseDocumentUrl = () => {
   const stagingBase = "https://token-service-files.concordqa.org"
@@ -129,4 +111,4 @@ const getBaseDocumentUrl = () => {
 // with names matching these IDs. They redirect to a final location in S3.
 export const getLegacyUrl = (documentId: string) => {
   return `${getBaseDocumentUrl()}/${S3_SHARED_DOC_PATH_LEGACY}/${documentId}`
-};
+}
