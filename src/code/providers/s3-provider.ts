@@ -10,6 +10,7 @@ import {
 
 import { createFile, getLegacyUrl } from '../utils/s3-share-provider-token-service-helper'
 import { reportError } from '../utils/report-error'
+import tr from '../utils/translate'
 
 // TODO: Type the cient
 interface IClientInterface {}
@@ -64,35 +65,37 @@ class S3Provider extends ProviderInterface {
     });
   }
 
-  loadFromUrl(
-    documentUrl: string,
-    metadata: CloudMetadata,
-    callback: callbackSigLoad) {
+  loadFromUrl(documentUrl: string, metadata: CloudMetadata, callback: callbackSigLoad) {
     fetch(documentUrl)
-    .then(response => response.json())
-    .then(data => {
-      const content = cloudContentFactory.createEnvelopedCloudContent(data)
-      // for documents loaded by id or other means (besides name),
-      // capture the name for use in the CFM interface.
-      // 'docName' at the top level for CFM-wrapped documents
-      // 'name' at the top level for unwrapped documents (e.g. CODAP)
-      // 'name' at the top level of 'content' for wrapped CODAP documents
-      const name =
-        metadata.name
-        || metadata.providerData.name
-        || data.docName
-        || data.name
-        || data.content?.name
-      metadata.rename(name)
-      if (metadata.name) {
-        content.addMetadata({docName: metadata.filename})
-      }
-
-      return callback(null, content)
-    })
-    .catch(e => {
-      callback(`Unable to load '${metadata.name}': ${e.message}`, {})
-    })
+      .then(response => {
+        if (response.status === 404) {
+          callback(tr("~DOCSTORE.LOAD_SHARED_404_ERROR"), {});
+        } else {
+          return response.json()
+            .then(data => {
+              const content = cloudContentFactory.createEnvelopedCloudContent(data)
+              // for documents loaded by id or other means (besides name),
+              // capture the name for use in the CFM interface.
+              // 'docName' at the top level for CFM-wrapped documents
+              // 'name' at the top level for unwrapped documents (e.g. CODAP)
+              // 'name' at the top level of 'content' for wrapped CODAP documents
+              const name =
+                metadata.name
+                || metadata.providerData.name
+                || data.docName
+                || data.name
+                || data.content?.name
+              metadata.rename(name)
+              if (metadata.name) {
+                content.addMetadata({ docName: metadata.filename })
+              }
+              return callback(null, content)
+            })
+            .catch(e => {
+              callback(`Unable to load '${metadata.name}': ${e.message}`, {})
+            });
+        }
+      })
   }
 
   private getLoadUrlFromSharedContentId(sharedDocumentId: string) {
