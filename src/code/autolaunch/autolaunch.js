@@ -27,11 +27,8 @@ function getURLParam (name) {
 function codap_v2_link(codapServer) {
   const defaultCodapUrl = "https://codap.concord.org/releases/latest/"
   const documentServer = "https://document-store.concord.org/"
-  const CFMOrigin = window.location.origin
-  const cfmBaseUrl = `${CFMOrigin}/js`
   const extraData = {
-    documentServer,
-    cfmBaseUrl
+    documentServer
   }
   const baseUrl = codapServer || defaultCodapUrl
   const {url, query, fragmentIdentifier} = queryString.parseUrl(baseUrl, {fragmentIdentifier: true})
