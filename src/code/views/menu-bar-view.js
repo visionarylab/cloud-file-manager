@@ -7,15 +7,11 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import DropDownView from "./dropdown-view"
-import DropDownAnchor from "./dropdown-view"
+import {TriangleOnlyAnchor} from './dropdown-anchors'
 import tr  from '../utils/translate'
-
-
 
 const {div, i, span, input} = ReactDOMFactories
 const Dropdown = createReactFactory(DropDownView)
-const {TriangleOnlyAnchor} = DropDownAnchor
-
 
 export default createReactClass({
 
