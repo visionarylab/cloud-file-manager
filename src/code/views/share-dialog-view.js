@@ -100,7 +100,7 @@ export default createReactClass({
   getShareLink() {
     const shareRef = this.getShareUrl()
     if (shareRef) {
-      return `${this.props.client.getCurrentUrl()}#shared=${encodeURI(shareRef)}`
+      return `${this.props.client.getCurrentUrl()}#shared=${encodeURIComponent(shareRef)}`
     }
     return null
   },
