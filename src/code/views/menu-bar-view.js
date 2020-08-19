@@ -188,6 +188,8 @@ export default createReactClass({
   },
 
   render() {
+    const { provider } = this.props;
+    const isAuthorized = provider && provider.isAuthorizationRequired() && provider.authorized();
     return (div({className: 'menu-bar'},
       (div({className: 'menu-bar-left'},
         (Dropdown({items: this.props.items})),
@@ -203,8 +205,7 @@ export default createReactClass({
       (div({className: 'menu-bar-right'},
         this.props.options.info ?
           (span({className: 'menu-bar-info', onClick: this.infoClicked}, this.props.options.info)) : undefined,
-        (this.props.provider != null ? this.props.provider.authorized() : undefined) ?
-          this.props.provider.renderUser() : undefined,
+        isAuthorized ? this.props.provider.renderUser() : undefined,
         this.props.options.help ?
           (i({style: {fontSize: "13px"}, className: 'clickable icon-help', onClick: this.help})) : undefined,
         this.props.options.languageMenu ?
