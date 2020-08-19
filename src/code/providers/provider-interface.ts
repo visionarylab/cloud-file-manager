@@ -451,11 +451,11 @@ class ProviderInterface implements IProviderInterfaceOpts {
   }
 
   renderAuthorizationDialog() {
-    console.warn('renderAuthorizationDialog not implimented')
+    console.warn('renderAuthorizationDialog not implemented')
   }
 
   renderUser() {
-    console.warn('renderUser not implimented')
+    console.warn('renderUser not implemented')
   }
 
   filterTabComponent(capability: ECapabilities, defaultComponent: React.Component) {
