@@ -116,10 +116,9 @@
     "~SHARE_DIALOG.EMBED_MESSAGE": "ウェブページもしくは他のウェブベースコンテンツに埋め込まれたコード",
     "~SHARE_DIALOG.LARA_MESSAGE": " LARAで活動を作成するときにこのリンクを用います",
     "~SHARE_DIALOG.LARA_CODAP_URL": "CODAPサーバーURL:",
-    "~SHARE_DIALOG.LARA_AUTOLAUNCH_PAGE": "自動開始ページ",
     "~SHARE_DIALOG.LARA_FULLSCREEN_BUTTON_AND_SCALING": "フルスクリーンボタンおよびスケール",
-    "~SHARE_DIALOG.LARA_LAUNCH_BUTTON_TEXT": "ボタンのテキストを始める",
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "グラフ上にデータ可視化タグを表示する",
     "~CONFIRM.CHANGE_LANGUAGE": "変更が保存されていません。言語を変更してもよろしいですか。",
-    "~FILE_STATUS.FAILURE": "再接続しています…"
+    "~FILE_STATUS.FAILURE": "再接続しています…",
+    "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …"
 }
