@@ -1,12 +1,18 @@
 const execSync = require('sync-exec')
+const packageJSON = require('../package.json')
 const { env } = process
 const codap = !!env.codap // include CODAP-specific modifications
 
 const commitHash = execSync('git log -1 --pretty=format:"%H"').stdout
 const date = new Date()
+const version = packageJSON.version
 
 const replacementStrings = {
   html: [
+    {
+      search: /__VERSION__/g,
+      replace: version
+    },
     {
       search: /__COMMIT__/g,
       replace: commitHash
