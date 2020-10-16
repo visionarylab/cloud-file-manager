@@ -71,9 +71,9 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
 
 class GoogleDriveProvider extends ProviderInterface {
   static initClass() {
-  
+
     this.Name = 'googleDrive'
-  
+
     // aliases for boolean parameter to authorize
     this.IMMEDIATE = true
     this.SHOW_POPUP = false
@@ -330,22 +330,22 @@ class GoogleDriveProvider extends ProviderInterface {
             }
           })
         }
-        var download = (url, fallback) => {
+        var download = (url) => {
           const xhr = new XMLHttpRequest()
           xhr.open('GET', url)
           xhr.setRequestHeader("Authorization", `Bearer ${this.authToken.access_token}`)
           xhr.onload = () => callback(null, cloudContentFactory.createEnvelopedCloudContent(xhr.responseText))
           xhr.onerror = function() {
-            // try second request after changing the domain (https://issuetracker.google.com/issues/149891169)
-            if (fallback) {
-              return download(url.replace(/^https:\/\/content\.googleapis\.com/, "https://www.googleapis.com"), false)
-            } else {
-              return callback("Unable to download file content")
-            }
+            return callback("Unable to download file content")
           }
           return xhr.send()
         }
-        return download(file.downloadUrl, true)
+        // always change the domain (https://issuetracker.google.com/issues/149891169)
+        // this used to be in an xhr error handler in the download function above but a
+        // recent change in the behavior of the api is causing that error handler not to
+        // be called
+        const url = file.downloadUrl.replace('content.googleapis.com', 'www.googleapis.com')
+        return download(url, true)
       } else {
         return callback(this._apiError(file, 'Unable to get download url'))
       }
