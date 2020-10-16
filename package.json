@@ -2,7 +2,7 @@
   "name": "cloud-file-manager",
   "description": "Wrapper for providing file management for web applications",
   "author": "The Concord Consortium",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/concord-consortium/cloud-file-manger"
