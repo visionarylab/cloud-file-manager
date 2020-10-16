@@ -344,7 +344,7 @@ class GoogleDriveProvider extends ProviderInterface {
         // this used to be in an xhr error handler in the download function above but a
         // recent change in the behavior of the api is causing that error handler not to
         // be called
-        const url = file.downloadUrl.replace('content.googleapis.com', 'www.googleapis.com')
+        const url = file.downloadUrl.replace(/^https:\/\/content\.googleapis\.com/, "https://www.googleapis.com")
         return download(url)
       } else {
         return callback(this._apiError(file, 'Unable to get download url'))
