@@ -123,6 +123,8 @@
 
   "~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL": "Login to Google",
   "~GOOGLE_DRIVE.CONNECTING_MESSAGE": "Connecting to Google...",
+  "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "Error connecting to Google!",
+  "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options",
   "~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID": "Missing required clientId in googleDrive provider options",
 
   "~DOCSTORE.LOAD_403_ERROR": "You don't have permission to load %{filename}.<br><br>If you are using some else's shared document it may have been unshared.",

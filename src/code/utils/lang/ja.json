@@ -120,5 +120,7 @@
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "グラフ上にデータ可視化タグを表示する",
     "~CONFIRM.CHANGE_LANGUAGE": "変更が保存されていません。言語を変更してもよろしいですか。",
     "~FILE_STATUS.FAILURE": "再接続しています…",
-    "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …"
+    "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
+    "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "Error connecting to Google!",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options"
 }

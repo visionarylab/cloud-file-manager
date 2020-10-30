@@ -120,5 +120,7 @@
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "Switchear ver datos en gráficos",
     "~CONFIRM.CHANGE_LANGUAGE": "Hay cambios sin guardar. ¿Seguro de cambiar de idioma?",
     "~FILE_STATUS.FAILURE": "Reintento..",
-    "~SHARE_DIALOG.PLEASE_WAIT": "Por favor espere mientras se genera el enlace..."
+    "~SHARE_DIALOG.PLEASE_WAIT": "Por favor espere mientras se genera el enlace...",
+    "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "Error connecting to Google!",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options"
 }

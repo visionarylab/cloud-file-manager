@@ -120,5 +120,7 @@
     "~SHARE_DIALOG.LARA_DISPLAY_VISIBILITY_TOGGLES": "图表数据可视化显示切换",
     "~CONFIRM.CHANGE_LANGUAGE": "有未保存更改，确定更改语言吗？",
     "~FILE_STATUS.FAILURE": "重试...",
-    "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …"
+    "~SHARE_DIALOG.PLEASE_WAIT": "Please wait while we generate a shared link …",
+    "~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE": "Error connecting to Google!",
+    "~GOOGLE_DRIVE.ERROR_MISSING_APIKEY": "Missing required apiKey in googleDrive provider options"
 }

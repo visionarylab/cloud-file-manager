@@ -142,3 +142,8 @@ Note that there is probably a way to eliminate the need for step 3 above by requ
 
 We should move to using jsx for components instead of react-create-factory:
 see [this deprecation warning](https://reactjs.org/blog/2020/02/26/react-v16.13.0.html#deprecating-reactcreatefactory)
+
+
+# Upgrading to Google Drive API V3
+
+To upgrade a project to use V3 find the API key for the project in the Google Developer's Console and add it as an "apiKey" option in the provider setup (next to the existing "clientId" option)
