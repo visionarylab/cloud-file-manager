@@ -40,18 +40,11 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   },
 
   render() {
-    let contents
-    switch (this.state.gapiLoadState) {
-      case "not-loaded":
-        contents = tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE")
-        break
-      case "loaded":
-        contents = button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL")))
-        break
-      case "errored":
-        contents = tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
-        break
-    }
+    const contents = {
+      "not-loaded": tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
+      "loaded": button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
+      "errored": tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
+    }[this.state.gapiLoadState] || "An unknown error occurred!"
     return (div({className: 'google-drive-auth'},
       (div({className: 'google-drive-concord-logo'}, '')),
       (div({className: 'google-drive-footer'},
@@ -202,7 +195,7 @@ class GoogleDriveProvider extends ProviderInterface {
         if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
         const list = []
         const files = result.files;
-        if (files && files.length > 0) {
+        if (files?.length > 0) {
           for (let i = 0; i < files.length; i++) {
             const item = files[i];
             const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
