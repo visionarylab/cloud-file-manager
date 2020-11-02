@@ -316,6 +316,8 @@ class GoogleDriveProvider extends ProviderInterface {
           }
         })
       }
+
+      // v3 of the api removed the downloadUrl from the returned file data so we need to manually construct it
       const xhr = new XMLHttpRequest()
       xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${metadata.providerData.id}?alt=media`)
       xhr.setRequestHeader("Authorization", `Bearer ${this.authToken.access_token}`)
