@@ -58,7 +58,7 @@ const getFirstBrowserLanguage = function() {
 
 const translations =  {}
 languageFiles.forEach(function(lang) {
-  translations[lang.key] = lang.contents
+  translations[lang.key.toLowerCase()] = lang.contents
   // accept full key with region code or just the language code
   const baseLang = getBaseLanguage(lang.key)
   if (baseLang && !translations[baseLang]) {
@@ -68,7 +68,8 @@ languageFiles.forEach(function(lang) {
 
 const lang = urlParams.lang || getPageLanguage() || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
-const defaultLang = lang && translations[lang] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
+// CODAP/Sproutcore lower cases language in documentElement
+const defaultLang = lang && translations[lang.toLowerCase()] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
 
 console.log(`CFM: using ${defaultLang} for translation (lang is "${urlParams.lang}" || "${getFirstBrowserLanguage()}")`);
 
