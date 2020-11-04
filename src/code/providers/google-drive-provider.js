@@ -142,7 +142,7 @@ class GoogleDriveProvider extends ProviderInterface {
         auth.isSignedIn.listen(() => {
           finishAuthorization()
         })
-        if (immediate) {
+        if (!immediate) {
           auth.signIn()
         } else {
           finishAuthorization()
