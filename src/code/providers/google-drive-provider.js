@@ -1,18 +1,3 @@
-// TODO: This file was created by bulk-decaffeinate.
-// Sanity-check the conversion and remove this comment.
-/*
- * decaffeinate suggestions:
- * DS001: Remove Babel/TypeScript constructor workaround
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS206: Consider reworking classes to avoid initClass
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-
-
 import tr  from '../utils/translate'
 import { ProviderInterface }  from './provider-interface'
 import { cloudContentFactory }  from './provider-interface'
@@ -25,7 +10,7 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   displayName: 'GoogleDriveAuthorizationDialog',
 
   getInitialState() {
-    return {loadedGAPI: window._LoadedGAPIClients}
+    return {gapiLoadState: this.props.provider.gapiLoadState}
   },
 
   // See comments in AuthorizeMixin for detailed description of the issues here.
@@ -34,18 +19,16 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   // unmounted components, which doesn't work and triggers a React warning.
 
   UNSAFE_componentWillMount() {
-    return this.props.provider._loadedGAPI(() => {
+    return this.props.provider._waitForGAPILoad().then(() => {
       if (this._isMounted) {
-        return this.setState({loadedGAPI: true})
+        return this.setState({gapiLoadState: this.props.provider.gapiLoadState})
       }
     })
   },
 
   componentDidMount() {
     this._isMounted = true
-    if (this.state.loadedGAPI !== window._LoadedGAPIClients) {
-      return this.setState({loadedGAPI: window._LoadedGAPIClients})
-    }
+    this.setState({gapiLoadState: this.props.provider.gapiLoadState})
   },
 
   componentWillUnmount() {
@@ -57,13 +40,15 @@ const GoogleDriveAuthorizationDialog = createReactClassFactory({
   },
 
   render() {
+    const contents = {
+      "not-loaded": tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"),
+      "loaded": button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))),
+      "errored": tr("~GOOGLE_DRIVE.ERROR_CONNECTING_MESSAGE")
+    }[this.state.gapiLoadState] || "An unknown error occurred!"
     return (div({className: 'google-drive-auth'},
       (div({className: 'google-drive-concord-logo'}, '')),
       (div({className: 'google-drive-footer'},
-        window._LoadedGAPIClients || this.state.loadedGAPI ?
-          (button({onClick: this.authenticate}, (tr("~GOOGLE_DRIVE.LOGIN_BUTTON_LABEL"))))
-        :
-          (tr("~GOOGLE_DRIVE.CONNECTING_MESSAGE"))
+        contents
       ))
     ))
   }
@@ -88,7 +73,7 @@ class GoogleDriveProvider extends ProviderInterface {
       capabilities: {
         save: true,
         resave: true,
-        "export": true,
+        'export': true,
         load: true,
         list: true,
         remove: false,
@@ -101,19 +86,27 @@ class GoogleDriveProvider extends ProviderInterface {
     this.client = client
     this.authToken = null
     this.user = null
+    this.apiKey = this.options.apiKey
     this.clientId = this.options.clientId
+    if (!this.apiKey) {
+      throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_APIKEY")))
+    }
     if (!this.clientId) {
       throw new Error((tr("~GOOGLE_DRIVE.ERROR_MISSING_CLIENTID")))
     }
-    this.scopes = this.options.scopes || [
+    this.scopes = (this.options.scopes || [
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/drive.install',
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/userinfo.profile'
-    ]
+    ]).join(" ")
     this.mimeType = this.options.mimeType || "text/plain"
     this.readableMimetypes = this.options.readableMimetypes
-    this._loadGAPI()
+
+    this.gapiLoadState = "not-loaded"
+    this._waitForGAPILoad()
+      .then(() => this.gapiLoadState = "loaded")
+      .catch(() => this.gapiLoadState = "errored")
   }
 
   authorized(authCallback) {
@@ -130,23 +123,31 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   authorize(immediate) {
-    return this._loadedGAPI(() => {
-      const args = {
-        client_id: this.clientId,
-        scope: this.scopes,
-        immediate
-      }
-      return gapi.auth.authorize(args, authToken => {
-        this.authToken = authToken && !authToken.error ? authToken : null
-        this.user = null
+    return this._waitForGAPILoad().then(() => {
+      const auth = gapi.auth2.getAuthInstance()
+      const finishAuthorization = () => {
+        const authorized = auth.isSignedIn.get()
+        const currentUser = authorized ? auth.currentUser.get() : null
+        this.authToken = currentUser ? currentUser.getAuthResponse(true) : null
+        this.user = currentUser ? {name: currentUser.getBasicProfile().getName()} : null
         this.autoRenewToken(this.authToken)
-        if (this.authToken) {
-          gapi.client.oauth2.userinfo.get().execute(user => {
-            return this.user = user
-          })
+        if (typeof this.authCallback === 'function') {
+          this.authCallback(authorized)
         }
-        return (typeof this.authCallback === 'function' ? this.authCallback(this.authToken !== null) : undefined)
-      })
+      }
+
+      if (auth.isSignedIn.get()) {
+        finishAuthorization()
+      } else {
+        auth.isSignedIn.listen(() => {
+          finishAuthorization()
+        })
+        if (!immediate) {
+          auth.signIn()
+        } else {
+          finishAuthorization()
+        }
+      }
     })
   }
 
@@ -172,49 +173,48 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   save(content, metadata, callback) {
-    return this._loadedGAPI(() => {
+    return this._waitForGAPILoad().then(() => {
       return this._saveFile(content, metadata, callback)
     })
   }
 
   load(metadata, callback) {
-    return this._loadedGAPI(() => {
+    return this._waitForGAPILoad().then(() => {
       return this._loadFile(metadata, callback)
     })
   }
 
   list(metadata, callback) {
-    return this._loadedGAPI(() => {
-      let mimeType
-      const mimeTypesQuery = ((() => {
-        const result = []
-        for (mimeType of Array.from(this.readableMimetypes)) {           result.push(`mimeType = '${mimeType}'`)
-        }
-        return result
-      })()).join(" or ")
+    return this._waitForGAPILoad().then(() => {
+      const mimeTypesQuery = (this.readableMimetypes || []).map((mimeType) => `mimeType = '${mimeType}'`).join(" or ")
       const request = gapi.client.drive.files.list({
-        q: (
-          `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`)})
+        fields: "files(id, mimeType, name, capabilities(canEdit))",
+        q: `trashed = false and (${mimeTypesQuery} or mimeType = 'application/vnd.google-apps.folder') and '${metadata ? metadata.providerData.id : 'root'}' in parents`
+      })
       return request.execute(result => {
         if (!result || result.error) { return callback(this._apiError(result, 'Unable to list files')) }
         const list = []
-        for (let item of Array.from((result != null ? result.items : undefined))) {
-          const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
-          if ((type === CloudMetadata.Folder) || this.matchesExtension(item.title)) {
-            list.push(new CloudMetadata({
-              name: item.title,
-              type,
-              parent: metadata,
-              overwritable: item.editable,
-              provider: this,
-              providerData: {
-                id: item.id
-              }
-            })
-            )
+        const files = result.files;
+        if (files?.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            const item = files[i];
+            const type = item.mimeType === 'application/vnd.google-apps.folder' ? CloudMetadata.Folder : CloudMetadata.File
+            if ((type === CloudMetadata.Folder) || this.matchesExtension(item.name)) {
+              list.push(new CloudMetadata({
+                name: item.name,
+                type,
+                parent: metadata,
+                overwritable: item.capabilities.canEdit,
+                provider: this,
+                providerData: {
+                  id: item.id
+                }
+              })
+              )
+            }
           }
         }
-        list.sort(function(a, b) {
+        list.sort((a, b) => {
           const lowerA = a.name.toLowerCase()
           const lowerB = b.name.toLowerCase()
           if (lowerA < lowerB) { return -1 }
@@ -227,7 +227,7 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   remove(metadata, callback) {
-    return this._loadedGAPI(function() {
+    return this._waitForGAPILoad().then(() => {
       const request = gapi.client.drive.files["delete"]({
         fileId: metadata.providerData.id})
       return request.execute(result => typeof callback === 'function' ? callback((result != null ? result.error : undefined) || null) : undefined)
@@ -235,14 +235,14 @@ class GoogleDriveProvider extends ProviderInterface {
   }
 
   rename(metadata, newName, callback) {
-    return this._loadedGAPI(function() {
+    return this._waitForGAPILoad().then(() => {
       const request = gapi.client.drive.files.patch({
         fileId: metadata.providerData.id,
         resource: {
           title: CloudMetadata.withExtension(newName)
         }
       })
-      return request.execute(function(result) {
+      return request.execute((result) => {
         if (result != null ? result.error : undefined) {
           return (typeof callback === 'function' ? callback(result.error) : undefined)
         } else {
@@ -277,78 +277,53 @@ class GoogleDriveProvider extends ProviderInterface {
     return true
   }
 
-  _loadGAPI() {
-    if (!window._LoadingGAPI) {
-      window._LoadingGAPI = true
-      window._GAPIOnLoad = () => {
-        window._LoadedGAPI = true
-        // preload clients to avoid user delay later
-        return this._loadedGAPI(function() {})
-      }
+  _waitForGAPILoad() {
+    return new Promise((resolve, reject) => {
       const script = document.createElement('script')
-      script.src = 'https://apis.google.com/js/client.js?onload=_GAPIOnLoad'
-      return document.head.appendChild(script)
-    }
-  }
-
-  _loadedGAPI(callback) {
-    if (window._LoadedGAPIClients) {
-      return callback()
-    } else {
-      const self = this
-      var check = function() {
-        if (window._LoadedGAPI) {
-          return gapi.client.load('drive', 'v2', () =>
-            gapi.client.load('oauth2', 'v2', function() {
-              window._LoadedGAPIClients = true
-              return callback.call(self)
-            })
-          )
-        } else {
-          return setTimeout(check, 10)
-        }
+      script.src = "https://apis.google.com/js/api.js"
+      script.onload = () => {
+        gapi.load("client:auth2", () => {
+          gapi.client.init({
+            apiKey: this.apiKey,
+            clientId: this.clientId,
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+            scope: this.scopes
+          })
+          .then(resolve)
+          .catch(reject)
+        })
       }
-      return setTimeout(check, 10)
-    }
+      document.head.appendChild(script)
+    })
   }
 
   _loadFile(metadata, callback) {
     const request = gapi.client.drive.files.get({
-      fileId: metadata.providerData.id})
+      fileId: metadata.providerData.id,
+      fields: "id, mimeType, name, parents, capabilities(canEdit)",
+    })
     return request.execute(file => {
-      if (file != null ? file.downloadUrl : undefined) {
-        metadata.rename(file.title)
-        metadata.overwritable = file.editable
-        metadata.providerData = {id: file.id}
-        metadata.mimeType = file.mimeType
-        if ((metadata.parent == null) && ((file.parents != null ? file.parents.length : undefined) > 0)) {
-          metadata.parent = new CloudMetadata({
-            type: CloudMetadata.Folder,
-            provider: this,
-            providerData: {
-              id: file.parents[0].id
-            }
-          })
-        }
-        var download = (url) => {
-          const xhr = new XMLHttpRequest()
-          xhr.open('GET', url)
-          xhr.setRequestHeader("Authorization", `Bearer ${this.authToken.access_token}`)
-          xhr.onload = () => callback(null, cloudContentFactory.createEnvelopedCloudContent(xhr.responseText))
-          xhr.onerror = function() {
-            return callback("Unable to download file content")
+      metadata.rename(file.name)
+      metadata.overwritable = file.capabilities.canEdit
+      metadata.providerData = {id: file.id}
+      metadata.mimeType = file.mimeType
+      if ((metadata.parent == null) && ((file.parents != null ? file.parents.length : undefined) > 0)) {
+        metadata.parent = new CloudMetadata({
+          type: CloudMetadata.Folder,
+          provider: this,
+          providerData: {
+            id: file.parents[0]
           }
-          return xhr.send()
-        }
-        // always change the domain (https://issuetracker.google.com/issues/149891169)
-        // this used to be in an xhr error handler in the download function above but a
-        // recent change in the behavior of the api is causing that error handler not to
-        // be called
-        const url = file.downloadUrl.replace(/^https:\/\/content\.googleapis\.com/, "https://www.googleapis.com")
-        return download(url)
-      } else {
-        return callback(this._apiError(file, 'Unable to get download url'))
+        })
       }
+
+      // v3 of the api removed the downloadUrl from the returned file data so we need to manually construct it
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${metadata.providerData.id}?alt=media`)
+      xhr.setRequestHeader("Authorization", `Bearer ${this.authToken.access_token}`)
+      xhr.onload = () => callback(null, cloudContentFactory.createEnvelopedCloudContent(xhr.responseText))
+      xhr.onerror = () => callback("Unable to download file content")
+      return xhr.send()
     })
   }
 
