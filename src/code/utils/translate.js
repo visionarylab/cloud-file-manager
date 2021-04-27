@@ -16,6 +16,7 @@ import he from './lang/he'
 import ja from './lang/ja'
 import nb from './lang/nb'
 import nn from './lang/nn'
+import th from './lang/th'
 import tr from './lang/tr'
 import zhHans from './lang/zh-Hans'
 import zhTW from './lang/zh-TW'
@@ -29,6 +30,7 @@ const languageFiles = [
   {key: 'ja' ,   contents: ja},     // Japanese
   {key: 'nb',    contents: nb},     // Norwegian Bokmål
   {key: 'nn',    contents: nn},     // Norwegian Nynorsk
+  {key: 'th',    contents: th},     // Thai
   {key: 'tr',    contents: tr},     // Turkish
   {key: 'zh',    contents: zhHans}, // Simplified Chinese
   {key: 'zh-TW', contents: zhTW}    // Traditional Chinese (Taiwan)
