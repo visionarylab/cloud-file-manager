@@ -2,7 +2,7 @@
   "name": "cloud-file-manager",
   "description": "Wrapper for providing file management for web applications",
   "author": "The Concord Consortium",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/concord-consortium/cloud-file-manger"
@@ -42,7 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
     "babel-eslint": "^10.1.0",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^6.4.1",
     "cross-env": "^7.0.2",
     "css-loader": "^3.5.2",
     "cypress": "^4.4.1",

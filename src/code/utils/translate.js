@@ -16,6 +16,7 @@ import he from './lang/he'
 import ja from './lang/ja'
 import nb from './lang/nb'
 import nn from './lang/nn'
+import th from './lang/th'
 import tr from './lang/tr'
 import zhHans from './lang/zh-Hans'
 import zhTW from './lang/zh-TW'
@@ -29,6 +30,7 @@ const languageFiles = [
   {key: 'ja' ,   contents: ja},     // Japanese
   {key: 'nb',    contents: nb},     // Norwegian Bokmål
   {key: 'nn',    contents: nn},     // Norwegian Nynorsk
+  {key: 'th',    contents: th},     // Thai
   {key: 'tr',    contents: tr},     // Turkish
   {key: 'zh',    contents: zhHans}, // Simplified Chinese
   {key: 'zh-TW', contents: zhTW}    // Traditional Chinese (Taiwan)
@@ -58,7 +60,7 @@ const getFirstBrowserLanguage = function() {
 
 const translations =  {}
 languageFiles.forEach(function(lang) {
-  translations[lang.key] = lang.contents
+  translations[lang.key.toLowerCase()] = lang.contents
   // accept full key with region code or just the language code
   const baseLang = getBaseLanguage(lang.key)
   if (baseLang && !translations[baseLang]) {
@@ -68,7 +70,8 @@ languageFiles.forEach(function(lang) {
 
 const lang = urlParams.lang || getPageLanguage() || getFirstBrowserLanguage()
 const baseLang = getBaseLanguage(lang || '')
-const defaultLang = lang && translations[lang] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
+// CODAP/Sproutcore lower cases language in documentElement
+const defaultLang = lang && translations[lang.toLowerCase()] ? lang : baseLang && translations[baseLang] ? baseLang : "en"
 
 console.log(`CFM: using ${defaultLang} for translation (lang is "${urlParams.lang}" || "${getFirstBrowserLanguage()}")`);
 
