@@ -80,6 +80,7 @@ const varRegExp = /%\{\s*([^}\s]*)\s*\}/g
 const translate = function(key, vars, lang) {
   if (vars == null) { vars = {} }
   if (lang == null) { lang = defaultLang }
+  lang = lang.toLowerCase()
   let translation = translations[lang] != null ? translations[lang][key] : undefined
   if ((translation == null)) { translation = key }
   return translation.replace(varRegExp, function(match, key) {
